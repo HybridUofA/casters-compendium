@@ -1,0 +1,29 @@
+# Compiled Go files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test/build output
+*.test
+*.out
+bin/
+build/
+dist/
+
+# Editors
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+
+# Secrets and temporary captures
+.env
+*.har
+card_list
+card_list_tcc
+
+# Temporary downloaded data
+snapshots/
