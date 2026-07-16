@@ -23,7 +23,7 @@ func FetchPage(
 ) (SearchResponse, error) {
 	var result SearchResponse
 
-	if client == null {
+	if client == nil {
 		return result, fmt.Errorf("HTTP client cannot be nil")
 	}
 
