@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"io"
 	"log"
+	"os"
 	"github.com/HybridUofA/caster-deckbuilder/internal/speedrobo"
 	"time"
 )
@@ -30,7 +30,7 @@ func main() {
 	fmt.Printf("Total pages: %d\n", response.Data.Pages)
 	fmt.Printf("Cards received: %d\n", len(response.Data.Cards))
 
-	if len(reponse.Data.Cards) > 0 {
+	if len(response.Data.Cards) > 0 {
 		fmt.Printf("First card: %s\n", response.Data.Cards[0].CardKey,)
 	}
 }
