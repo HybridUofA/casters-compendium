@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"io"
 	"log"
-	"TCC_Deckbuilder/internal/speedrobo"
+	"github.com/HybridUofA/caster-deckbuilder/internal/speedrobo"
 	"time"
 )
 
