@@ -2,27 +2,34 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"log"
-	"os"
 	"github.com/HybridUofA/caster-deckbuilder/internal/speedrobo"
-	"time"
+	"github.com/HybridUofA/caster-deckbuilder/internal/updates"
 )
 
 func main() {
-	nonce := os.Getenv("SPEEDROBO_NONCE")
-	if nonce == "" {
-		log.Fatal("SPEEDROBO_NONCE is not set")
-	}
 
-	client := &http.Client{
-		Timeout: 15 * time.Second,
-	}
-
-	response, err := speedrobo.FetchPage(client, nonce, 1)
+	client, err := speedrobo.NewClient()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	config, err := speedrobo.FetchPageConfig(client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	response, err := speedrobo.FetchPage(client, config.AjaxURL, config.Nonce, 1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cards, err := updates.FetchAllCards(client, config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Downloaded %d cards\n", len(cards))
 
 	fmt.Printf("Success: %t\n", response.Success)
 	fmt.Printf("Total cards: %d\n", response.Data.Total)
