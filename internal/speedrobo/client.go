@@ -2,7 +2,6 @@ package speedrobo
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
