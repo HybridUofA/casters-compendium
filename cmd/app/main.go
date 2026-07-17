@@ -5,7 +5,8 @@ import (
 	"log"
 
 	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
-
+	"github.com/HybridUofA/caster-deckbuilder/internal/cli"
+	"github.com/HybridUofA/caster-deckbuilder/internal/decks"
 )
 
 func main() {
@@ -15,27 +16,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Loaded %d cards\n", len(repository.All()))
-
-	results := repository.Filter(cards.Filter{
-		Name:			"arth",
-		Elements:		[]string{"Void"},
-		Types:			[]string{"Caster"},
-		IncludeTesting: false,
-	})
-
-	fmt.Printf("Found %d matching card(s):\n", len(results))
-
-	for _, card := range results {
-		fmt.Printf(
-			"- %s | %s | %s | %s\n",
-			card.Name,
-			card.Type,
-			card.Element,
-			card.Expansion,
-		)
+	deck, err := decks.NewDeck("New Deck")
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	fmt.Printf("Elements: %v\n", repository.Elements())
-	fmt.Printf("Types: %v\n", repository.Types())
+	fmt.Printf("Loaded %d cards\n", len(repository.All()))
+
+	cli.InitCLI(repository, deck)
 }

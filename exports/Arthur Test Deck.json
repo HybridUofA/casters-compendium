@@ -1,0 +1,16 @@
+{
+ "schema_version": 1,
+ "name": "Arthur Test Deck",
+ "main_deck": [
+  {
+   "card_id": "56",
+   "quantity": 3
+  }
+ ],
+ "side_deck": [
+  {
+   "card_id": "71",
+   "quantity": 2
+  }
+ ]
+}

@@ -5,20 +5,16 @@
   "type": "Conjure",
   "element": "Silva",
   "traits": "Sloth",
+  "cost_level": "5",
   "ability": "• Return two target servants to their owners' hands.",
   "flavor": "Laziness is infectious, it seems.",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "DD03-033",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/A-Leisurely-Pace.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-033",
-   "Cost/Lv": "5",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "84",
@@ -26,20 +22,16 @@
   "type": "Conjure",
   "element": "Luna",
   "traits": "Greed",
+  "cost_level": "7",
   "ability": "• Put all servants on the bottom of their owners' decks in any order chosen by their owners.",
   "flavor": "Bamanon's order of greed. To surrender all to the demon.",
   "artist": "MATSUMOTO EIGHT",
-  "card_number": "",
+  "card_number": "DD03-013",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Abolition.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-013",
-   "Cost/Lv": "7",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "125",
@@ -47,20 +39,16 @@
   "subname": "Momiji Ogawa",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "1",
   "ability": "• Whenever an allied [Sweets] enters the field : Put me from your graveyard to your hand.",
   "flavor": "Mint tea with macarons! Totally gotta try it!",
   "artist": "Itsuki Hazime",
-  "card_number": "",
+  "card_number": "DD04-021",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Afternoon-Ramie.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-021",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "131",
@@ -68,20 +56,18 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "5",
+  "attack": "4000",
+  "defense": "2000",
   "ability": "• Enter : Put target [Sweets] with a cost of 1 from an allied graveyard into the field.",
   "flavor": "Those that see it refuse to visit again in the afternoon.",
   "artist": "Misa Tsutsui",
-  "card_number": "",
+  "card_number": "DD04-027",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Afternoon-Tea.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "DD04-027",
-   "Cost/Lv": "5",
-   "DEF": "2000"
-  }
+  "extra_fields": null
  },
  {
   "id": "126",
@@ -89,20 +75,16 @@
   "subname": "Mizuka Noguchi",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "1",
   "ability": "• Rest: Put the top three cards of your deck into your graveyard.\n• Rest, banish a servant: Put target [Sweets] servant with a different name than the banished servant from an allied graveyard into your hand.",
   "flavor": "Hey Nonoka, what should I do?",
   "artist": "Nekobayashi",
-  "card_number": "",
+  "card_number": "DD04-022",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Airi.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-022",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "110",
@@ -110,20 +92,16 @@
   "subname": "Kurumi Wakui",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "1",
   "ability": "• Rest, banish a [Cosmetics]: Draw a card.",
   "flavor": "\"I'll go! Your dad's cakes are the best!\"",
   "artist": "sakura moyon",
-  "card_number": "",
+  "card_number": "DD04-006",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Almeria.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-006",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "138",
@@ -131,20 +109,16 @@
   "type": "Conjure",
   "element": "Solis",
   "traits": "Hunger",
+  "cost_level": "2",
   "ability": "• Destroy all servants with a cost of 2 or less.",
   "flavor": "Eat this!!!",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD04-034",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Annihilation-of-the-Weak.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-034",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "246",
@@ -152,18 +126,17 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "[Insect]",
+  "cost_level": "5",
+  "attack": "3000",
+  "defense": "1500",
   "ability": "• [Hubris]\n• I cannot be attacked by servants while rested.",
   "flavor": "Nobody can even come close to catching this elegant flying butterfly.",
   "artist": "KONNO Takashi",
-  "card_number": "",
+  "card_number": "EX02-020",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Arrogant-Murasaki.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "EX02-020",
-   "Cost/Lv": "5",
-   "DEF": "1500",
    "Notes": ""
   }
  },
@@ -173,19 +146,16 @@
   "subname": "Mariko Yumejiki",
   "type": "Caster",
   "element": "Void",
+  "cost_level": "1",
   "ability": "•Target allied face down Caster gains \"Rest: Target allied {Void} servant gains +500 ATK until end of turn.\" this turn.",
   "flavor": "Let's get to know each other better.",
   "artist": "JAIBON",
-  "card_number": "",
+  "card_number": "DD02-019",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Arthur.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-019",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -195,19 +165,16 @@
   "subname": "Mariko Yumejiki",
   "type": "Caster",
   "element": "Void",
+  "cost_level": "2",
   "ability": "• Rest, banish a \"Arthur\" from my Stock: Put the top two cards of your deck into an allied caster zone face down, as a Caster as Rest.",
   "flavor": "Now that we know each other, let's talk.",
   "artist": "JAIBON",
-  "card_number": "",
+  "card_number": "DD02-020",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Arthur-Lv2.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-020",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -217,18 +184,17 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Demon",
+  "cost_level": "7",
+  "attack": "5000",
+  "defense": "4000",
   "ability": "• Double Corrupt (When I corrupt, I corrupt two orbs instead of one.)\n\n• Enemy servants cannot be switched except by spell or ability.",
   "flavor": "To love her is compulsory.",
   "artist": "Mad",
-  "card_number": "",
+  "card_number": "EX01-036",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ashmodae-Apparition-of-Temptation.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "5000",
-   "Card Number": "EX01-036",
-   "Cost/Lv": "7",
-   "DEF": "4000",
    "Rarity": "Normal"
   }
  },
@@ -238,18 +204,17 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "[Youkai]",
+  "cost_level": "5",
+  "attack": "3000",
+  "defense": "3000",
   "ability": "• This I gain Double Corrupt as long as there are four or fewer allied orbs. (When I corrupt, I corrupt two orbs instead of one.)",
   "flavor": "There's no fourth side.",
   "artist": "hatarisu",
-  "card_number": "",
+  "card_number": "EX02-007",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Asura-the-Three-Sided.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "EX02-007",
-   "Cost/Lv": "5",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -259,20 +224,16 @@
   "subname": "Yuzuki Otonashi",
   "type": "Caster",
   "element": "Luna",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Draw a card.",
   "flavor": "I never get tired of that girl.",
   "artist": "oyume",
-  "card_number": "",
+  "card_number": "DD03-004",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ayutaila.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-004",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "65",
@@ -280,19 +241,18 @@
   "type": "Servant",
   "element": "Void",
   "traits": "Cthulhu",
+  "cost_level": "9",
+  "attack": "9000",
+  "defense": "6000",
   "ability": "• Double Corrupt\n• At end of turn : If rested, you may banish me. If you do, target enemy player loses the game if they have no orbs in their orb zone.",
   "flavor": "The source of all Aether.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-029",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Azathoth.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "9000",
-   "Card Number": "DD02-029",
    "Copies in Product": "4",
-   "Cost/Lv": "9",
-   "DEF": "6000",
    "Notes": ""
   }
  },
@@ -302,18 +262,17 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Demon",
+  "cost_level": "7",
+  "attack": "4000",
+  "defense": "3000",
   "ability": "• Double Corrupt (When I corrupt, I corrupt two orbs instead of one.)\n• Enter : Put up to two cards from your hand face down into an allied orb zone as orbs.",
   "flavor": "Trading in human suffering, she's procured immense wealth.",
   "artist": "keivin",
-  "card_number": "",
+  "card_number": "EX01-032",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bamanon-Source-of-Greed.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "EX01-032",
-   "Cost/Lv": "7",
-   "DEF": "3000",
    "Rarity": "Normal"
   }
  },
@@ -323,19 +282,16 @@
   "type": "Barrier",
   "element": "Terra",
   "traits": "Pride",
+  "cost_level": "4",
   "ability": "• Rested allied servants can't be attacked.",
   "flavor": "\"I'm making the rules\"",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "DD01-029",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Barrier-of-Arrogance.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-029",
    "Copies in Product": "2",
-   "Cost/Lv": "4",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -345,19 +301,18 @@
   "type": "Servant",
   "element": "Aqua",
   "traits": "[Supplies]",
+  "cost_level": "2",
+  "attack": "1500",
+  "defense": "0",
   "ability": "[Unity](Whenever I attack : You may rest any number of recovered allied servants that share a Trait with me. If you do, I gain +X ATK until end of turn, where X is the total ATK of servants rested this way)\n• Enter: You may put target [Supplies] in an allied Graveyard on top of your deck.",
   "flavor": "Farewell, Jashin Academy.",
   "artist": "MATSUMOTO EIGHT",
-  "card_number": "",
+  "card_number": "DD02-015",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Battleship-Glue-Stick.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1500",
-   "Card Number": "DD02-015",
    "Copies in Product": "4",
-   "Cost/Lv": "2",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -367,18 +322,15 @@
   "type": "Conjure",
   "element": "Void",
   "traits": "[Madness]",
+  "cost_level": "5",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n\n• Put target servant into it's owner's caster zone face down, as a caster.",
   "flavor": "\"I'm so happy.\"",
   "artist": "MATSUMOTO EIGHT",
-  "card_number": "",
+  "card_number": "EX02-036",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Be-Born-Again-As-A-Caster.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-036",
-   "Cost/Lv": "5",
-   "DEF": "",
    "Notes": "Rare"
   }
  },
@@ -388,18 +340,15 @@
   "type": "Conjure",
   "element": "Aes",
   "traits": "Charm",
+  "cost_level": "6",
   "ability": "• Gain control of target enemy servant.",
   "flavor": "\"I'm so glad you're here.\"",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "EX01-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Be-Mine.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-022",
-   "Cost/Lv": "6",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -409,20 +358,18 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "Cryptid",
+  "cost_level": "3",
+  "attack": "3000",
+  "defense": "2000",
   "ability": "• Slow Start (I cannot attack the turn I am played to the field.)",
   "flavor": "Let's all just do as we please.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD03-029",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bear-Boy.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "DD03-029",
-   "Cost/Lv": "3",
-   "DEF": "2000"
-  }
+  "extra_fields": null
  },
  {
   "id": "228",
@@ -430,17 +377,16 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "[Sweets]",
+  "cost_level": "2",
+  "attack": "0",
+  "defense": "2000",
   "flavor": "Melts in your mouth, not on the field.",
   "artist": "Misa Tsutsui",
-  "card_number": "",
+  "card_number": "EX02-002",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bitter-Chocolate.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "EX02-002",
-   "Cost/Lv": "2",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -450,18 +396,17 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Plant",
+  "cost_level": "1",
+  "attack": "0",
+  "defense": "1000",
   "flavor": "Sneering at everything.",
   "artist": "Miko Yamazaki",
-  "card_number": "",
+  "card_number": "DD01-038",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bombastic-Lily.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD01-038",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "1000",
    "Notes": ""
   }
  },
@@ -471,20 +416,18 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Cosmetics",
+  "cost_level": "2",
+  "attack": "2000",
+  "defense": "2000",
   "ability": "At end of turn : Return me to my owner's hand if I battled this turn.",
   "flavor": "Unfortunately, the smell doesn't last too long.",
   "artist": "Misa Tsutsui",
-  "card_number": "",
+  "card_number": "DD04-008",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bouncing-Perfume.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD04-008",
-   "Cost/Lv": "2",
-   "DEF": "2000"
-  }
+  "extra_fields": null
  },
  {
   "id": "46",
@@ -492,19 +435,16 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "[Research]",
+  "cost_level": "3",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Search your deck for a servant, reveal it and put it into your hand. Then shuffle your deck.",
   "flavor": "\"The best servant in this situation would be...\"",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD02-009",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Brain-Embody.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-009",
    "Copies in Product": "4",
-   "Cost/Lv": "3",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -514,18 +454,17 @@
   "type": "Servant",
   "element": "Aqua",
   "traits": "Supplies",
+  "cost_level": "2",
+  "attack": "0",
+  "defense": "1000",
   "ability": "• Last Words : Destroy target barrier. (When I am put into a graveyard from the field : Perform the effect.)",
   "flavor": "An eraser that erases memories.",
   "artist": "uekino aroe",
-  "card_number": "",
+  "card_number": "EX01-033",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Brain-Eraser.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "EX01-033",
-   "Cost/Lv": "2",
-   "DEF": "1000",
    "Rarity": "Normal"
   }
  },
@@ -535,18 +474,15 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "Research",
+  "cost_level": "1",
   "ability": "• Search your deck for a Lv1 caster, reveal it and put it into your hand. Then shuffle your deck.",
   "flavor": "\"Answer my call!\"",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "EX01-019",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Call-Forth.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-019",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -556,19 +492,16 @@
   "subname": "Mahiro Inuzuka",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "1",
   "ability": "• You may control two or more casters with the same name as this card.",
   "flavor": "\"I definitely won't lose to you, Momoka!\"",
   "artist": "sakura moyon",
-  "card_number": "",
+  "card_number": "DD02-005",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Canal.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-005",
    "Copies in Product": "4",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -578,19 +511,16 @@
   "subname": "Jun Fujinami",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Destroy target enemy servant with a cost of 1.",
   "flavor": "Miss Saya...",
   "artist": "kawaryunoki",
-  "card_number": "",
+  "card_number": "DD01-003",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Carella.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-003",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -600,18 +530,15 @@
   "subname": "Jyun Fujinmai",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "2",
   "ability": "• Banish a \"Carella\" from my Stock: Target allied servant gains +1000 ATK until end of turn.\n• Rest, discard a caster: Destroy target enemy servant with a cost of 3 or less.",
   "flavor": "Leave this to me!",
   "artist": "noki",
-  "card_number": "",
+  "card_number": "EX02-009",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Carella-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-009",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -621,20 +548,16 @@
   "type": "Conjure",
   "element": "Solis",
   "traits": "Hunger",
+  "cost_level": "3",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Put target servant with a cost of 3 or less from an allied graveyard into the field.",
   "flavor": "\"Be reborn, as my servant.\"",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD04-032",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Carrion-Scrounge.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-032",
-   "Cost/Lv": "3",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "1100",
@@ -653,18 +576,17 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Cryptid",
+  "cost_level": "6",
+  "attack": "3000",
+  "defense": "3000",
   "ability": "• Double Corrupt (When I corrupt, I corrupt two orbs instead of one.)\n• Whenever I corrupt an orb : Target enemy player discards a card.",
   "flavor": "Three heads to eat thrice as much.",
   "artist": "uekino aroe",
-  "card_number": "",
+  "card_number": "EX01-024",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cerberoast.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "EX01-024",
-   "Cost/Lv": "6",
-   "DEF": "3000",
    "Rarity": "Normal"
   }
  },
@@ -674,18 +596,15 @@
   "subname": "Izumi Matsuka",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "1",
   "ability": "• Rest: Rest target Lv1 enemy caster. Play this ability only during an enemy battle phase.",
   "flavor": "Kaya, Ichika, are we going to the aviary today?",
   "artist": "ShiroYayoi",
-  "card_number": "",
+  "card_number": "EX02-031",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cestria.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-031",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": "Rare"
   }
  },
@@ -695,18 +614,15 @@
   "subname": "Haruka Yanase",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if an enemy servant was returned to its owner's hand from the field this turn.",
   "flavor": "Risa, you really don't have to go all out.",
   "artist": "Pisuke",
-  "card_number": "",
+  "card_number": "EX02-011",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Chain-of-Hearts.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-011",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": "Rare"
   }
  },
@@ -716,19 +632,17 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Cosmetics",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "1000",
   "flavor": "You'll never want to use it twice.",
   "artist": "Miko Yamazaki",
-  "card_number": "",
+  "card_number": "DD04-010",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Chaos-Curler.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD04-010",
-   "Cost/Lv": "2",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "105",
@@ -736,20 +650,16 @@
   "subname": "Kaoru Shida",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "1",
   "ability": "• Rest, return a Lv1 allied caster to its owner's hand: Target allied servant gains +1000 ATK until end of turn.",
   "flavor": "\"But you solve them with no hints, Nagi-chan. Amazing!\"",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD04-001",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Citra-Cayce.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-001",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "258",
@@ -757,18 +667,15 @@
   "subname": "Kaoru Shida",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "2",
   "ability": "• Rest, banish a \"Citra Cayce\" from my Stock: Search your deck for a Lv1 caster you do not control and put it into the field. Then shuffle your deck. Play this ability only during main timing.\n• Rest, return a Lv1 allied caster to its owner's hand: Up to two target allied [Cosmetics] gain +1000 ATK until end of turn.",
   "flavor": "Miracle~Make Up!",
   "artist": "sakura chomi",
-  "card_number": "",
+  "card_number": "EX02-032",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Citra-Cayce-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-032",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -778,18 +685,15 @@
   "type": "Barrier",
   "element": "Terra",
   "traits": "Pride",
+  "cost_level": "2",
   "ability": "• Allied casters cannot be targeted by enemy spells or abilities. \n• Banish this card: Draw a card.",
   "flavor": "Thank you for such a wonderful offer, but regrettably I will have to refuse it.",
   "artist": "AKI",
-  "card_number": "",
+  "card_number": "EX01-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Civil-Attitude.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-006",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -799,20 +703,16 @@
   "subname": "Iroha Murase",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Reverse target enemy servant.",
   "flavor": "Uwa!! Miwa Torii in the flesh! I'm a big fan!\"",
   "artist": "Yuzuki Kihiro",
-  "card_number": "",
+  "card_number": "DD04-004",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Clara-Shurei.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-004",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "4",
@@ -820,19 +720,16 @@
   "subname": "Taruho Tachibana",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Target allied [Youkai] gains [Double Corrupt] until end of turn.",
   "flavor": "Mashiro! Mahoro! Let's unwind at a cafe today.",
   "artist": "gajumaru",
-  "card_number": "",
+  "card_number": "DD01-005",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Clarisse-Marida.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-005",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -842,20 +739,18 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Heroic Spirit",
+  "cost_level": "2",
+  "attack": "500",
+  "defense": "500",
   "ability": "• Last Words : Target enemy player banishes a servant.",
   "flavor": "This way I can preserve my beauty for eternity.",
   "artist": "Yukie TAJIMA",
-  "card_number": "",
+  "card_number": "DD04-036",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cleopatra.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "500",
-   "Card Number": "DD04-036",
-   "Cost/Lv": "2",
-   "DEF": "500"
-  }
+  "extra_fields": null
  },
  {
   "id": "115",
@@ -863,20 +758,18 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Cosmetics",
+  "cost_level": "3",
+  "attack": "0",
+  "defense": "3000",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)",
   "flavor": "A powder brush that seems to erase what it touches.",
   "artist": "keivin",
-  "card_number": "",
+  "card_number": "DD04-011",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cloudy-Powder-Brush.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD04-011",
-   "Cost/Lv": "3",
-   "DEF": "3000"
-  }
+  "extra_fields": null
  },
  {
   "id": "102",
@@ -884,20 +777,16 @@
   "type": "Conjure",
   "element": "Silva",
   "traits": "Sloth",
+  "cost_level": "3",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Return target servant to its owner's hand.",
   "flavor": "\"See ya~\"",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "DD03-031",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Come-Back-Again-Sometime.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-031",
-   "Cost/Lv": "3",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "88",
@@ -905,20 +794,16 @@
   "type": "Conjure",
   "element": "Luna",
   "traits": "Greed",
+  "cost_level": "3",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.) \n• Put the top card of your deck into an allied orb zone face down, as an orb.",
   "flavor": "\"Protect me once again, my orb.\"",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "DD03-017",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Compensation.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-017",
-   "Cost/Lv": "3",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "261",
@@ -926,18 +811,17 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "[Cosmetics]",
+  "cost_level": "5",
+  "attack": "3000",
+  "defense": "3000",
   "ability": "• Enter : Banish another allied servant. If you do, reveal cards from the top of your deck until you reveal a servant. Put the servant revealed this way into the field and shuffle all other cards revealed this way into your deck.",
   "flavor": "\"Do you want to be beautiful?\"",
   "artist": "Yuko Nagasaki",
-  "card_number": "",
+  "card_number": "EX02-035",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cosmetic-Doctor-Sakasu.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "EX02-035",
-   "Cost/Lv": "5",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -947,18 +831,15 @@
   "subname": "Nagi Sawara",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if two or more allied servants entered the field this turn.",
   "flavor": "Akira, your puzzles are way too difficult!",
-  "card_number": "",
+  "card_number": "DD01-004",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Crimson-Nicola.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-004",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -968,20 +849,18 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
   "ability": "[Unity](Whenever I attack : You may rest any number of recovered allied servants that share a Trait with me. If you do, I gain +X ATK until end of turn, where X is the total ATK of servants rested this way)",
   "flavor": "Just try one...",
   "artist": "tokiwa",
-  "card_number": "",
+  "card_number": "DD04-023",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Crispy-Cookie.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "500",
-   "Card Number": "DD04-023",
-   "Cost/Lv": "1",
-   "DEF": "0"
-  }
+  "extra_fields": null
  },
  {
   "id": "47",
@@ -989,19 +868,16 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "[Research]",
+  "cost_level": "5",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Quickcast (You may play me any time.)\n• Destroy target enemy servant with a cost of 5 or less.",
   "flavor": "It's extremely effective!",
   "artist": "MATSUMOTO EIGHT",
-  "card_number": "",
+  "card_number": "DD02-010",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Critical-Hit.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-010",
    "Copies in Product": "4",
-   "Cost/Lv": "5",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1011,19 +887,17 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "1",
+  "attack": "0",
+  "defense": "1000",
   "flavor": "Over 10,000 rusks sold daily. Eat as many as you can~",
   "artist": "hatarisu",
-  "card_number": "",
+  "card_number": "DD04-026",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Crunchy-Crunchy-Rusk.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD04-026",
-   "Cost/Lv": "1",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "49",
@@ -1031,19 +905,16 @@
   "type": "Barrier",
   "element": "Aqua",
   "traits": "[Research/Earnest]",
+  "cost_level": "2",
   "ability": "• At any time, you may look at target opponent's hand.",
   "flavor": "Oh...is that so?",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD02-012",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cunning.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-012",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1053,18 +924,17 @@
   "type": "Servant",
   "element": "Void",
   "traits": "Cthulhu",
+  "cost_level": "2",
+  "attack": "2000",
+  "defense": "0",
   "flavor": "Come forth, step deeper into the swamps.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-021",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Deep-One.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD02-021",
    "Copies in Product": "4",
-   "Cost/Lv": "2",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -1074,18 +944,15 @@
   "type": "Conjure",
   "element": "Ignus",
   "traits": "[Rage]",
+  "cost_level": "5",
   "ability": "• Destroy ALL servants with a cost of 5 or less.",
   "flavor": "An enourmous flame burst from the magic circle and swept everything away.",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "EX02-008",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Demonic-Hellfire.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-008",
-   "Cost/Lv": "5",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1095,19 +962,16 @@
   "subname": "Rui Saotome",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Put target Supplies in an allied graveyard into your hand.",
   "flavor": "Mira! Can you paint this design I drew?",
   "artist": "noki",
-  "card_number": "",
+  "card_number": "DD02-002",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Deshi-Lion.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-002",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1117,19 +981,16 @@
   "subname": "Rui Saotome",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "2",
   "ability": "• Rest, banish a \"Deshi Lion\" from my Stock: Search your deck for a [Supplies] servant with a cost of 3 or less and put it into the field as Rest. Then shuffle your deck.",
   "flavor": "How's this? Is it within your expectations?!",
   "artist": "noki",
-  "card_number": "",
+  "card_number": "DD02-003",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Deshi-Lion-Lv2.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-003",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1139,18 +1000,17 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Demon",
+  "cost_level": "7",
+  "attack": "7000",
+  "defense": "4000",
   "ability": "• Double Corrupt (When I corrupt, I corrupt two orbs instead of one.)\n• At end of your turn : Return an allied caster from the field to its owner's hand.",
   "flavor": "Fakes aren't too different from the real thing.",
   "artist": "Nanase Kokoa",
-  "card_number": "",
+  "card_number": "EX01-026",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Diablos-the-Deciever.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "7000",
-   "Card Number": "EX01-026",
-   "Cost/Lv": "7",
-   "DEF": "4000",
    "Rarity": "Normal"
   }
  },
@@ -1160,19 +1020,17 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Cosmetics",
+  "cost_level": "1",
+  "attack": "0",
+  "defense": "1000",
   "flavor": "I really wouldn't wear that shade if I were you.",
   "artist": "uekino aroe",
-  "card_number": "",
+  "card_number": "DD04-009",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Dirty-Mascara.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD04-009",
-   "Cost/Lv": "1",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "6",
@@ -1180,19 +1038,18 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Youkai",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
   "ability": "[Unity](Whenever I attack : You may rest any number of recovered allied servants that share a Trait with me. If you do, I gain +X ATK until end of turn, where X is the total ATK of servants rested this way)",
   "flavor": "A manifestation of furious anger.",
   "artist": "gozz",
-  "card_number": "",
+  "card_number": "DD01-007",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Disembodied-Soul.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "500",
-   "Card Number": "DD01-007",
    "Copies in Product": "4",
-   "Cost/Lv": "1",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -1202,19 +1059,16 @@
   "type": "Conjure",
   "element": "Void",
   "traits": "Madness",
+  "cost_level": "2",
   "ability": "• Break\n• Remove target enemy servant with cost 4 or less from the game. If you do, remove target face up card you control from the game.",
   "flavor": "Let's travel together!",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-031",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Door-To-Another-Dimension.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-031",
    "Copies in Product": "4",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1224,20 +1078,18 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Cryptid",
+  "cost_level": "4",
+  "attack": "2000",
+  "defense": "2000",
   "ability": "• Discard a card: This card gains +2000 ATK until end of turn.",
   "flavor": "Chase two rabbits and you'll catch neither.",
   "artist": "SO",
-  "card_number": "",
+  "card_number": "DD03-012",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Double-Rabbit.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD03-012",
-   "Cost/Lv": "4",
-   "DEF": "2000"
-  }
+  "extra_fields": null
  },
  {
   "id": "171",
@@ -1245,18 +1097,15 @@
   "subname": "Mayu Ono",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "1",
   "ability": "• Rest, banish a recovered [Insect] or [Plant]: Destroy target enemy servant with a cost equal to or less than the cost of the card banished for this ability's cost.",
   "flavor": "Geeze Honoka, you worry too much.",
   "artist": "sakura moyon",
-  "card_number": "",
+  "card_number": "EX01-010",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Eli-Superior.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-010",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -1266,18 +1115,15 @@
   "type": "Conjure",
   "element": "Solis",
   "traits": "Solar",
+  "cost_level": "1",
   "ability": "• As an additional cost to play this card, corrupt an allied orb.\n• Destroy target barrier.",
   "flavor": "\"Disappear!\"",
   "artist": "Shirono Muku",
-  "card_number": "",
+  "card_number": "EX01-015",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Evaporation.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-015",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -1287,18 +1133,15 @@
   "type": "Barrier",
   "element": "Void",
   "traits": "Madness",
+  "cost_level": "2",
   "ability": "• All face down allied casters gain the Void element. (When those casters product Aether, it will be Void Aether instead of having no element)\n• Banish this card: Draw a card.",
   "flavor": "Welcome to Jyashin High School.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX01-005",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Evil-Presence.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-005",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -1308,19 +1151,16 @@
   "type": "Conjure",
   "element": "Void",
   "traits": "Madness",
+  "cost_level": "1",
   "ability": "• As an additional cost to play this card, banish a [Cthulhu].\n• Produce Void aether equal to the cost of the card banished for this card's cost plus 1. Draw a card.",
   "flavor": "A sacrifice is necessary.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-033",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Evil-Ritual.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-033",
    "Copies in Product": "4",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1330,18 +1170,15 @@
   "type": "Conjure",
   "element": "Silva",
   "traits": "Holy",
+  "cost_level": "2",
   "ability": "• Destroy target barrier.",
   "flavor": "\"BAM!\"",
   "artist": "mie",
-  "card_number": "",
+  "card_number": "EX01-017",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Exorcism.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-017",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -1351,20 +1188,16 @@
   "type": "Conjure",
   "element": "Luna",
   "traits": "Greed",
+  "cost_level": "4",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.) \n• Draw three cards.",
   "flavor": "\"Oh, this looks expensive.\"",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD03-016",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Expensive-Jar.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-016",
-   "Cost/Lv": "4",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "9",
@@ -1372,19 +1205,18 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Youkai/Plant",
+  "cost_level": "2",
+  "attack": "3000",
+  "defense": "0",
   "ability": "• At end of turn : Destroy me if I battled an enemy servant this turn.",
   "flavor": "Powerful, but frail.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD01-010",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Explosive-Bamboo.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "DD01-010",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -1394,20 +1226,18 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Jewelry",
+  "cost_level": "4",
+  "attack": "1000",
+  "defense": "1000",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Last Words : Put a card from your hand into an allied orb zone face down, as an orb. (When this card is put into a graveyard from the field : Perform the effect.)",
   "flavor": "\"Vanity? No, this is proper use of my fortune.\"",
   "artist": "Misa Tsutsui",
-  "card_number": "",
+  "card_number": "DD03-010",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Extravagant-Necklace.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD03-010",
-   "Cost/Lv": "4",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "141",
@@ -1415,18 +1245,15 @@
   "subname": "Michiru Uchiki",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "1",
   "ability": "• Rest: Put target Cosumetics in an allied graveyard on top of your deck.",
   "flavor": "I wonder... will anyone like me?",
   "artist": "Marui-no",
-  "card_number": "",
+  "card_number": "EX01-013",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Faare-A-Popierre.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-013",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -1436,19 +1263,18 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Insect",
+  "cost_level": "4",
+  "attack": "2000",
+  "defense": "0",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Enter: Destroy target enemy servant with a cost of 3 or less. (When this card enters the field : Perform the effect.)",
   "flavor": "\"Your fate is to be the prey.\"",
   "artist": "Mad",
-  "card_number": "",
+  "card_number": "DD01-032",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ferocious-Mantis.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD01-032",
    "Copies in Product": "4",
-   "Cost/Lv": "4",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -1458,19 +1284,16 @@
   "type": "Conjure",
   "element": "Ignus",
   "traits": "Rage",
+  "cost_level": "3",
   "ability": "• Destroy target enemy servant with a cost of 4 or less.",
   "flavor": "Fire arrow!",
   "artist": "MATSUMOTO EIGHT",
-  "card_number": "",
+  "card_number": "DD01-018",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Fire-Arrow.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-018",
    "Copies in Product": "4",
-   "Cost/Lv": "3",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1480,19 +1303,18 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Youkai",
+  "cost_level": "4",
+  "attack": "1000",
+  "defense": "1000",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Enter: Destroy target enemy servant with a cost of 3 or less.",
   "flavor": "I'll just help myself to your soul.",
   "artist": "M ganzy",
-  "card_number": "",
+  "card_number": "DD01-013",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Firewheel.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD01-013",
    "Copies in Product": "4",
-   "Cost/Lv": "4",
-   "DEF": "1000",
    "Notes": ""
   }
  },
@@ -1502,19 +1324,16 @@
   "type": "Conjure",
   "element": "Ignus",
   "traits": "Rage",
+  "cost_level": "5",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Destroy target enemy servant with a cost of 6 or less.",
   "flavor": "Burn to ash!",
   "artist": "mie",
-  "card_number": "",
+  "card_number": "DD01-019",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Flame-of-Indignation.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-019",
    "Copies in Product": "2",
-   "Cost/Lv": "5",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1524,19 +1343,16 @@
   "subname": "Risa Ibushi",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if an allied servant destroyed an enemy servant in battle this turn.",
   "flavor": "Let's heat things up~",
   "artist": "sakura chomi",
-  "card_number": "",
+  "card_number": "DD01-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Flame-Rouge.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-006",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1546,19 +1362,15 @@
   "type": "Conjure",
   "element": "Terra",
   "traits": "Pride",
+  "cost_level": "3",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Return target rested enemy servant to its owner's hand.",
   "flavor": "\"Go back.\"",
   "artist": "mie",
-  "card_number": "",
+  "card_number": "PR001-004",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Forced-Repatriation.png",
   "expansion": "Influencer Promo Pack",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "PR001-004",
-   "Cost/Lv": "3",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "28",
@@ -1566,19 +1378,16 @@
   "type": "Conjure",
   "element": "Terra",
   "traits": "Pride",
+  "cost_level": "3",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Return target rested enemy servant to its owner's hand.",
   "flavor": "\"Go back.\"",
   "artist": "mie",
-  "card_number": "",
+  "card_number": "DD01-030",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Forced-Repatriation.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-030",
    "Copies in Product": "2",
-   "Cost/Lv": "3",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1588,20 +1397,16 @@
   "subname": "Nahoko Tosaka",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if no allied cards, except Casters, have been played this turn. Play this ability only during your end phase.",
   "flavor": "Oh, I caught another rare butterfly. I need to show Sakura-san!",
   "artist": "sakura chomi",
-  "card_number": "",
+  "card_number": "DD03-020",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Forre-Mellow.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-020",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "236",
@@ -1609,18 +1414,15 @@
   "type": "Conjure",
   "element": "Ignus",
   "traits": "[Rage]",
+  "cost_level": "3",
   "ability": "• Put target allied Caster into an allied servant zone. That caster gains Double Corrupt, \"At end of turn : Put this card into its owner's hand.\", and becomes a 5000/5000 allied servant.",
   "flavor": "I'm outraged!",
   "artist": "AKI",
-  "card_number": "",
+  "card_number": "EX02-010",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Furious-Collision.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-010",
-   "Cost/Lv": "3",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1630,19 +1432,17 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Dragon",
+  "cost_level": "6",
+  "attack": "2000",
+  "defense": "2000",
   "ability": "• [Double Corrupt] (When this servant corrupts, it corrupts two orbs instead of one.)\n• I gain +500 ATK and DEF for each allied {Ignus} caster.",
   "flavor": "All it knows is anger.",
   "artist": "gozz",
-  "card_number": "",
+  "card_number": "PR001-005",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Furious-Dragon.png",
   "expansion": "Influencer Promo Pack",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "PR001-005",
-   "Cost/Lv": "6",
-   "DEF": "2000"
-  }
+  "extra_fields": null
  },
  {
   "id": "15",
@@ -1650,19 +1450,18 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Dragon",
+  "cost_level": "6",
+  "attack": "2000",
+  "defense": "2000",
   "ability": "• [Double Corrupt] (When this servant corrupts, it corrupts two orbs instead of one.)\n• I gain +500 ATK and DEF for each allied {Ignus} caster.",
   "flavor": "All it knows is anger.",
   "artist": "gozz",
-  "card_number": "",
+  "card_number": "DD01-016",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Furious-Dragon.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD01-016",
    "Copies in Product": "2",
-   "Cost/Lv": "6",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -1672,18 +1471,17 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "[Cryptid/Jewelry/Insect]",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "500",
   "ability": "• Discard a card: This card gains +1000 ATK until end of turn.",
   "flavor": "Stings hurt twice as much the second time.",
   "artist": "nomura Tomori",
-  "card_number": "",
+  "card_number": "EX02-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gadfly-Wasp.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "EX02-022",
-   "Cost/Lv": "2",
-   "DEF": "500",
    "Notes": ""
   }
  },
@@ -1693,19 +1491,16 @@
   "subname": "Mika Rokutanda",
   "type": "Caster",
   "element": "Void",
+  "cost_level": "1",
   "ability": "• Rest: If an allied orb would be corrupted, you may turn me face down instead.",
   "flavor": "You'll soon see that pain is not always so bad.",
   "artist": "JAIBON",
-  "card_number": "",
+  "card_number": "DD02-023",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-023",
    "Copies in Product": "4",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1715,18 +1510,15 @@
   "subname": "Mika Rokutanda",
   "type": "Caster",
   "element": "Void",
+  "cost_level": "2",
   "ability": "• Rest, banish a \"Gawain\" from my Stock : Put the top card of your deck into an allied orb zone face down, as an orb.\n• Rest : During your turn, if both you and your opponent have no orbs, you win the game.",
   "flavor": "\"Oof. Alright, that one hurt.\"",
   "artist": "JAIBON",
-  "card_number": "",
+  "card_number": "EX02-039",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-039",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1736,18 +1528,17 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "[Jewelry]",
+  "cost_level": "5",
+  "attack": "2000",
+  "defense": "3000",
   "ability": "Enter : Search your deck for a [Jewelry], reveal it and put it into your hand. Then shuffle your deck. (When I enter the field : Perform the effect.)",
   "flavor": "The goblin clings to its bag of gems until death.",
   "artist": "SO",
-  "card_number": "",
+  "card_number": "EX02-023",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gem-Pouch.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX02-023",
-   "Cost/Lv": "5",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -1757,19 +1548,16 @@
   "subname": "Sakura Nishinotouin",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "1",
   "ability": "• Rest: Target allied servant gains +500 DEF until end of turn.",
   "flavor": "Miss Hanna, after school let's go to the greenhouse.",
   "artist": "Nekobayashi",
-  "card_number": "",
+  "card_number": "DD01-020",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Glory-Butterfly.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-020",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1779,19 +1567,16 @@
   "subname": "Sakura Nishinotouin",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "2",
   "ability": "• Rest, banish a \"Glory Butterfly\" from my Stock: Destroy target servant with a cost of 3 or less.\n• Rest: Target allied servant gains +1000 DEF until end of turn.",
   "flavor": "Miss Tsubasa, today I'm going to teach you some manners.",
   "artist": "Nekobayashi",
-  "card_number": "",
+  "card_number": "DD01-021",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Glory-Butterfly-Lv2.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-021",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1801,20 +1586,16 @@
   "subname": "Suzu Tachibana",
   "type": "Caster",
   "element": "Luna",
+  "cost_level": "1",
   "ability": "• Whenever an allied Jewelry enters the field : Recover me.",
   "flavor": "\"Fufufu, she's such an airhead, it's fun to tease her!\"",
   "artist": "sakura moyon",
-  "card_number": "",
+  "card_number": "DD03-005",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Grace.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-005",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "64",
@@ -1822,19 +1603,18 @@
   "type": "Servant",
   "element": "Void",
   "traits": "Cthulhu",
+  "cost_level": "7",
+  "attack": "5000",
+  "defense": "3000",
   "ability": "• Double Corrupt\n• Enter : Turn target Lv1 caster face down.",
   "flavor": "Apparently its weak point is olive oil.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-028",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Great-Elder-Cthulhu.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "5000",
-   "Card Number": "DD02-028",
    "Copies in Product": "4",
-   "Cost/Lv": "7",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -1844,20 +1624,18 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Jewelry",
+  "cost_level": "4",
+  "attack": "2000",
+  "defense": "2500",
   "ability": "• Whenever this card switches : Draw a card. (When this card is changed from non-reversed to reversed, or from reversed to recovered : Perform the effect.)",
   "flavor": "There's no mistaking its value.",
   "artist": "keivin",
-  "card_number": "",
+  "card_number": "DD03-011",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Greedy-Vase.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD03-011",
-   "Cost/Lv": "4",
-   "DEF": "2500"
-  }
+  "extra_fields": null
  },
  {
   "id": "29",
@@ -1865,19 +1643,18 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Cryptid",
+  "cost_level": "6",
+  "attack": "4000",
+  "defense": "2000",
   "ability": "• Double Corrupt (When this servant corrupts, it corrupts two orbs instead of one.)\n• Enter: Destroy target rested enemy servant.",
   "flavor": "Wandering around, looking for glory to steal.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD01-031",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Griphon.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "DD01-031",
    "Copies in Product": "2",
-   "Cost/Lv": "6",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -1887,19 +1664,16 @@
   "type": "Conjure",
   "element": "Terra",
   "traits": "Pride",
+  "cost_level": "3",
   "ability": "• Destroy target rested enemy servant.",
   "flavor": "\"Regret.\"",
   "artist": "MATSUMOTO EIGHT",
-  "card_number": "",
+  "card_number": "DD01-028",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Grudge-Attack.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-028",
    "Copies in Product": "4",
-   "Cost/Lv": "3",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -1909,20 +1683,18 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "4",
+  "attack": "0",
+  "defense": "3000",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Enter : Put target servant with cost 3 or less in an allied graveyard into your hand. (When I enter the field : Perform the effect.)",
   "flavor": "\"One more please!\"",
   "artist": "Yuko Nagasaki",
-  "card_number": "",
+  "card_number": "DD04-029",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hard-Pancake.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD04-029",
-   "Cost/Lv": "4",
-   "DEF": "3000"
-  }
+  "extra_fields": null
  },
  {
   "id": "98",
@@ -1930,20 +1702,18 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "Cryptid",
+  "cost_level": "4",
+  "attack": "1000",
+  "defense": "1000",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Enter : Return target servant with total cost four or less to its owner's hand. (When I enter the field : Perform the effect.)",
   "flavor": "The one sent away is the most surprised.",
   "artist": "AKI",
-  "card_number": "",
+  "card_number": "DD03-027",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Harpy.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD03-027",
-   "Cost/Lv": "4",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "63",
@@ -1951,19 +1721,18 @@
   "type": "Servant",
   "element": "Void",
   "traits": "Cthulhu",
+  "cost_level": "5",
+  "attack": "2000",
+  "defense": "2000",
   "ability": "• Last Words : Target player banishes servants equal to the number of face down casters they control.",
   "flavor": "Banishment, this world!",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-027",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hastur.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD02-027",
    "Copies in Product": "4",
-   "Cost/Lv": "5",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -1973,18 +1742,17 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "[Cosmetics]",
+  "cost_level": "1",
+  "attack": "2000",
+  "defense": "0",
   "ability": "• Enter : Return target Lv1 allied caster to the hand.\n[Unity]",
   "flavor": "The ultimate weapon.. apparently",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX02-034",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Haunted-Nightwear.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX02-034",
-   "Cost/Lv": "1",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -1994,20 +1762,18 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Angel",
+  "cost_level": "4",
+  "attack": "2000",
+  "defense": "1000",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n\n• Enter : Rest or Reverse target servant.",
   "flavor": "An angel that fires arrows of heartbreak.",
   "artist": "Nanase Kokoa",
-  "card_number": "",
+  "card_number": "DD04-012",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Heartbreak-Cupid.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD04-012",
-   "Cost/Lv": "4",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "58",
@@ -2015,19 +1781,18 @@
   "type": "Servant",
   "element": "Void",
   "traits": "Cthulhu",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
   "ability": "• Rest, Banish me: Produce one Void aether. Spend this aether only to play Cthulhu.",
   "flavor": "I'll gladly offer up this body.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Heretic.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "500",
-   "Card Number": "DD02-022",
    "Copies in Product": "4",
-   "Cost/Lv": "1",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -2037,18 +1802,15 @@
   "subname": "Shizuku Mizumoto",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "1",
   "ability": "• Rest: Look at the top card of an enemy deck. You may put that card on the bottom of that enemy deck.",
   "flavor": "\"Rui, your luck is looking really awful this month!\"",
   "artist": "oyume",
-  "card_number": "",
+  "card_number": "EX01-012",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hilde-Willow.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-012",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -2058,18 +1820,15 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "[Water]",
+  "cost_level": "2",
   "ability": "• Quickcast (You may play this card any time you have priority.)\n• Destroy target enemy servant with a cost of 2 or less.",
   "flavor": "\"Sink down.\"",
   "artist": "Shirono Muku",
-  "card_number": "",
+  "card_number": "EX02-030",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hit-the-Weak-Point.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-030",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2079,19 +1838,17 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "Monk",
+  "cost_level": "1",
+  "attack": "0",
+  "defense": "1000",
   "flavor": "\"Let's call someone else instead.\"",
   "artist": "MATSUMOTO EIGHT",
-  "card_number": "",
+  "card_number": "DD03-024",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Holy-Monk.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD03-024",
-   "Cost/Lv": "1",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "263",
@@ -2099,18 +1856,17 @@
   "type": "Servant",
   "element": "Void",
   "traits": "[Cthulhu]",
+  "cost_level": "3",
+  "attack": "4000",
+  "defense": "0",
   "ability": "• Break\n• At end of your turn : Banish this card or a face down caster.",
   "flavor": "Loyal only to those worthy.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX02-037",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hound-of-Tindalos.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "EX02-037",
-   "Cost/Lv": "3",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -2120,20 +1876,16 @@
   "type": "Conjure",
   "element": "Aes",
   "traits": "Charm",
+  "cost_level": "1",
   "ability": "• Rest target enemy servant.",
   "flavor": "\"Now, now. Let's all calm down.\"",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "DD04-015",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ill-Be-Right-Over.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-015",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "33",
@@ -2141,18 +1893,17 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Insect",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "1000",
   "flavor": "Sucks up all confidence.",
   "artist": "Miko Yamazaki",
-  "card_number": "",
+  "card_number": "DD01-035",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Impudent-Swallowtail.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD01-035",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "1000",
    "Notes": ""
   }
  },
@@ -2162,18 +1913,15 @@
   "type": "Conjure",
   "element": "Ignus",
   "traits": "Rage",
+  "cost_level": "4",
   "ability": "• Target allied servant gains +4000 ATK and Double Corrupt until end of turn. (When that servant corrupts, it corrupts two orbs instead of one.)",
   "flavor": "\"This is no good, I'm getting angry.\"",
   "artist": "AKI",
-  "card_number": "",
+  "card_number": "EX01-016",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Incite-Ferocity.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-016",
-   "Cost/Lv": "4",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -2183,18 +1931,15 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "[Research]",
+  "cost_level": "1",
   "ability": "• Search your deck for a Lv2 caster, reveal it and put it into your hand. Then shuffle your deck.",
   "flavor": "\"That's not how Leveling Up works!\" \"I'm not wearing that!\"",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "EX02-028",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Increased-Exposure.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-028",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2204,20 +1949,18 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Jewelry",
+  "cost_level": "3",
+  "attack": "1000",
+  "defense": "1000",
   "ability": "• Last Words : Return this card from the graveyard to its owner's hand. (When this card is put into a graveyard from the field : Perform the effect.)",
   "flavor": "Mysterious coins that never deplete.",
   "artist": "Moopic",
-  "card_number": "",
+  "card_number": "DD03-009",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Infini-Coin.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD03-009",
-   "Cost/Lv": "3",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "53",
@@ -2225,19 +1968,18 @@
   "type": "Servant",
   "element": "Aqua",
   "traits": "[Supplies]",
+  "cost_level": "4",
+  "attack": "1500",
+  "defense": "1500",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Enter, Choose two target servants an enemy player controls: That enemy player banishes one of them. (When this card enters the field : Perform the effect.)",
   "flavor": "*Ka-chunk*",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD02-016",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Intelligent-Stapler.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1500",
-   "Card Number": "DD02-016",
    "Copies in Product": "4",
-   "Cost/Lv": "4",
-   "DEF": "1500",
    "Notes": ""
   }
  },
@@ -2247,19 +1989,16 @@
   "subname": "Hanna Miyama",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "1",
   "ability": "• Rest: Reverse target allied [Plant].",
   "flavor": "Hey, Nahoko, is everyone going to the greenhouse?",
   "artist": "sakura chomi",
-  "card_number": "",
+  "card_number": "DD01-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Iroha-Maltz.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-022",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2269,20 +2008,18 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Cosmetics",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
   "ability": "• Enter : Look at target allied orb, then return it. (When I enter the field : Perform the effect.)",
   "flavor": "To love and be loved is the greatest happiness.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD04-007",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Irresistible-Rouge.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "500",
-   "Card Number": "DD04-007",
-   "Cost/Lv": "1",
-   "DEF": "0"
-  }
+  "extra_fields": null
  },
  {
   "id": "150",
@@ -2290,18 +2027,17 @@
   "type": "Servant",
   "element": "Aqua",
   "traits": "Demon",
+  "cost_level": "3",
+  "attack": "2000",
+  "defense": "1000",
   "ability": "• Enter : Target enemy player banishes a servant if they control more servants than there are allied servants.",
   "flavor": "An azure flame of jealousy.",
   "artist": "Takamura Haluki",
-  "card_number": "",
+  "card_number": "EX01-034",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Jealous-Hera.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX01-034",
-   "Cost/Lv": "3",
-   "DEF": "1000",
    "Rarity": "Normal"
   }
  },
@@ -2311,20 +2047,16 @@
   "type": "Conjure",
   "element": "Silva",
   "traits": "Sloth",
+  "cost_level": "2",
   "ability": "• Quickcast (You may play this card any time you have priority.)\n• Recovered and rested servants you control can't be attacked this turn. (If this card is cast during an attack, it does not stop the attack)",
   "flavor": "Alright, I'll work hard tomorrow.",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD03-032",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Just-a-Short-Rest.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-032",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "10",
@@ -2332,18 +2064,17 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Youkai",
+  "cost_level": "3",
+  "attack": "2000",
+  "defense": "2000",
   "flavor": "Did you not notice the bones on the floor?",
   "artist": "hatarisu",
-  "card_number": "",
+  "card_number": "DD01-011",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kachi-Kachi-Mountain-Tanuki.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD01-011",
    "Copies in Product": "4",
-   "Cost/Lv": "3",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -2353,18 +2084,15 @@
   "subname": "Karen Kashima",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if an allied servant was destroyed by non-battle this turn.",
   "flavor": "\"I only know about stars.\"",
   "artist": "Kutori PanYa",
-  "card_number": "",
+  "card_number": "EX02-027",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-027",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": "Rare"
   }
  },
@@ -2374,18 +2102,15 @@
   "subname": "Karen Kashima",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "2",
   "ability": "• Banish a \"Karen Urania\" from my Stock: Until end of turn, the next time target allied servant would be destroyed by non-battle, it isn't destroyed.\n• Rest: Draw two cards and discard a card if an allied servant was destroyed by non-battle this turn.",
   "flavor": "\"Command the stars!\"",
   "artist": "Kutori PanYa",
-  "card_number": "",
+  "card_number": "EX02-026",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-026",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": "Super Rare"
   }
  },
@@ -2395,20 +2120,16 @@
   "subname": "Ichika Asaba",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "1",
   "ability": "• Rest: Target enemy servant gains -500 ATK until end of turn.",
   "flavor": "Kaya, why are you always eating sweets?",
   "artist": "Matsurika Yoko",
-  "card_number": "",
+  "card_number": "DD03-018",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kiberia-Yosha.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-018",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "90",
@@ -2416,20 +2137,16 @@
   "subname": "Ichika Asaba",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "2",
   "ability": "• Rest, banish a\"Kiberia Yosha\" from my Stock: Return target enemy servant with a cost of 4 or less to its owner's hand.\n• Rest: Target enemy servant gains -1000 ATK until end of turn.",
   "flavor": "Izumi-chan smells good again today~?",
   "artist": "Matsurika Yoko",
-  "card_number": "",
+  "card_number": "DD03-019",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kiberia-Yosha-Lv2.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-019",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "16",
@@ -2437,19 +2154,16 @@
   "type": "Conjure",
   "element": "Ignus",
   "traits": "Rage",
+  "cost_level": "1",
   "ability": "• Target allied servant gains +2000 ATK until end of turn.",
   "flavor": "Go get the bad servant!",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD01-017",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kindle-the-Spirit.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-017",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2459,19 +2173,16 @@
   "type": "Conjure",
   "element": "Terra",
   "traits": "Pride",
+  "cost_level": "6",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Rest all enemy servants.",
   "flavor": "An imposing figure.",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "DD01-027",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kneel-Before-Me.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-027",
    "Copies in Product": "2",
-   "Cost/Lv": "6",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2481,18 +2192,15 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "Research",
+  "cost_level": "1",
   "ability": "• Search your deck for a conjure, reveal it and put it into your hand. Then shuffle your deck.",
   "flavor": "Ancient masters of magic, grant me your eldritch knowledge.",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "EX01-020",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Knowledge-From-Ancestors.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-020",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -2502,19 +2210,16 @@
   "subname": "Maya Shimofuji",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "1",
   "ability": "• Rest: Target [Supplies] gets +500 ATK this turn for each other {Aqua} Caster you control.",
   "flavor": "It can't be helped. I'll lend you my power.",
   "artist": "Mile",
-  "card_number": "",
+  "card_number": "DD02-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lablarite.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-006",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2524,19 +2229,16 @@
   "subname": "Rin Nakahara",
   "type": "Caster",
   "element": "Void",
+  "cost_level": "1",
   "ability": "• Rest, banish a face down Caster: Destroy target enemy servant with a cost of 2 or less.",
   "flavor": "Ora! Go forth! Evil gods!",
   "artist": "JAIBON",
-  "card_number": "",
+  "card_number": "DD02-025",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lancelot.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-025",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2546,20 +2248,18 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "Youkai",
+  "cost_level": "3",
+  "attack": "1000",
+  "defense": "3000",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Slow Start (I cannot attack the turn I am played to the field.)",
   "flavor": "Alright, alright. I'm up!",
   "artist": "gozz",
-  "card_number": "",
+  "card_number": "DD03-026",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lazy-Spirit.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD03-026",
-   "Cost/Lv": "3",
-   "DEF": "3000"
-  }
+  "extra_fields": null
  },
  {
   "id": "227",
@@ -2567,18 +2267,15 @@
   "subname": "Mao Mizoguchi",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Remove a number of [Sweets] in an allied graveyard from the game equal to the cost of target enemy servant. If you do, destroy that servant. Play this ability only during an allied main phase.",
   "flavor": "\"I won't lose in swimming to Momoka today!\"",
   "artist": "Mayo",
-  "card_number": "",
+  "card_number": "EX02-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lilia-Chocolate.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-001",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": "Rare"
   }
  },
@@ -2588,18 +2285,15 @@
   "subname": "Sayuri Shiratori",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Target enemy servant gains Slow Start until end of turn.",
   "flavor": "We just broke 300,000 subscribers! Are we famous?",
   "artist": "sakura moyon",
-  "card_number": "",
+  "card_number": "EX01-009",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lily-Verde.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-009",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -2609,18 +2303,17 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Youkai",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "1000",
   "flavor": "A girl who embraced death with a smile.",
   "artist": "gozz",
-  "card_number": "",
+  "card_number": "DD01-009",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Little-Match-Girl.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD01-009",
    "Copies in Product": "4",
-   "Cost/Lv": "2",
-   "DEF": "1000",
    "Notes": ""
   }
  },
@@ -2630,19 +2323,17 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "Monk",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "1000",
   "flavor": "\"Let's go for a walk instead.\"",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD03-025",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lively-Monk.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD03-025",
-   "Cost/Lv": "2",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "244",
@@ -2650,18 +2341,15 @@
   "subname": "Shiho Haseya",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if a card was played by its Break ability this turn.",
   "flavor": "Suzu, you really tease too much. I'm ignoring you.",
   "artist": "yua",
-  "card_number": "",
+  "card_number": "EX02-Alt04",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Louise-Bayli.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-Alt04",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": "Super Rare"
   }
  },
@@ -2671,18 +2359,17 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Demon",
+  "cost_level": "7",
+  "attack": "5000",
+  "defense": "2000",
   "ability": "• Double Corrupt\n• I cannot be attacked while rested.\n• [Hubris]",
   "flavor": "\"I'll corrupt those orbs for you.\"",
   "artist": "Miko Yamazaki",
-  "card_number": "",
+  "card_number": "EX01-030",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lucifell-Flawless-Beauty.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "5000",
-   "Card Number": "EX01-030",
-   "Cost/Lv": "7",
-   "DEF": "2000",
    "Rarity": "Normal"
   }
  },
@@ -2692,20 +2379,16 @@
   "subname": "Suzume Yabuki",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "1",
   "ability": "• Rest: Put the top card of your deck into an allied graveyard. If that card is a [Sweets], draw a card.",
   "flavor": "\"I'm going to eat snacks with Yuzuki after school again!\"",
   "artist": "Tsukumi",
-  "card_number": "",
+  "card_number": "DD04-019",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lufue-Yuni.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-019",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "74",
@@ -2713,20 +2396,16 @@
   "subname": "Kana Izuhara",
   "type": "Caster",
   "element": "Luna",
+  "cost_level": "1",
   "ability": "• Rest: Swap the ATK and DEF of target enemy servant until end of turn",
   "flavor": "Runa~ Shall we go see Kotoko's experiments today?",
   "artist": "Rubisama",
-  "card_number": "",
+  "card_number": "DD03-003",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lumielle.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-003",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "85",
@@ -2734,20 +2413,16 @@
   "type": "Conjure",
   "element": "Luna",
   "traits": "Greed",
+  "cost_level": "2",
   "ability": "• Draw two cards.",
   "flavor": "A plea to the moon.",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD03-014",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Magic-Paper.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-014",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "106",
@@ -2755,20 +2430,16 @@
   "subname": "Miwa Torri",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "1",
   "ability": "• Rest: Reveal the top card of your deck. If it's a Cosmetics with a cost of 1, put it into the field.",
   "flavor": "\"Uu...I can feel it. An intense glance at me!\"",
   "artist": "Tsukumi",
-  "card_number": "",
+  "card_number": "DD04-002",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Maisey-Queen.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-002",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "107",
@@ -2776,20 +2447,16 @@
   "subname": "Miwa Torri",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "2",
   "ability": "• Banish a \"Maisey Queen\" from my Stock: Reverse target servant.\n\n• Rest: Reveal the top card of your deck. If it's a Cosmetics with a cost of 2 or less, put it into the field.",
   "flavor": "\"This is the aura of the school's top performer!\"",
   "artist": "Tsukumi",
-  "card_number": "",
+  "card_number": "DD04-003",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Maisey-Queen-Lv2.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-003",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "128",
@@ -2797,20 +2464,18 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "2",
+  "attack": "3000",
+  "defense": "0",
   "ability": "• At end of turn : Banish this card.",
   "flavor": "Even ice cream loves ice cream.",
   "artist": "uekino aroe",
-  "card_number": "",
+  "card_number": "DD04-024",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Melty-Ice-Cream.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "DD04-024",
-   "Cost/Lv": "2",
-   "DEF": "0"
-  }
+  "extra_fields": null
  },
  {
   "id": "45",
@@ -2818,19 +2483,16 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "[Research]",
+  "cost_level": "1",
   "ability": "• Gain control of all Servants and Casters you own. OR, return a face down card in your Caster Zone to your hand. If you do, call up to one level 1 Caster from your hand. (You must fill all conditions to normally call that Caster)",
   "flavor": "Recall... That time!",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "DD02-008",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Mental-Recovery.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-008",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2840,18 +2502,15 @@
   "subname": "Yuka Fujikawa",
   "type": "Caster",
   "element": "Void",
+  "cost_level": "1",
   "ability": "• Enter : Look at target enemy orb, then return it. Draw a card.",
   "flavor": "Analysis complete. Arthur, your next orders?",
   "artist": "JAIBON",
-  "card_number": "",
+  "card_number": "EX01-014",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Merlin.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-014",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -2861,18 +2520,17 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "[Cosmetics]",
+  "cost_level": "3",
+  "attack": "1000",
+  "defense": "2000",
   "ability": "• Last Words : Reverse target enemy servant.",
   "flavor": "Seems a lot of Aes casters make use of these.",
   "artist": "Yuko Nagasaki",
-  "card_number": "",
+  "card_number": "EX02-033",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Messy-Compact.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "EX02-033",
-   "Cost/Lv": "3",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -2882,18 +2540,17 @@
   "type": "Servant",
   "element": "Void",
   "traits": "Cthulhu",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "0",
   "ability": "• Enter : Target enemy player reveals their hand. Choose a non-caster card from among them and remove it from game. If you do, that player draws a card.",
   "flavor": "A lapse of memory. Or something far more sinister?",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX01-037",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Mi-go.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "EX01-037",
-   "Cost/Lv": "2",
-   "DEF": "0",
    "Rarity": "Normal"
   }
  },
@@ -2903,20 +2560,16 @@
   "subname": "Manami Kawada",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Target allied servant gains +1000 ATK until end of turn.",
   "flavor": "\"Tsubasa. If you're ever in trouble, you can always tell me.\"",
   "artist": "noki",
-  "card_number": "",
+  "card_number": "DD04-020",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Mia-Laira.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-020",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "23",
@@ -2924,19 +2577,16 @@
   "subname": "Misora Hiraiwa",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if an allied [Insect] was destroyed or banished this turn.",
   "flavor": "You want to see some new magic, You?",
   "artist": "mie",
-  "card_number": "",
+  "card_number": "DD01-025",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-025",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2946,18 +2596,15 @@
   "subname": "Misora Hiraiwa",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "2",
   "ability": "• Banish a \"Miu\" from my Stock: Put all cards in your hand on the bottom of your deck in any order. Then draw that many cards.\n• Rest: Destroy target non-[Insect] servant with cost 3 or less if an [Insect] servant you control was destroyed or banished this turn.",
   "flavor": "Butterfly Illusion!",
   "artist": "mie",
-  "card_number": "",
+  "card_number": "EX02-016",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-016",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -2967,20 +2614,18 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "4",
+  "attack": "4000",
+  "defense": "2000",
   "ability": "• Enter : Banish an allied servant. (When I enter the field : Perform the effect.)",
   "flavor": "No matter what, you'll want to eat it.",
   "artist": "Sanosuke Sakuma",
-  "card_number": "",
+  "card_number": "DD04-030",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Mixed-Parfait.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "DD04-030",
-   "Cost/Lv": "4",
-   "DEF": "2000"
-  }
+  "extra_fields": null
  },
  {
   "id": "122",
@@ -2988,20 +2633,16 @@
   "subname": "Hina Kujyou",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "1",
   "ability": "• Rest: Put target servant from an enemy graveyard on the bottom of its owner's deck.",
   "flavor": "\"Is everyone coming to the green room today?\"",
   "artist": "Matsurika Yoko",
-  "card_number": "",
+  "card_number": "DD04-018",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Mona-Styla.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-018",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "121",
@@ -3009,20 +2650,16 @@
   "subname": "Natsume Hoshigaoka",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "1",
   "ability": "• If you would play a caster as part of your call phase, you may play me face up from an allied graveyard instead.",
   "flavor": "\"Hey, hey everyone! Are you watching our broadcast?\"",
   "artist": "ShiroYayoi",
-  "card_number": "",
+  "card_number": "DD04-017",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Nebula-Soleil.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-017",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "179",
@@ -3030,18 +2667,15 @@
   "type": "Conjure",
   "element": "Void",
   "traits": "Madness",
+  "cost_level": "2",
   "ability": "• Play rock-paper-scissors with target enemy player. If you win, search your deck for a card and put it into your hand. Shuffle your deck. If you lose, produce 3 Void aether.",
   "flavor": "Did reading grant you wicked knowledge? Or have you merely lost something dear?",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX01-039",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Necronomicon.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-039",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -3051,18 +2685,17 @@
   "type": "Servant",
   "element": "Void",
   "traits": "Cthulhu",
+  "cost_level": "3",
+  "attack": "0",
+  "defense": "2000",
   "ability": "• Break\n• Enter : Search your deck for a servant with a cost of 7 or more, reveal it and put it into your hand. Shuffle your deck.",
   "flavor": "I serve you. The one who brings emptiness.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX01-038",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Night-Gaunt.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "EX01-038",
-   "Cost/Lv": "3",
-   "DEF": "2000",
    "Rarity": "Normal"
   }
  },
@@ -3072,19 +2705,16 @@
   "type": "Conjure",
   "element": "Void",
   "traits": "Madness",
+  "cost_level": "3",
   "ability": "• Turn target Lv 1 caster face down.",
   "flavor": "Nightmares are often considered forebodings of events yet to come.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-032",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Nightmare.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-032",
    "Copies in Product": "4",
-   "Cost/Lv": "3",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3094,19 +2724,18 @@
   "type": "Servant",
   "element": "Void",
   "traits": "Cthulhu",
+  "cost_level": "4",
+  "attack": "1000",
+  "defense": "1000",
   "ability": "• Break\n• Enter : Remove target enemy servant with a cost 3 or less from the game.",
   "flavor": "Leave now. Begone from this dimension.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-026",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Nyarlathotep.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD02-026",
    "Copies in Product": "4",
-   "Cost/Lv": "4",
-   "DEF": "1000",
    "Notes": ""
   }
  },
@@ -3116,18 +2745,17 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Cryptid",
+  "cost_level": "3",
+  "attack": "2000",
+  "defense": "1000",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Enter : Draw a card. Then discard a card.",
   "flavor": "Greed destroys the body.",
   "artist": "SO",
-  "card_number": "",
+  "card_number": "EX01-031",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ouroboros.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX01-031",
-   "Cost/Lv": "3",
-   "DEF": "1000",
    "Rarity": "Normal"
   }
  },
@@ -3137,18 +2765,15 @@
   "type": "Conjure",
   "element": "Solis",
   "traits": "[Hunger]",
+  "cost_level": "3",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Target enemy player discards two cards.",
   "flavor": "If it seems unfair, that's only because it is.",
   "artist": "saumaro",
-  "card_number": "",
+  "card_number": "EX02-005",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Paper-Eating-Virus.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-005",
-   "Cost/Lv": "3",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3158,18 +2783,15 @@
   "type": "Conjure",
   "element": "Aes",
   "traits": "Charm",
+  "cost_level": "2",
   "ability": "• Exchange control of target Lv1 face up caster your opponent controls that does not share a name with any card you control, and target Lv1 face up caster you control that does not share a name with any card your opponent controls.",
   "flavor": "Sometimes a different teamup is good.",
   "artist": "mie",
-  "card_number": "",
+  "card_number": "EX01-021",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Partner-Change.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-021",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -3179,19 +2801,16 @@
   "subname": "Tsubasa Koga",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• Rest: Target allied servant gains +500 ATK until end of turn.",
   "flavor": "Miss Manami, thanks for always being so kind.",
   "artist": "sakura moyon",
-  "card_number": "",
+  "card_number": "DD01-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-001",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3201,19 +2820,15 @@
   "subname": "Saaya Matsui",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• As long as your opponent controls six or more orbs, cards they control lose Break.\n• Rest: Target allied servant with cost of 2 or less gains +500 ATK until end of turn.",
   "flavor": "I'll try making a beat down deck for now.",
   "artist": "Ru-en Rouga",
-  "card_number": "",
+  "card_number": "PR001-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing.png",
   "expansion": "Influencer Promo Pack",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "PR001-001",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "37",
@@ -3221,19 +2836,16 @@
   "subname": "Tsubasa Koga",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "2",
   "ability": "• Banish a \"Passion Wing\" from my Stock: Destroy target enemy servant with a cost of 2 or less.\n• Rest: Target allied servant gains +1000 ATK until end of turn.",
   "flavor": "Miss Sakura, I'm going to get serious!",
   "artist": "sakura moyon",
-  "card_number": "",
+  "card_number": "DD01-002",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-Lv2.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-002",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3243,19 +2855,15 @@
   "subname": "Saaya Matsui",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• As long as your opponent controls six or more orbs, cards they control lose Break.\n• Rest: Target allied servant with cost of 2 or less gains +500 ATK until end of turn.",
   "flavor": "I'll try making a beat down deck for now.",
   "artist": "Ru-en Rouga",
-  "card_number": "",
+  "card_number": "PR001-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-Saaya.png",
   "expansion": "Influencer Promo Pack",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "PR001-001",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "11",
@@ -3263,19 +2871,18 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Youkai",
+  "cost_level": "3",
+  "attack": "0",
+  "defense": "3000",
   "ability": "• [Break](When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)",
   "flavor": "Jeeze! I can't take it anymore!",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD01-012",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Patience-Bag.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD01-012",
    "Copies in Product": "2",
-   "Cost/Lv": "3",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -3285,20 +2892,18 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Youkai",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
   "ability": "• Enter : Look at target enemy orb, then return it. (When this card enters the field : Perform the effect.)",
   "flavor": "It glitters even in the darkness.",
   "artist": "Ru-en Rouga",
-  "card_number": "",
+  "card_number": "DD03-007",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pentachi.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "500",
-   "Card Number": "DD03-007",
-   "Cost/Lv": "1",
-   "DEF": "0"
-  }
+  "extra_fields": null
  },
  {
   "id": "182",
@@ -3306,19 +2911,17 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Youkai",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
   "ability": "• Enter : Look at target enemy orb, then return it. (When this card enters the field : Perform the effect.)",
   "flavor": "It glitters even in the darkness.",
   "artist": "Ru-en Rouga",
-  "card_number": "",
+  "card_number": "PR001-003",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pentachi.png",
   "expansion": "Influencer Promo Pack",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "500",
-   "Card Number": "PR001-003",
-   "Cost/Lv": "1",
-   "DEF": "0"
-  }
+  "extra_fields": null
  },
  {
   "id": "60",
@@ -3326,19 +2929,16 @@
   "subname": "Tomoka Arimori",
   "type": "Caster",
   "element": "Void",
+  "cost_level": "1",
   "ability": "• Rest: Turn target face up Lv1 allied caster face down.",
   "flavor": "Let's wipe your brain into a clean slate~",
   "artist": "JAIBON",
-  "card_number": "",
+  "card_number": "DD02-024",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-024",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3348,18 +2948,15 @@
   "subname": "Tomoka Arimori",
   "type": "Caster",
   "element": "Void",
+  "cost_level": "2",
   "ability": "• Rest, Banish a \"Percival\" from my Stock OR Banish a face down caster: Discard your hand. Then draw three cards.",
   "flavor": "This is a new world.",
   "artist": "JAIBON",
-  "card_number": "",
+  "card_number": "EX02-038",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-038",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3369,18 +2966,17 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "Cryptid",
+  "cost_level": "6",
+  "attack": "2000",
+  "defense": "2000",
   "ability": "• At end of turn : If I was put into a graveyard from the field this turn, put me into the field under my owner's control.",
   "flavor": "It even slacks off on dying.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX01-028",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Phoenix.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX01-028",
-   "Cost/Lv": "6",
-   "DEF": "2000",
    "Rarity": "Normal"
   }
  },
@@ -3390,18 +2986,15 @@
   "type": "Conjure",
   "element": "Luna",
   "traits": "Greed",
+  "cost_level": "2",
   "ability": "Quickcast (You may play this card any time you have priority.)\n• Until end of turn, if target enemy player would draw a card by a card or ability, you draw a card instead.",
   "flavor": "Knowing an enemy's movements is key to a successful raid.",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "EX01-040",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pillage.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-040",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -3411,20 +3004,16 @@
   "type": "Conjure",
   "element": "Aes",
   "traits": "Charm",
+  "cost_level": "3",
   "ability": "• Quickcast (You may play this card any time you have priority.)\n\n• You can't be attacked this turn. Remove this card from game as it resolves.",
   "flavor": "\"Could you do that for me?\"",
   "artist": "Shirono Muku",
-  "card_number": "",
+  "card_number": "DD04-016",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Play-Nice.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-016",
-   "Cost/Lv": "3",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "245",
@@ -3432,18 +3021,17 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "[Plant]",
+  "cost_level": "4",
+  "attack": "0",
+  "defense": "4000",
   "ability": "• Your opponent cannot attack allied rested servants while I am reversed.",
   "flavor": "Try what you like, you won't get past it.",
   "artist": "M ganzy",
-  "card_number": "",
+  "card_number": "EX02-019",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pompous-Delphinium.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "EX02-019",
-   "Cost/Lv": "4",
-   "DEF": "4000",
    "Notes": ""
   }
  },
@@ -3453,18 +3041,15 @@
   "type": "Conjure",
   "element": "Terra",
   "traits": "[Pride]",
+  "cost_level": "1",
   "ability": "• Quickcast\n• [Universal](You may pay the TERRA aether of this card with any element except non-elemental aether.)\n• Remove target caster ability in the chase. If you paid {Terra} aether for this card, Draw a card.",
   "flavor": "Abandoned.",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "EX02-017",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Praying-to-Deaf-Ears.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-017",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3474,20 +3059,16 @@
   "type": "Conjure",
   "element": "Solis",
   "traits": "Hunger",
+  "cost_level": "2",
   "ability": "• Draw four cards. Then discard four cards.",
   "flavor": "She lost a lot as compensation.",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "DD04-033",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Price-of-Overeating.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-033",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "173",
@@ -3495,18 +3076,17 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Cryptid",
+  "cost_level": "5",
+  "attack": "4000",
+  "defense": "2000",
   "ability": "• Enter : Target enemy player banishes a servant. (When I enter the field : Perform the effect.)",
   "flavor": "There's no time to be distracted by beauty.",
   "artist": "Nakaba Higurashi",
-  "card_number": "",
+  "card_number": "EX01-029",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Prideful-Peafowl.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "EX01-029",
-   "Cost/Lv": "5",
-   "DEF": "2000",
    "Rarity": "Normal"
   }
  },
@@ -3516,20 +3096,18 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "Cryptid",
+  "cost_level": "5",
+  "attack": "5000",
+  "defense": "1000",
   "ability": "• Slow Start (I cannot attack the turn I am played to the field.)\n• Whenever I destroy an enemy servant by battle : Recover me. Play this ability only once per turn.",
   "flavor": "Gentle people fear their own anger. It weighs on them.",
   "artist": "gozz",
-  "card_number": "",
+  "card_number": "DD03-028",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Primal-Sloth.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "5000",
-   "Card Number": "DD03-028",
-   "Cost/Lv": "5",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "21",
@@ -3537,19 +3115,16 @@
   "subname": "Saya Ichijyou",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Put target Insect in an allied graveyard into your hand.",
   "flavor": "\"Dance for me once again.\"",
   "artist": "Ayami Mugiharu",
-  "card_number": "",
+  "card_number": "DD01-023",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Princess-Papillon.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-023",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3559,19 +3134,16 @@
   "type": "Conjure",
   "element": "Terra",
   "traits": "Pride",
+  "cost_level": "2",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Target enemy player banishes a servant.",
   "flavor": "\"Die.\"",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "DD01-026",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Proclamation-of-Life-and-Death.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-026",
    "Copies in Product": "4",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3581,18 +3153,15 @@
   "type": "Conjure",
   "element": "Silva",
   "traits": "[Sloth]",
+  "cost_level": "6",
   "ability": "• Return ALL servants to their owners' hands.",
   "flavor": "\"I'll work hard!...Tomorrow!\"",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "EX02-014",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Procrastination.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-014",
-   "Cost/Lv": "6",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3602,18 +3171,17 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Youkai",
+  "cost_level": "5",
+  "attack": "4000",
+  "defense": "3000",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n\nAt end of turn : Return me to my owner's hand if I attacked this turn.",
   "flavor": "The ultimate tank created by magical girls.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX01-035",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pumpkin-Chariot.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "EX01-035",
-   "Cost/Lv": "5",
-   "DEF": "3000",
    "Rarity": "Normal"
   }
  },
@@ -3623,19 +3191,16 @@
   "subname": "Inori Tsuzuka",
   "type": "Caster",
   "element": "Terra",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Destroy target reversed enemy servant if an allied servant corrupted an enemy orb this turn.",
   "flavor": "Yae! I found a really good inkstone to use!",
   "artist": "kyoka sera",
-  "card_number": "",
+  "card_number": "DD01-024",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Puria-Marito.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD01-024",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3645,19 +3210,16 @@
   "type": "Barrier",
   "element": "Void",
   "traits": "Madness",
+  "cost_level": "4",
   "ability": "• You may pay 1 less when playing [Cthulhu] with a cost of 4 or more.\n• You may only have one Barrier in play while this card is on your field.",
   "flavor": "A city void of life.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD02-030",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Rlyeh.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-030",
    "Copies in Product": "2",
-   "Cost/Lv": "4",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3667,18 +3229,15 @@
   "subname": "Mei Takayanagi",
   "type": "Caster",
   "element": "Luna",
+  "cost_level": "1",
   "ability": "• Rest: Recover target Lv1 allied caster.",
   "flavor": "\"Sayuri! Natsume! We need some new outfits for our new single!\"",
   "artist": "Matsurika Yoko",
-  "card_number": "",
+  "card_number": "EX01-011",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Rafina-Soa.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-011",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -3688,20 +3247,16 @@
   "subname": "You Chitose",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "1",
   "ability": "• Rest: Return target [Cryptid] or [Plant] allied servant to its owner's hand. If you do, another target allied servant gains +500 ATK until end of turn.",
   "flavor": "\"Miu! Show me some magic!\"",
   "artist": "Sanosuke Sakuma",
-  "card_number": "",
+  "card_number": "DD03-021",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-021",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "241",
@@ -3709,18 +3264,15 @@
   "subname": "You Chitose",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "2",
   "ability": "• Banish a \"Ran Berfield\" from my Stock: Remove target servant from the game. At end of turn → Put it into the field under its owner's control.",
   "flavor": "Go forth! Daze!",
   "artist": "Sanosuke Sakuma",
-  "card_number": "",
+  "card_number": "EX02-015",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-015",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3730,19 +3282,17 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "1000",
   "flavor": "They're good for you so eat as many as you like.",
   "artist": "Yuko Nagasaki",
-  "card_number": "",
+  "card_number": "DD04-025",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Rich-Macaron.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD04-025",
-   "Cost/Lv": "2",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "255",
@@ -3750,18 +3300,17 @@
   "type": "Servant",
   "element": "Aqua",
   "traits": "[Supplies]",
+  "cost_level": "3",
+  "attack": "2000",
+  "defense": "1500",
   "ability": "• Whenever I am targeted by an enemy card or ability : That enemy player discards a card.",
   "flavor": "Touch me and you'll get dirty!",
   "artist": "Yuko Nagasaki",
-  "card_number": "",
+  "card_number": "EX02-029",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Rocket-Pencil-Hedgehog.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX02-029",
-   "Cost/Lv": "3",
-   "DEF": "1500",
    "Notes": ""
   }
  },
@@ -3771,18 +3320,17 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Plant",
+  "cost_level": "2",
+  "attack": "0",
+  "defense": "2000",
   "flavor": "Beauty is impertinent.",
   "artist": "Yuko Nagasaki",
-  "card_number": "",
+  "card_number": "DD01-037",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Rose-of-Insolence.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD01-037",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -3792,20 +3340,16 @@
   "subname": "Koyori Oonuma",
   "type": "Caster",
   "element": "Luna",
+  "cost_level": "1",
   "ability": "• Rest: Target allied servant gains +100 ATK for each card in your hand until end of turn.",
   "flavor": "\"I'll decide this with my fortune.\"",
   "artist": "JURI",
-  "card_number": "",
+  "card_number": "DD03-001",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ruka-Eremi.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-001",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "73",
@@ -3813,20 +3357,16 @@
   "subname": "Koyori Oonuma",
   "type": "Caster",
   "element": "Luna",
+  "cost_level": "2",
   "ability": "• Banish a \"Ruka Eremi\" from my Stock: Draw a card.\n• Rest: Target allied servant gains +200 ATK for each card in your hand until end of turn.",
   "flavor": "\"Something money can't solve? I guess I'll solve it with magic.\"",
   "artist": "JURI",
-  "card_number": "",
+  "card_number": "DD03-002",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ruka-Eremi-Lv2.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-002",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "44",
@@ -3834,19 +3374,16 @@
   "type": "Barrier",
   "element": "Aqua",
   "traits": "[Research]",
+  "cost_level": "2",
   "ability": "• If you would draw a card, you may instead look at the top three cards of your deck. If you do, choose one from among them and put it into your hand and put the rest on the bottom of your deck in any order.",
   "flavor": "\"Please impart your wisdom on me, oh ancient master.\"",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "DD02-007",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sage-Advice.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-007",
    "Copies in Product": "2",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3856,19 +3393,16 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "[Research/Earnest]",
+  "cost_level": "1",
   "ability": "• Draw a card.",
   "flavor": "If you cram an overwhelming amount of knowledge, you too can become a sage.",
   "artist": "Shirono Muku",
-  "card_number": "",
+  "card_number": "DD02-013",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sages-Book.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-013",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3878,19 +3412,16 @@
   "subname": "Akira Nakaya",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "1",
   "ability": "• [Rest]: Draw a card if enemy servants attacked twice or more this turn.",
   "flavor": "\"Can you solve my puzzle?\"",
   "artist": "Haruichi Kido",
-  "card_number": "",
+  "card_number": "DD02-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Saira-Treverse.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-001",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3900,19 +3431,18 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Cryptid",
+  "cost_level": "5",
+  "attack": "4000",
+  "defense": "2000",
   "ability": "• Enter: Destroy target rested enemy servant.(When this servant enters the field : Perform the effect.)",
   "flavor": "Her anger formed into a fearsome spirit.",
   "artist": "gozz",
-  "card_number": "",
+  "card_number": "DD01-015",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Salamander.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "DD01-015",
    "Copies in Product": "4",
-   "Cost/Lv": "5",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -3922,20 +3452,16 @@
   "type": "Barrier",
   "element": "Silva",
   "traits": "Sloth",
+  "cost_level": "2",
   "ability": "• Each player can only play one non-aether caster ability per turn.",
   "flavor": "Let's unwind a bit.",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "DD03-030",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Salvation-by-Faith.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-030",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "48",
@@ -3943,19 +3469,16 @@
   "type": "Conjure",
   "element": "Aqua",
   "traits": "[Research]",
+  "cost_level": "6",
   "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Exchange control of target allied servant and target enemy servant.",
   "flavor": "\"Here, you can have this one.\"",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "DD02-011",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Servant-Exchange.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-011",
    "Copies in Product": "2",
-   "Cost/Lv": "6",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -3965,20 +3488,16 @@
   "type": "Conjure",
   "element": "Luna",
   "traits": "Greed",
+  "cost_level": "5",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.) \n• Put target servant into its owner's orb zone face down, as an orb.",
   "flavor": "The wicked shall become a shield for the righteous.",
   "artist": "AKI",
-  "card_number": "",
+  "card_number": "DD03-015",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Servant-Seal.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-015",
-   "Cost/Lv": "5",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "232",
@@ -3986,18 +3505,15 @@
   "subname": "Riko Kohashi",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if an allied servant corrupted an enemy orb this turn.",
   "flavor": "Hitori, let me copy your homework!",
   "artist": "Takamiya Ren",
-  "card_number": "",
+  "card_number": "EX02-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Shera-Angellica.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-006",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": "Rare"
   }
  },
@@ -4007,18 +3523,15 @@
   "type": "Barrier",
   "element": "Luna",
   "traits": "Greed",
+  "cost_level": "4",
   "ability": "• At end of enemy turn : Draw a card.",
   "flavor": "\"Let's hurry to the sale!\"",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "EX01-004",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Shopping-Plaza.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-004",
-   "Cost/Lv": "4",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -4028,18 +3541,15 @@
   "type": "Conjure",
   "element": "Void",
   "traits": "[Madness]",
+  "cost_level": "1",
   "ability": "• [Universal](You may pay the VOID aether of this card with any element except non-elemental aether.)\n• Put target servant you own from an allied removed zone into your hand. If you paid VOID aether for this card, that servant costs 1 less the next time it is played this turn. It cannot cost less than 1.",
   "flavor": "Open the door leading to oth dimension.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX02-040",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Silver-Key.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-040",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -4049,19 +3559,18 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Plant",
+  "cost_level": "3",
+  "attack": "0",
+  "defense": "3000",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)",
   "flavor": "It laughs because it knows you have no confidence.",
   "artist": "hatarisu",
-  "card_number": "",
+  "card_number": "DD01-034",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sneering-Orchid.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD01-034",
    "Copies in Product": "4",
-   "Cost/Lv": "3",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -4071,20 +3580,16 @@
   "subname": "Waka Koujiya",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "1",
   "ability": "• Rest: Target enemy player discards a card if an enemy servant was returned to a player's hand from a servant zone this turn.",
   "flavor": "Morning, Tamaki!",
   "artist": "Nekobayashi",
-  "card_number": "",
+  "card_number": "DD03-023",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Solol-Baton.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-023",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "160",
@@ -4092,18 +3597,15 @@
   "type": "Barrier",
   "element": "Silva",
   "traits": "Sloth",
+  "cost_level": "4",
   "ability": "• All servants gain Slow Start. (I cannot attack the turn I am played to the field.)",
   "flavor": "Ah~ I really don't feel like fighting~.",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "EX01-003",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sophmore-Slump.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-003",
-   "Cost/Lv": "4",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -4113,19 +3615,18 @@
   "type": "Servant",
   "element": "Aqua",
   "traits": "[Supplies]",
+  "cost_level": "3",
+  "attack": "1000",
+  "defense": "2000",
   "ability": "• Last Words : Destroy target enemy servant with a cost of 2 or less. (When this card is put into a graveyard from the field : Perform the effect.)",
   "flavor": "*Snip snip*",
   "artist": "Inomura Tomori",
-  "card_number": "",
+  "card_number": "DD02-018",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Spirit-Scissors.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD02-018",
    "Copies in Product": "4",
-   "Cost/Lv": "3",
-   "DEF": "2000",
    "Notes": ""
   }
  },
@@ -4135,19 +3636,18 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Insect",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
   "ability": "[Unity](Whenever I attack : You may rest any number of recovered allied servants that share a Trait with me. If you do, I gain +X ATK until end of turn, where X is the total ATK of servants rested this way)",
   "flavor": "Sucks up all hope.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD01-036",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Spiteful-Clam.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "500",
-   "Card Number": "DD01-036",
    "Copies in Product": "4",
-   "Cost/Lv": "1",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -4157,18 +3657,17 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "[Cryptid]",
+  "cost_level": "5",
+  "attack": "3000",
+  "defense": "3000",
   "ability": "• Last Words → Put up to two servants with a cost of two or less each from your hand into the field.",
   "flavor": "Greed destroys you, but you get a lot too. So there's some benefits.",
   "artist": "Moopic",
-  "card_number": "",
+  "card_number": "EX02-021",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Split-Eagle.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "EX02-021",
-   "Cost/Lv": "5",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -4178,18 +3677,15 @@
   "type": "Conjure",
   "element": "Luna",
   "traits": "[Greed]",
+  "cost_level": "5",
   "ability": "• Discard your hand. Take an extra turn after this one. Remove this card from game as it resolves.",
   "flavor": "It'll all workout somehow!",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "EX02-024",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Starting-Anew.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-024",
-   "Cost/Lv": "5",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -4199,19 +3695,18 @@
   "type": "Servant",
   "element": "Aqua",
   "traits": "[Supplies]",
+  "cost_level": "6",
+  "attack": "3000",
+  "defense": "3000",
   "ability": "• Enter : Reveal the top card of your deck. If it's a [Supplies] servant with Cost 4 or less, put it into the field. Otherwise, put it into your hand.\n• Last Words : Reveal the top card of your deck. If it's a [Supplies] servant with Cost 4 or less, put it into the field. Otherwise, put it into your hand.",
   "flavor": "*Wobble wobble* *Boing boing*",
   "artist": "jitari",
-  "card_number": "",
+  "card_number": "DD02-017",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Stationery-Slime.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "DD02-017",
    "Copies in Product": "2",
-   "Cost/Lv": "6",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -4221,19 +3716,18 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Youkai",
+  "cost_level": "1",
+  "attack": "1000",
+  "defense": "1000",
   "ability": "• [Enter]: Corrupt an allied orb. (When this card enters the field : Perform the effect.)",
   "flavor": "A curse digs two graves.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD01-008",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Straw-Effigy.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1000",
-   "Card Number": "DD01-008",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "1000",
    "Notes": ""
   }
  },
@@ -4243,19 +3737,17 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "3",
+  "attack": "2000",
+  "defense": "2000",
   "flavor": "A simple, delicious treat.",
   "artist": "Sanosuke Sakuma",
-  "card_number": "",
+  "card_number": "DD04-028",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Strawberry-on-the-Shortcake.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "DD04-028",
-   "Cost/Lv": "3",
-   "DEF": "2000"
-  }
+  "extra_fields": null
  },
  {
   "id": "117",
@@ -4263,20 +3755,18 @@
   "type": "Servant",
   "element": "Aes",
   "traits": "Demon/Cosmetics",
+  "cost_level": "6",
+  "attack": "3000",
+  "defense": "3500",
   "ability": "• Double Corrupt (When this servant corrupts, it corrupts two orbs instead of one.)\n\n• Enter : Rest or Reverse target enemy servant.",
   "flavor": "Love can make one do pretty stupid things.",
   "artist": "ComamitsuZaki",
-  "card_number": "",
+  "card_number": "DD04-013",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Succubus.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "DD04-013",
-   "Cost/Lv": "6",
-   "DEF": "3500"
-  }
+  "extra_fields": null
  },
  {
   "id": "172",
@@ -4284,18 +3774,15 @@
   "type": "Conjure",
   "element": "Terra",
   "traits": "Pride",
+  "cost_level": "3",
   "ability": "• Quickcast (You may play this card any time you have priority.)\n• Return target servant in the chase to its owner's hand. (The servant is not played. Your opponent still pays the cost of the servant)",
   "flavor": "Return.",
   "artist": "sasaki kounosuke",
-  "card_number": "",
+  "card_number": "EX01-018",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Summoning-Obstruction.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-018",
-   "Cost/Lv": "3",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -4305,18 +3792,17 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Heroic Spirit",
+  "cost_level": "3",
+  "attack": "2000",
+  "defense": "1000",
   "ability": "• Enter : Search your deck for a [Youkai] with a cost of 1, reveal it and put it into your hand. Shuffle your deck.",
   "flavor": "Magic duels sure are exciting.",
   "artist": "tokiwa",
-  "card_number": "",
+  "card_number": "EX01-025",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sun-Wukong.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX01-025",
-   "Cost/Lv": "3",
-   "DEF": "1000",
    "Rarity": "Normal"
   }
  },
@@ -4326,18 +3812,15 @@
   "type": "Barrier",
   "element": "Solis",
   "traits": "Solar",
+  "cost_level": "4",
   "ability": "• At end of enemy turn : That enemy player discards a card.",
   "flavor": "Bit by bit, the entire thing is cooked through.",
   "artist": "kawaryu",
-  "card_number": "",
+  "card_number": "EX01-002",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunbeam-Roasting.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-002",
-   "Cost/Lv": "4",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -4347,18 +3830,15 @@
   "subname": "Hitori Kusaka",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if an enemy discarded a card this turn.",
   "flavor": "\"Huh? Where's Rikocchi?\"",
   "artist": "Foo Midori",
-  "card_number": "",
+  "card_number": "EX01-007",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunny.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-007",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -4368,18 +3848,15 @@
   "subname": "Hitori Kusaka",
   "type": "Caster",
   "element": "Solis",
+  "cost_level": "2",
   "ability": "• Banish a \"Sunny\" from my Stock: Target enemy player discards a card. Play this ability only during main timing.\n• Rest: Put target servant with a cost of 3 or less that was discarded from an enemy hand this turn into an allied servant zone.",
   "flavor": "\"I won't forgive anyone who hurts Rikocchi.\"",
   "artist": "Inomura Tomori",
-  "card_number": "",
+  "card_number": "EX02-003",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunny-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-003",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -4389,20 +3866,16 @@
   "subname": "Saya Udagawa",
   "type": "Caster",
   "element": "Silva",
+  "cost_level": "1",
   "ability": "• Rest: Target allied servant loses Slow Start until end of turn.",
   "flavor": "You sure know a lot, Karen-chan.",
   "artist": "tomimin",
-  "card_number": "",
+  "card_number": "DD03-022",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sweet-Pea.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-022",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "135",
@@ -4410,20 +3883,16 @@
   "type": "Barrier",
   "element": "Solis",
   "traits": "Sweets",
+  "cost_level": "4",
   "ability": "• Whenever another allied [Sweets] enters the field : Search your deck for a [Sweets], reveal it and put it into your hand. Then shuffle your deck.",
   "flavor": "The height of pleasure.",
   "artist": "OJONPA",
-  "card_number": "",
+  "card_number": "DD04-031",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sweets-Buffet.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-031",
-   "Cost/Lv": "4",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "31",
@@ -4431,19 +3900,18 @@
   "type": "Servant",
   "element": "Terra",
   "traits": "Insect",
+  "cost_level": "3",
+  "attack": "1500",
+  "defense": "0",
   "ability": "• [Hubris] (Cards with [Hubris] may attack enemy players even if there are reversed enemy servants.) \n• I cannot be attacked while rested.",
   "flavor": "Sucks up all life.",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD01-033",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Tactless-Butterfly.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "1500",
-   "Card Number": "DD01-033",
    "Copies in Product": "4",
-   "Cost/Lv": "3",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -4453,20 +3921,16 @@
   "subname": "Sahoko Mitazono",
   "type": "Caster",
   "element": "Aes",
+  "cost_level": "1",
   "ability": "• Rest, discard a caster: Target allied [Cosmetics] gains Double Corrupt until end of turn.",
   "flavor": "An~ Let's go to Karaoke!",
   "artist": "Matsurika Yoko",
-  "card_number": "",
+  "card_number": "DD04-005",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Tenel-Frula.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-005",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "139",
@@ -4474,20 +3938,16 @@
   "type": "Conjure",
   "element": "Solis",
   "traits": "Hunger",
+  "cost_level": "6",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Destroy target servant.",
   "flavor": "All is devoured, not a scrap remains.",
   "artist": "saumaro",
-  "card_number": "",
+  "card_number": "DD04-035",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Total-Eclipse.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-035",
-   "Cost/Lv": "6",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "168",
@@ -4495,18 +3955,17 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "Cryptid",
+  "cost_level": "4",
+  "attack": "2000",
+  "defense": "1000",
   "ability": "• Whenever I attack an enemy servant : Destroy that enemy servant.",
   "flavor": "An avatar of revenge for all the birds that are killed on a certain day every year.",
   "artist": "Takumi Sugikawa",
-  "card_number": "",
+  "card_number": "EX01-023",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Toxic-Turkey.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX01-023",
-   "Cost/Lv": "4",
-   "DEF": "1000",
    "Rarity": "Normal"
   }
  },
@@ -4516,20 +3975,16 @@
   "subname": "Runa Tsukinaga",
   "type": "Caster",
   "element": "Luna",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if you drew a card by the effect of a conjure this turn.",
   "flavor": "\"I want tea time with Mahiro-san~.\"",
   "artist": "Tam-U",
-  "card_number": "",
+  "card_number": "DD03-006",
   "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD03-006",
-   "Cost/Lv": "1",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "251",
@@ -4537,18 +3992,15 @@
   "subname": "Momoka Michizuki",
   "type": "Caster",
   "element": "Luna",
+  "cost_level": "2",
   "ability": "• Rest, banish a \"Twinkle Charm\" from my Stock: Search your deck for a servant with the same name as target allied servant with a cost of 2 or less and put it into the field. Then shuffle your deck.\n• Rest: Draw a card.",
   "flavor": "Why don't you have one more?",
   "artist": "Tam-U",
-  "card_number": "",
+  "card_number": "EX02-025",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm-Lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX02-025",
-   "Cost/Lv": "2",
-   "DEF": "",
    "Notes": ""
   }
  },
@@ -4558,18 +4010,17 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "Monk",
+  "cost_level": "3",
+  "attack": "3000",
+  "defense": "3000",
   "ability": "• At the start of your turn : Return me to my owner's hand.",
   "flavor": "If only it wasn't so fickle...",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "EX01-027",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Unreliable-Monk.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "EX01-027",
-   "Cost/Lv": "3",
-   "DEF": "3000",
    "Rarity": "Normal"
   }
  },
@@ -4579,18 +4030,15 @@
   "subname": "Kotono Kyobeni",
   "type": "Caster",
   "element": "Ignus",
+  "cost_level": "1",
   "ability": "• Rest, banish an orb: Corrupt target orb.",
   "flavor": "For Miwa-sama, I would do anything.",
   "artist": "BANAMONS*",
-  "card_number": "",
+  "card_number": "EX01-008",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Vega-Scarlet-Star.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-008",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -4600,18 +4048,17 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "[Plant]",
+  "cost_level": "2",
+  "attack": "0",
+  "defense": "500",
   "ability": "• Last Words : Return target enemy servant that attacked this card this turn to its owner's hand. (When this card is put into a graveyard from the field : Perform the effect.)",
   "flavor": "A drastic strategy.",
   "artist": "keivin",
-  "card_number": "",
+  "card_number": "EX02-012",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Venus-Flytrap.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "0",
-   "Card Number": "EX02-012",
-   "Cost/Lv": "2",
-   "DEF": "500",
    "Notes": ""
   }
  },
@@ -4621,20 +4068,16 @@
   "type": "Conjure",
   "element": "Aes",
   "traits": "Charm",
+  "cost_level": "2",
   "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n\n• Reverse target enemy servant.",
   "flavor": "\"That's a promise, okay?\"",
   "artist": "Shirono Muku",
-  "card_number": "",
+  "card_number": "DD04-014",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Wait-There-Okay.png",
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD04-014",
-   "Cost/Lv": "2",
-   "DEF": ""
-  }
+  "extra_fields": null
  },
  {
   "id": "13",
@@ -4642,18 +4085,17 @@
   "type": "Servant",
   "element": "Ignus",
   "traits": "Youkai",
+  "cost_level": "4",
+  "attack": "4000",
+  "defense": "1000",
   "flavor": "\"Tsubasa...Tsubasa...\"",
   "artist": "Saiko Takaki",
-  "card_number": "",
+  "card_number": "DD01-014",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Wandering-Flames.png",
   "expansion": "DD01: Magical Girl Duel",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "4000",
-   "Card Number": "DD01-014",
    "Copies in Product": "2",
-   "Cost/Lv": "4",
-   "DEF": "1000",
    "Notes": ""
   }
  },
@@ -4663,20 +4105,18 @@
   "type": "Servant",
   "element": "Luna",
   "traits": "Youkai",
+  "cost_level": "2",
+  "attack": "0",
+  "defense": "1000",
   "ability": "• Enter : Destroy target barrier. (When this card enters the field : Perform the effect.)",
   "flavor": "It increases the greed of those around it.",
   "artist": "ComamitsuZaki",
-  "card_number": "",
+  "card_number": "DD03-008",
   "count": "4",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/White-Fox.png",
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
-  "extra_fields": {
-   "ATK": "0",
-   "Card Number": "DD03-008",
-   "Cost/Lv": "2",
-   "DEF": "1000"
-  }
+  "extra_fields": null
  },
  {
   "id": "51",
@@ -4684,19 +4124,18 @@
   "type": "Servant",
   "element": "Aqua",
   "traits": "[Supplies]",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
   "ability": "• Enter : Look at the top card of your deck, then return it. (When this card enters the field : Perform the effect.)",
   "flavor": "Seems like short pencils gather together in some secret place.",
   "artist": "Inomura Tomori",
-  "card_number": "",
+  "card_number": "DD02-014",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Wise-Pencil.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "500",
-   "Card Number": "DD02-014",
    "Copies in Product": "4",
-   "Cost/Lv": "1",
-   "DEF": "0",
    "Notes": ""
   }
  },
@@ -4706,18 +4145,17 @@
   "type": "Servant",
   "element": "Silva",
   "traits": "[Cryptid]",
+  "cost_level": "6",
+  "attack": "3000",
+  "defense": "3000",
   "ability": "• Double Corrupt (When this servant corrupts, it corrupts two orbs instead of one.)\n• Enter : Return target servant to its owner's hand.",
   "flavor": "By the time you notice, it's already there.",
   "artist": "Haruki Komai",
-  "card_number": "",
+  "card_number": "EX02-013",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Wooden-Bear.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "3000",
-   "Card Number": "EX02-013",
-   "Cost/Lv": "6",
-   "DEF": "3000",
    "Notes": ""
   }
  },
@@ -4727,18 +4165,15 @@
   "type": "Barrier",
   "element": "Ignus",
   "traits": "Rage",
+  "cost_level": "4",
   "ability": "• Enemy servants enter the field recovered.\n• Enemy servants cannot be switched except by spell or ability.",
   "flavor": "Searching for those who live in blind rage.",
   "artist": "MATSUMOTO EIGHT",
-  "card_number": "",
+  "card_number": "EX01-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/World-of-Rage.png",
   "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "EX01-001",
-   "Cost/Lv": "4",
-   "DEF": "",
    "Rarity": "Normal"
   }
  },
@@ -4748,18 +4183,17 @@
   "type": "Servant",
   "element": "Solis",
   "traits": "[Heroic Spirit]",
+  "cost_level": "3",
+  "attack": "2000",
+  "defense": "1000",
   "ability": "• Enter : Search your deck for a Sweets with a cost of 1, reveal it and put it into your hand. Then shuffle your deck.",
   "flavor": "\"Don't underestimate the power of snacks!\"",
   "artist": "tokiwa",
-  "card_number": "",
+  "card_number": "EX02-004",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Zhu-Bajie.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "ATK": "2000",
-   "Card Number": "EX02-004",
-   "Cost/Lv": "3",
-   "DEF": "1000",
    "Notes": ""
   }
  },
@@ -4769,19 +4203,16 @@
   "subname": "Kotoko Mizusaku",
   "type": "Caster",
   "element": "Aqua",
+  "cost_level": "1",
   "ability": "• Rest: Draw a card if an allied servant was destroyed in battle this turn.",
   "flavor": "\"Runa, you're interested in this kind of thing?\"",
   "artist": "NANAHARA",
-  "card_number": "",
+  "card_number": "DD02-004",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Zoi-Russel.png",
   "expansion": "DD02: Away Game",
   "is_playtesting": false,
   "extra_fields": {
-   "ATK": "",
-   "Card Number": "DD02-004",
    "Copies in Product": "2",
-   "Cost/Lv": "1",
-   "DEF": "",
    "Notes": ""
   }
  }

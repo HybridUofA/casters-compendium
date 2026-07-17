@@ -1,9 +1,10 @@
 package updates
 
 import (
-	"net/http"
-	"github.com/HybridUofA/caster-deckbuilder/internal/speedrobo"
 	"fmt"
+	"github.com/HybridUofA/caster-deckbuilder/internal/speedrobo"
+	"net/http"
+	"time"
 )
 
 func FetchAllCards(
@@ -39,7 +40,7 @@ func FetchAllCards(
 			)
 		}
 
-		allCards = append(allCards, pageResponse.Data.Cards...,)
+		allCards = append(allCards, pageResponse.Data.Cards...)
 	}
 
 	if len(allCards) != firstResponse.Data.Total {
@@ -51,4 +52,47 @@ func FetchAllCards(
 	}
 
 	return allCards, nil
+}
+
+func FetchAllCardDetails(
+	client *http.Client,
+	config speedrobo.PageConfig,
+	summaries []speedrobo.CardResponse,
+) ([]speedrobo.CardDetail, error) {
+	details := make(
+		[]speedrobo.CardDetail,
+		0,
+		len(summaries),
+	)
+
+	for index, summary := range summaries {
+		response, err := speedrobo.FetchCardDetails(
+			client,
+			config.AjaxURL,
+			config.Nonce,
+			summary.ID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"fetch details for card %q (%s): %w",
+				summary.CardKey,
+				summary.ID,
+				err,
+			)
+		}
+		details = append(details, response.Data.Card)
+
+		fmt.Printf(
+			"Fetched card %d/%d: %s\n",
+			index+1,
+			len(summaries),
+			summary.CardKey,
+		)
+
+		if index < len(summaries)-1 {
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+
+	return details, nil
 }

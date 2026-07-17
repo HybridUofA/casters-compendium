@@ -27,3 +27,4 @@ card_list_tcc
 
 # Temporary downloaded data
 snapshots/
+data/*.tmp

@@ -1,42 +1,39 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
 	"log"
-	"os"
-	"github.com/HybridUofA/caster-deckbuilder/internal/speedrobo"
-	"github.com/HybridUofA/caster-deckbuilder/internal/updates"
 )
 
 func main() {
 
-	client, err := speedrobo.NewClient()
+	repository, err := cards.LoadFile("data/cards.json")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	config, err := speedrobo.FetchPageConfig(client)
-	if err != nil {
-		log.Fatal(err)
+	fmt.Printf("Loaded %d cards\n", len(repository.All()))
+
+	card, found := repository.FindByID("104")
+	if found {
+		fmt.Printf("Found card: %s\n", card.Name)
 	}
 
-	cards, err := updates.FetchAllCards(client, config)
-	if err != nil {
-		log.Fatal(err)
+	matches := repository.SearchByName("passion wing")
+	if len(matches) == 0 {
+		fmt.Printf("No cards found with the name Passion Wing")
 	}
 
-	fmt.Printf("Downloaded %d cards\n", len(cards))
+	fmt.Printf("Found %d card(s) named Passion Wing:\n", len(matches))
 
-	cardJSON, err := json.MarshalIndent(cards, "", " ")
-	if err != nil {
-		log.Fatalf("encode cards as JSON: %v", err)
+	for _, match := range matches {
+		fmt.Printf(
+			"- %s | %s | %s | %s\n",
+			match.Name,
+			match.CardNumber,
+			match.Element,
+			match.Expansion,
+		)
 	}
-	cardJSON = append(cardJSON, '\n')
-
-	if err := os.WriteFile("data/cards.json", cardJSON, 0644); err != nil {
-		log.Fatalf("Write card database: %v", err)
-	}
-
-	fmt.Printf("Saved %d cards to data/cards.json\n", len(cards))
 }

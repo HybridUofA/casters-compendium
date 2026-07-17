@@ -42,11 +42,11 @@ func FromSpeedrobo(detail speedrobo.CardDetail) (Card, error) {
 			card.Element = field.Value
 		case "Traits":
 			card.Traits = field.Value
-		case "CostLevel":
+		case "CostLevel", "Cost/Lv":
 			card.CostLevel = field.Value
-		case "Attack":
+		case "Attack", "ATK":
 			card.Attack = field.Value
-		case "Defense":
+		case "Defense", "DEF":
 			card.Defense = field.Value
 		case "Ability":
 			card.Ability = field.Value
@@ -54,7 +54,7 @@ func FromSpeedrobo(detail speedrobo.CardDetail) (Card, error) {
 			card.Flavor = field.Value
 		case "Artist":
 			card.Artist = field.Value
-		case "CardNumber":
+		case "CardNumber", "Card Number":
 			card.CardNumber = field.Value
 		case "Count":
 			card.Count = field.Value

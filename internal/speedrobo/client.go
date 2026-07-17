@@ -229,6 +229,107 @@ func FetchPage(
 	return result, nil
 }
 
+func FetchCardDetails(
+	client *http.Client,
+	ajaxURL string,
+	nonce string,
+	cardID string,
+) (CardDetailResponse, error) {
+	var result CardDetailResponse
+	if client == nil {
+		return result, fmt.Errorf("HTTP client cannot be nil")
+	}
+
+	if strings.TrimSpace(ajaxURL) == "" {
+		return result, fmt.Errorf("AJAX URL cannot be empty")
+	}
+
+	if strings.TrimSpace(nonce) == "" {
+		return result, fmt.Errorf("nonce cannot be empty")
+	}
+
+	if strings.TrimSpace(cardID) == "" {
+		return result, fmt.Errorf("card ID cannot be empty")
+	}
+
+	var requestBody bytes.Buffer
+
+	writer := multipart.NewWriter(&requestBody)
+
+	fields := []struct {
+		name  string
+		value string
+	}{
+		{name: "nonce", value: nonce},
+		{name: "action", value: "src_get_card"},
+		{name: "card_id", value: cardID},
+	}
+
+	for _, field := range fields {
+		if err := writer.WriteField(field.name, field.value); err != nil {
+			return result, fmt.Errorf(
+				"write multipart field %q, %w",
+				field.name,
+				err,
+			)
+		}
+	}
+
+	if err := writer.Close(); err != nil {
+		return result, fmt.Errorf("finish multipart body: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		ajaxURL,
+		&requestBody,
+	)
+	if err != nil {
+		return result, fmt.Errorf("create card-details request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("User-Agent", "caster-chronicles-deckbuilder/0.1")
+	req.Header.Set("Origin", "https://speedrobogames.com")
+	req.Header.Set("Referer", databaseURL)
+
+	res, err := client.Do(req)
+	if err != nil {
+		return result, fmt.Errorf("read card-details response: %w", err)
+	}
+
+	responseBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return result, fmt.Errorf("failed to read response body")
+	}
+
+	if err := json.Unmarshal(responseBody, &result); err != nil {
+		return result, fmt.Errorf(
+			"decode card-details response: %w; body: %s",
+			err,
+			shortBody(responseBody),
+		)
+	}
+
+	if !result.Success {
+		return result, fmt.Errorf(
+			"Speedrobo returned success=false: %s",
+			shortBody(responseBody),
+		)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return result, fmt.Errorf(
+			"unexpected HTTP status %s: %s",
+			res.Status,
+			shortBody(responseBody),
+		)
+	}
+
+	return result, nil
+}
+
 func shortBody(body []byte) string {
 	const maximumLength = 300
 

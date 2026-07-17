@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("encode normalized card database: %v", err)
 	}
-	
+
 	output = append(output, '\n')
 
 	if err := os.WriteFile("data/cards.json", output, 0644); err != nil {

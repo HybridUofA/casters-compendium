@@ -19,6 +19,7 @@ type Filter struct {
 	Elements       []string
 	Types          []string
 	Traits         []string
+	CostLevels	   []string
 	Expansions     []string
 	IncludeTesting bool
 }
@@ -158,26 +159,27 @@ func (repository *Repository) Filter(options Filter) []Card {
 		}
 
 		if len(options.Elements) > 0 &&
-			!containsNormalized(options.Elements, card.Element) {
+			!matchesAnyExact(options.Elements, card.Element) {
 			continue
 		}
 
 		if len(options.Types) > 0 &&
-			!containsNormalized(options.Types, card.Type) {
+			!matchesAnyExact(options.Types, card.Type) {
 			continue
 		}
 
 		if len(options.Traits) > 0 &&
-			!containsNormalized(options.Traits, card.Traits) {
+			!matchesAnyContained(options.Traits, card.Traits) {
+			continue
+		}
+
+		if len(options.CostLevels) > 0 &&
+			!matchesAnyExact(options.CostLevels, card.CostLevel) {
 			continue
 		}
 
 		if len(options.Expansions) > 0 &&
-			!containsNormalized(options.Expansions, card.Expansion) {
-			continue
-		}
-
-		if !options.IncludeTesting && card.IsPlaytesting {
+			!matchesAnyExact(options.Expansions, card.Expansion) {
 			continue
 		}
 
@@ -250,6 +252,16 @@ func (repository *Repository) Traits() []string {
 	return uniqueSortedValues(values)
 }
 
+func (repository *Repository) CostLevels() []string {
+	values := make([]string, 0, len(repository.cards))
+
+	for _, card := range repository.cards {
+		values = append(values, card.CostLevel)
+	}
+
+	return uniqueSortedValues(values)
+}
+
 func (repository *Repository) Expansions() []string {
 	values := make([]string, 0, len(repository.cards))
 
@@ -258,4 +270,31 @@ func (repository *Repository) Expansions() []string {
 	}
 
 	return uniqueSortedValues(values)
+}
+
+func matchesAnyExact(values []string, target string) bool {
+	normalizedTarget := normalizeText(target)
+
+	for _, value := range values {
+		if normalizeText(value) == normalizedTarget {
+			return true
+		}
+	}
+
+	return false
+}
+
+func matchesAnyContained(values []string, target string) bool {
+	normalizedTarget := normalizeText(target)
+
+	for _, value := range values {
+		if strings.Contains(
+			normalizedTarget,
+			normalizeText(value),
+		) {
+			return true
+		}
+	}
+
+	return false
 }
