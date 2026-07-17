@@ -29,6 +29,68 @@ const (
 	SideZone Zone = "side"
 )
 
+const MaxCopiesPerCard = 4
+
+func normalizeCardName(name string) string {
+	return strings.ToLower(strings.TrimSpace(name))
+}
+
+func (deck *Deck) CopiesOfCard(
+	target cards.Card,
+	repository *cards.Repository,
+) int {
+	total := 0
+	targetName := normalizeCardName(target.Name)
+
+	countEntries := func(entries []DeckEntry) {
+		for _, entry := range entries {
+			// Exact database record match.
+			if entry.CardID == target.ID {
+				total += entry.Quantity
+				continue
+			}
+
+			// Check alternate printings by resolving their IDs.
+			entryCard, found := repository.FindByID(
+				entry.CardID,
+			)
+			if !found {
+				continue
+			}
+
+			if normalizeCardName(entryCard.Name) ==
+				targetName {
+				total += entry.Quantity
+			}
+		}
+	}
+
+	countEntries(deck.MainDeck)
+	countEntries(deck.SideDeck)
+
+	return total
+}
+
+func (deck *Deck) ValidateCopyLimits() error {
+	copyCounts := make(map[string]int)
+
+	for _, entry := range deck.MainDeck {
+		copyCounts[entry.CardID] += entry.Quantity
+	}
+
+	for _, entry := range deck.SideDeck {
+		copyCounts[entry.CardID] += entry.Quantity
+	}
+
+	for cardID, quantity := range copyCounts {
+		if quantity > MaxCopiesPerCard {
+			return fmt.Errorf("card %s has %d copies; maximum is 4", cardID, quantity)
+		}
+	}
+
+	return nil
+}
+
 func (deck *Deck) QuantityOf(cardID string) int {
 	cardID = strings.TrimSpace(cardID)
 
@@ -86,6 +148,47 @@ func (deck *Deck) AddCard(
 	})
 
 	return nil
+}
+
+func (deck *Deck) AddCardChecked(
+	zone Zone,
+	card cards.Card,
+	quantity int,
+	repository *cards.Repository,
+) (bool, error) {
+	if quantity <= 0 {
+		return false, fmt.Errorf(
+			"quantity must be greater than zero",
+		)
+	}
+
+	currentCopies := deck.CopiesOfCard(
+		card,
+		repository,
+	)
+
+	remainingCopies := MaxCopiesPerCard - currentCopies
+
+	// Already at the limit: silently do nothing.
+	if remainingCopies <= 0 {
+		return false, nil
+	}
+
+	// Prevent bulk additions from exceeding the limit.
+	if quantity > remainingCopies {
+		quantity = remainingCopies
+	}
+
+	err := deck.AddCard(
+		zone,
+		card.ID,
+		quantity,
+	)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (deck *Deck) SetQuantity(

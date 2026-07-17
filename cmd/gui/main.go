@@ -251,76 +251,92 @@ func main() {
 		mainDeckGrid.RemoveAll()
 		sideDeckGrid.RemoveAll()
 
+		/*
+			Main deck
+		*/
 		for _, entry := range deck.MainDeck {
 			card, found := repository.FindByID(entry.CardID)
 			if !found {
 				continue
 			}
 
-			currentCard := card
+			// Create one thumbnail for every physical copy.
+			for copyNumber := 0; copyNumber < entry.Quantity; copyNumber++ {
+				currentCard := card
 
-			tile := deckgui.NewCardTile(
-				currentCard,
+				tile := deckgui.NewCardTile(
+					currentCard,
 
-				func(selected cards.Card) {
-					showCard(selected)
-				},
+					// Left-click: show the card preview.
+					func(selected cards.Card) {
+						showCard(selected)
+					},
 
-				func(selected cards.Card, _ bool) {
-					removeErr := deck.RemoveCard(
-						decks.MainZone,
-						selected.ID,
-						1,
-					)
-					if removeErr != nil {
-						dialog.ShowError(
-							removeErr,
-							window,
+					// Right-click: remove one copy.
+					func(selected cards.Card, _ bool) {
+						removeErr := deck.RemoveCard(
+							decks.MainZone,
+							selected.ID,
+							1,
 						)
-						return
-					}
+						if removeErr != nil {
+							dialog.ShowError(
+								removeErr,
+								window,
+							)
+							return
+						}
 
-					refreshDeckDisplay()
-				},
-			)
+						refreshDeckDisplay()
+					},
+				)
 
-			mainDeckGrid.Add(tile)
+				mainDeckGrid.Add(tile)
+			}
 		}
 
+		/*
+			Side deck
+		*/
 		for _, entry := range deck.SideDeck {
 			card, found := repository.FindByID(entry.CardID)
 			if !found {
 				continue
 			}
 
-			currentCard := card
+			// Create one thumbnail for every physical copy.
+			for copyNumber := 0; copyNumber < entry.Quantity; copyNumber++ {
+				currentCard := card
 
-			tile := deckgui.NewCardTile(
-				currentCard,
+				tile := deckgui.NewCardTile(
+					currentCard,
 
-				func(selected cards.Card) {
-					showCard(selected)
-				},
+					// Left-click: show the card preview.
+					func(selected cards.Card) {
+						showCard(selected)
+					},
 
-				func(selected cards.Card, _ bool) {
-					removeErr := deck.RemoveCard(
-						decks.SideZone,
-						selected.ID,
-						1,
-					)
-					if removeErr != nil {
-						dialog.ShowError(
-							removeErr,
-							window,
+					// Right-click: remove one copy.
+					func(selected cards.Card, _ bool) {
+						removeErr := deck.RemoveCard(
+							decks.SideZone,
+							selected.ID,
+							1,
 						)
-						return
-					}
+						if removeErr != nil {
+							dialog.ShowError(
+								removeErr,
+								window,
+							)
+							return
+						}
 
-					refreshDeckDisplay()
-				},
-			)
+						refreshDeckDisplay()
+					},
+				)
 
-			sideDeckGrid.Add(tile)
+				sideDeckGrid.Add(tile)
+			}
 		}
 
 		mainDeckGrid.Refresh()
@@ -509,16 +525,18 @@ func main() {
 						zone = decks.SideZone
 					}
 
-					addErr := deck.AddCard(
+					added, addErr := deck.AddCardChecked(
 						zone,
-						selected.ID,
+						selected,
 						1,
+						repository,
 					)
 					if addErr != nil {
-						dialog.ShowError(
-							addErr,
-							window,
-						)
+						dialog.ShowError(addErr, window)
+						return
+					}
+
+					if !added {
 						return
 					}
 
@@ -607,7 +625,7 @@ func main() {
 			}
 
 			updatingFilters = true
-			
+
 			searchEntry.SetText("")
 			costEntry.SetText("")
 
