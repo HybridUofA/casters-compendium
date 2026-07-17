@@ -27,9 +27,10 @@ type Zone string
 const (
 	MainZone Zone = "main"
 	SideZone Zone = "side"
+	MaxCopiesPerCard = 4
+	MaxMainDeckCards = 50
+	MaxSideDeckCards = 12
 )
-
-const MaxCopiesPerCard = 4
 
 func normalizeCardName(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
@@ -156,6 +157,7 @@ func (deck *Deck) AddCardChecked(
 	quantity int,
 	repository *cards.Repository,
 ) (bool, error) {
+	deck.EnsureOrder()
 	if quantity <= 0 {
 		return false, fmt.Errorf(
 			"quantity must be greater than zero",
@@ -174,6 +176,19 @@ func (deck *Deck) AddCardChecked(
 		return false, nil
 	}
 
+	var zoneSpace int
+	switch zone {
+	case MainZone:
+		zoneSpace = MaxMainDeckCards - deck.MainTotal()
+	case SideZone:
+		zoneSpace = MaxSideDeckCards - deck.SideTotal()
+	default:
+		return false, fmt.Errorf("unknown deck zone %q", zone)
+	}
+
+	if zoneSpace <= 0 {
+		return false, nil
+	}
 	// Prevent bulk additions from exceeding the limit.
 	if quantity > remainingCopies {
 		quantity = remainingCopies
@@ -188,7 +203,54 @@ func (deck *Deck) AddCardChecked(
 		return false, err
 	}
 
+	order, err := deck.orderForZone(zone)
+	if err != nil {
+		return false, err
+	}
+
+	for copyNumber := 0;
+	copyNumber < quantity;
+	copyNumber++ {
+		*order = append(*order, card.ID)
+	}
+
 	return true, nil
+}
+
+func (deck *Deck) RemoveCardAt(
+	zone Zone,
+	index int,
+) error {
+	deck.EnsureOrder()
+
+	order, err := deck.orderForZone(zone)
+	if err != nil {
+		return err
+	}
+
+	if index < 0 || index >= len(*order) {
+		return fmt.Errorf(
+			"card index %d is outside the deck",
+			index,
+		)
+	}
+
+	cardID := (*order)[index]
+
+	if err := deck.RemoveCard(
+		zone,
+		cardID,
+		1,
+	); err != nil {
+		return err
+	}
+
+	*order = append(
+		(*order)[:index],
+		(*order)[index+1:]...,
+	)
+
+	return nil
 }
 
 func (deck *Deck) SetQuantity(
@@ -345,4 +407,194 @@ func WriteDeckList(
 		fmt.Fprintf(writer, "%dx %s [%s]\n", entry.Quantity, cardData.Name, cardData.Expansion)
 	}
 	return nil
+}
+
+func (deck *Deck) EnsureOrder() {
+	if len(deck.MainOrder) != deck.MainTotal() {
+		deck.MainOrder = make(
+			[]string,
+			0,
+			deck.MainTotal(),
+		)
+
+		for _, entry := range deck.MainDeck {
+			for copyNumber := 0;
+				copyNumber < entry.Quantity;
+				copyNumber++ {
+				deck.MainOrder = append(
+					deck.MainOrder,
+					entry.CardID,
+				)
+			}
+		}
+	}
+
+	if len(deck.SideOrder) != deck.SideTotal() {
+		deck.SideOrder = make(
+			[]string,
+			0,
+			deck.SideTotal(),
+		)
+
+		for _, entry := range deck.SideDeck {
+			for copyNumber := 0;
+				copyNumber < entry.Quantity;
+				copyNumber++ {
+				deck.SideOrder = append(
+					deck.SideOrder,
+					entry.CardID,
+				)
+			}
+		}
+	}
+}
+
+func (deck *Deck) orderForZone(
+	zone Zone,
+) (*[]string, error) {
+	switch zone {
+	case MainZone:
+		return &deck.MainOrder, nil
+
+	case SideZone:
+		return &deck.SideOrder, nil
+
+	default:
+		return nil, fmt.Errorf(
+			"unknown deck zone: %v",
+			zone,
+		)
+	}
+}
+
+func insertCardID(
+	cardIDs []string,
+	index int,
+	cardID string,
+) []string {
+	if index < 0 {
+		index = 0
+	}
+
+	if index > len(cardIDs) {
+		index = len(cardIDs)
+	}
+
+	cardIDs = append(cardIDs, "")
+
+	copy(
+		cardIDs[index+1:],
+		cardIDs[index:],
+	)
+
+	cardIDs[index] = cardID
+
+	return cardIDs
+}
+
+func (deck *Deck) MoveOrderedCard(
+	fromZone Zone,
+	fromIndex int,
+	toZone Zone,
+	toIndex int,
+) (bool, error) {
+	deck.EnsureOrder()
+
+	source, err := deck.orderForZone(fromZone)
+	if err != nil {
+		return false, err
+	}
+
+	destination, err := deck.orderForZone(toZone)
+	if err != nil {
+		return false, err
+	}
+
+	if fromIndex < 0 ||
+		fromIndex >= len(*source) {
+		return false, fmt.Errorf(
+			"source index %d is outside the deck",
+			fromIndex,
+		)
+	}
+
+	/*
+		Reordering within the same zone.
+	*/
+	if fromZone == toZone {
+		cardID := (*source)[fromIndex]
+
+		updated := append(
+			(*source)[:fromIndex],
+			(*source)[fromIndex+1:]...,
+		)
+
+		// The removal shifted later positions left.
+		if toIndex > fromIndex {
+			toIndex--
+		}
+
+		updated = insertCardID(
+			updated,
+			toIndex,
+			cardID,
+		)
+
+		*source = updated
+
+		return true, nil
+	}
+
+	/*
+		Moving between zones.
+	*/
+	switch toZone {
+	case MainZone:
+		if deck.MainTotal() >= MaxMainDeckCards {
+			return false, nil
+		}
+
+	case SideZone:
+		if deck.SideTotal() >= MaxSideDeckCards {
+			return false, nil
+		}
+	}
+
+	cardID := (*source)[fromIndex]
+
+	if err := deck.RemoveCard(
+		fromZone,
+		cardID,
+		1,
+	); err != nil {
+		return false, err
+	}
+
+	if err := deck.AddCard(
+		toZone,
+		cardID,
+		1,
+	); err != nil {
+		// Restore the source zone if the move fails.
+		_ = deck.AddCard(
+			fromZone,
+			cardID,
+			1,
+		)
+
+		return false, err
+	}
+
+	*source = append(
+		(*source)[:fromIndex],
+		(*source)[fromIndex+1:]...,
+	)
+
+	*destination = insertCardID(
+		*destination,
+		toIndex,
+		cardID,
+	)
+
+	return true, nil
 }

@@ -68,10 +68,61 @@ func optionalValue(value string) []string {
 	return []string{value}
 }
 
+func objectContainsPosition(
+	object fyne.CanvasObject,
+	position fyne.Position,
+) bool {
+	origin :=
+		fyne.CurrentApp().
+			Driver().
+			AbsolutePositionForObject(object)
+
+	size := object.Size()
+
+	return position.X >= origin.X &&
+		position.X <= origin.X+size.Width &&
+		position.Y >= origin.Y &&
+		position.Y <= origin.Y+size.Height
+}
+
+func deckInsertionIndex(
+	grid *fyne.Container,
+	absolutePosition fyne.Position,
+) int {
+	origin :=
+		fyne.CurrentApp().
+			Driver().
+			AbsolutePositionForObject(grid)
+
+	localX := absolutePosition.X - origin.X
+	localY := absolutePosition.Y - origin.Y
+
+	for index, object := range grid.Objects {
+		position := object.Position()
+		size := object.Size()
+
+		rightHalfBoundary :=
+			position.X + size.Width/2
+
+		rowBottom :=
+			position.Y + size.Height
+
+		if localY < rowBottom &&
+			localX < rightHalfBoundary {
+			return index
+		}
+	}
+
+	return len(grid.Objects)
+}
+
 func main() {
 
 	const previewWidth float32 = 160
 	const previewHeight float32 = 224
+	mainDeckTileMinSize := fyne.NewSize(48, 67)
+	sideDeckTileMinSize := fyne.NewSize(32,45)
+
 	repository, err := cards.LoadFile("data/cards.json")
 	if err != nil {
 		log.Fatal(err)
@@ -224,13 +275,18 @@ func main() {
 		}),
 	)
 
-	mainDeckGrid := container.NewGridWrap(
-		fyne.NewSize(130, 182),
+	const cardHeightToWidth float32 = 182.0 / 130.0
+
+	mainDeckGrid := container.New(
+		&deckgui.CardGridLayout{
+			Columns:			10,
+			HeightToWidth:		cardHeightToWidth,
+			Padding:			6,
+			MinimumCellWidth:	44,
+		},
 	)
 
-	sideDeckGrid := container.NewGridWrap(
-		fyne.NewSize(130, 182),
-	)
+	sideDeckGrid := container.NewGridWithColumns(decks.MaxSideDeckCards)
 
 	mainDeckLabel := widget.NewLabel(
 		"Main Deck (0)",
@@ -247,127 +303,194 @@ func main() {
 
 	var refreshDeckDisplay func()
 
+	var handleDeckDrop func(
+		decks.Zone,
+		int,
+		fyne.Position,
+	)
+
+	var mainDeckPanel *fyne.Container
+	var sideDeckPanel *fyne.Container
+
 	refreshDeckDisplay = func() {
+		// The display is rebuilt each time, so remove the old tiles first.
 		mainDeckGrid.RemoveAll()
 		sideDeckGrid.RemoveAll()
+
+		deck.EnsureOrder()
 
 		/*
 			Main deck
 		*/
-		for _, entry := range deck.MainDeck {
-			card, found := repository.FindByID(entry.CardID)
+		for index, cardID := range deck.MainOrder {
+			currentIndex := index
+
+			card, found := repository.FindByID(cardID)
 			if !found {
 				continue
 			}
 
-			// Create one thumbnail for every physical copy.
-			for copyNumber := 0; copyNumber < entry.Quantity; copyNumber++ {
-				currentCard := card
+			currentCard := card
 
-				tile := deckgui.NewCardTile(
-					currentCard,
+			tile := deckgui.NewCardTileSized(
+				currentCard,
+				mainDeckTileMinSize,
 
-					// Left-click: show the card preview.
-					func(selected cards.Card) {
-						showCard(selected)
-					},
+				func(selected cards.Card) {
+					showCard(selected)
+				},
 
-					// Right-click: remove one copy.
-					func(selected cards.Card, _ bool) {
-						removeErr := deck.RemoveCard(
-							decks.MainZone,
-							selected.ID,
-							1,
-						)
-						if removeErr != nil {
-							dialog.ShowError(
-								removeErr,
-								window,
-							)
-							return
-						}
+				func(_ cards.Card, _ bool) {
+					err := deck.RemoveCardAt(
+						decks.MainZone,
+						currentIndex,
+					)
+					if err != nil {
+						dialog.ShowError(err, window)
+						return
+					}
 
-						refreshDeckDisplay()
-					},
-				)
+					refreshDeckDisplay()
+				},
+			)
 
-				mainDeckGrid.Add(tile)
-			}
+			tile.EnableDeckDrag(
+				decks.MainZone,
+				currentIndex,
+				handleDeckDrop,
+			)
+
+			mainDeckGrid.Add(tile)
 		}
 
 		/*
 			Side deck
 		*/
-		for _, entry := range deck.SideDeck {
-			card, found := repository.FindByID(entry.CardID)
+		for index, cardID := range deck.SideOrder {
+			currentIndex := index
+
+			card, found := repository.FindByID(cardID)
 			if !found {
 				continue
 			}
 
-			// Create one thumbnail for every physical copy.
-			for copyNumber := 0; copyNumber < entry.Quantity; copyNumber++ {
-				currentCard := card
+			currentCard := card
 
-				tile := deckgui.NewCardTile(
-					currentCard,
+			tile := deckgui.NewCardTileSized(
+				currentCard,
+				sideDeckTileMinSize,
 
-					// Left-click: show the card preview.
-					func(selected cards.Card) {
-						showCard(selected)
-					},
+				func(selected cards.Card) {
+					showCard(selected)
+				},
 
-					// Right-click: remove one copy.
-					func(selected cards.Card, _ bool) {
-						removeErr := deck.RemoveCard(
-							decks.SideZone,
-							selected.ID,
-							1,
-						)
-						if removeErr != nil {
-							dialog.ShowError(
-								removeErr,
-								window,
-							)
-							return
-						}
+				func(_ cards.Card, _ bool) {
+					err := deck.RemoveCardAt(
+						decks.SideZone,
+						currentIndex,
+					)
+					if err != nil {
+						dialog.ShowError(err, window)
+						return
+					}
 
-						refreshDeckDisplay()
-					},
-				)
+					refreshDeckDisplay()
+				},
+			)
 
-				sideDeckGrid.Add(tile)
-			}
+			tile.EnableDeckDrag(
+				decks.SideZone,
+				currentIndex,
+				handleDeckDrop,
+			)
+
+			sideDeckGrid.Add(tile)
 		}
 
 		mainDeckGrid.Refresh()
 		sideDeckGrid.Refresh()
 
 		mainDeckLabel.SetText(fmt.Sprintf(
-			"Main Deck (%d)",
+			"Main Deck (%d/%d)",
 			deck.MainTotal(),
+			decks.MaxMainDeckCards,
 		))
 
 		sideDeckLabel.SetText(fmt.Sprintf(
-			"Side Deck (%d)",
+			"Side Deck (%d/%d)",
 			deck.SideTotal(),
+			decks.MaxSideDeckCards,
 		))
 	}
 
-	mainDeckPanel := container.NewBorder(
+	mainDeckScroll := container.NewVScroll(
+		mainDeckGrid,
+	)
+
+	mainDeckPanel = container.NewBorder(
 		mainDeckLabel,
 		nil,
 		nil,
 		nil,
-		container.NewVScroll(mainDeckGrid),
+		mainDeckScroll,
 	)
 
-	sideDeckPanel := container.NewBorder(
+	sideDeckPanel = container.NewBorder(
 		sideDeckLabel,
 		nil,
 		nil,
 		nil,
-		container.NewVScroll(sideDeckGrid),
+		sideDeckGrid,
 	)
+
+	handleDeckDrop = func(
+		fromZone decks.Zone,
+		fromIndex int,
+		position fyne.Position,
+	) {
+		var toZone decks.Zone
+		var destinationGrid *fyne.Container
+
+		switch {
+		case objectContainsPosition(
+			mainDeckPanel,
+			position,
+		):
+			toZone = decks.MainZone
+			destinationGrid = mainDeckGrid
+
+		case objectContainsPosition(
+			sideDeckPanel,
+			position,
+		):
+			toZone = decks.SideZone
+			destinationGrid = sideDeckGrid
+
+		default:
+			// Dropped outside both deck areas.
+			return
+		}
+
+		toIndex := deckInsertionIndex(
+			destinationGrid,
+			position,
+		)
+
+		moved, err := deck.MoveOrderedCard(
+			fromZone,
+			fromIndex,
+			toZone,
+			toIndex,
+		)
+		if err != nil {
+			dialog.ShowError(err, window)
+			return
+		}
+
+		if moved {
+			refreshDeckDisplay()
+		}
+	}
 
 	deckSplit := container.NewVSplit(
 		mainDeckPanel,
@@ -486,6 +609,8 @@ func main() {
 		}
 
 		matches := repository.Filter(filter)
+
+		cards.SortForSearch(matches)
 
 		resultCountLabel.SetText(fmt.Sprintf(
 			"%d matching card(s)",

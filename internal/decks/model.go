@@ -16,4 +16,6 @@ type Deck struct {
 	Name          string      `json:"name"`
 	MainDeck      []DeckEntry `json:"main_deck"`
 	SideDeck      []DeckEntry `json:"side_deck"`
+	MainOrder	  []string    `json:"main_order,omitempty"`
+	SideOrder	  []string    `json:"side_order,omitempty"`
 }
