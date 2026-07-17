@@ -57,7 +57,7 @@ artifacts for:
 - Linux x64
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
-such as `v0.1.0` builds the same packages and publishes them as GitHub Release
+such as `v0.1.1` builds the same packages and publishes them as GitHub Release
 assets. The macOS and Windows packages are currently unsigned; operating-system
 security prompts may therefore require the user to explicitly allow the first
 launch. Code signing can be added later when the appropriate Apple Developer and

@@ -12,7 +12,7 @@ permissions:
 env:
   APP_NAME: "Caster's Compendium"
   APP_ID: io.github.hybriduofa.casterdeckbuilder
-  APP_VERSION: 0.1.0
+  APP_VERSION: 0.1.1
   APP_BUILD: 1
 
 jobs:
@@ -54,7 +54,7 @@ jobs:
         if: matrix.target == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install --yes gcc libgl1-mesa-dev xorg-dev libxkbcommon-dev
+          sudo apt-get install --yes gcc libgl1-mesa-dev libwayland-dev xorg-dev libxkbcommon-dev
 
       - name: Run tests
         run: go test -tags migrated_fynedo ./...
