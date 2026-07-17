@@ -1,0 +1,139 @@
+name: Package desktop applications
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+env:
+  APP_NAME: "Caster's Compendium"
+  APP_ID: io.github.hybriduofa.casterdeckbuilder
+  APP_VERSION: 0.1.0
+  APP_BUILD: 1
+
+jobs:
+  package:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux x64
+            runner: ubuntu-24.04
+            target: linux
+            artifact: CastersCompendium-linux-amd64
+          - label: Windows x64
+            runner: windows-2025
+            target: windows
+            artifact: CastersCompendium-windows-amd64
+          - label: macOS Intel
+            runner: macos-15-intel
+            target: darwin-intel
+            artifact: CastersCompendium-macos-intel
+          - label: macOS Apple Silicon
+            runner: macos-15
+            target: darwin-arm64
+            artifact: CastersCompendium-macos-apple-silicon
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Install Linux build dependencies
+        if: matrix.target == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gcc libgl1-mesa-dev xorg-dev libxkbcommon-dev
+
+      - name: Run tests
+        run: go test -tags migrated_fynedo ./...
+
+      - name: Package Linux application
+        if: matrix.target == 'linux'
+        shell: bash
+        run: |
+          mkdir -p dist
+          go build -tags migrated_fynedo -trimpath -ldflags="-s -w" -o dist/CastersCompendium ./cmd/gui
+          go run fyne.io/fyne/v2/cmd/fyne@v2.8.0 package \
+            --os linux \
+            --executable "$PWD/dist/CastersCompendium" \
+            --name "$APP_NAME" \
+            --icon "$PWD/data/images/MTD-back-ver01.png" \
+            --appID "$APP_ID" \
+            --appVersion "$APP_VERSION" \
+            --appBuild "$APP_BUILD" \
+            --release
+          mv "$APP_NAME.tar.xz" "dist/${{ matrix.artifact }}.tar.xz"
+
+      - name: Package Windows application
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $icon = (Resolve-Path "data/images/MTD-back-ver01.png").Path
+          go run fyne.io/fyne/v2/cmd/fyne@v2.8.0 package `
+            --os windows `
+            --sourceDir ./cmd/gui `
+            --name "$env:APP_NAME" `
+            --icon "$icon" `
+            --appID "$env:APP_ID" `
+            --appVersion "$env:APP_VERSION" `
+            --appBuild "$env:APP_BUILD" `
+            --tags migrated_fynedo `
+            --release
+          Move-Item "cmd/gui/$env:APP_NAME.exe" "dist/${{ matrix.artifact }}.exe"
+
+      - name: Package macOS application
+        if: startsWith(matrix.target, 'darwin-')
+        shell: bash
+        run: |
+          mkdir -p dist
+          go build -tags migrated_fynedo -trimpath -ldflags="-s -w" -o dist/CastersCompendium ./cmd/gui
+          go run fyne.io/fyne/v2/cmd/fyne@v2.8.0 package \
+            --os darwin \
+            --executable "$PWD/dist/CastersCompendium" \
+            --name "$APP_NAME" \
+            --icon "$PWD/data/images/MTD-back-ver01.png" \
+            --appID "$APP_ID" \
+            --appVersion "$APP_VERSION" \
+            --appBuild "$APP_BUILD" \
+            --release
+          ditto -c -k --sequesterRsrc --keepParent "$APP_NAME.app" "dist/${{ matrix.artifact }}.zip"
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}.*
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    if: github.ref_type == 'tag'
+    needs: package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download packaged applications
+        uses: actions/download-artifact@v5
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release create "$GITHUB_REF_NAME" release-assets/* --verify-tag --generate-notes

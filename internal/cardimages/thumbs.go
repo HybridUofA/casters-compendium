@@ -15,11 +15,13 @@ import (
 )
 
 const (
-	ThumbnailDirectory = "data/thumbnails"
-	ThumbnailWidth     = 140
-	ThumbnailHeight    = 196
+	ThumbnailWidth  = 140
+	ThumbnailHeight = 196
 )
 
+var ThumbnailDirectory = "data/thumbnails"
+
+// FindThumbnail returns the JPEG thumbnail path for cardID when it exists.
 func FindThumbnail(cardID string) (string, bool) {
 	cardID = sanitizeID(cardID)
 	if cardID == "" {
@@ -36,6 +38,7 @@ func FindThumbnail(cardID string) (string, bool) {
 	return path, true
 }
 
+// CreateThumbnail scales a cached full card image into the configured thumbnail directory.
 func CreateThumbnail(cardID string) (string, error) {
 	cardID = sanitizeID(cardID)
 	if cardID == "" {

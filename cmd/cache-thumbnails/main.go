@@ -8,6 +8,7 @@ import (
 	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
 )
 
+// main creates thumbnails for every card image that does not already have one.
 func main() {
 	repository, err := cards.LoadFile("data/cards.json")
 	if err != nil {

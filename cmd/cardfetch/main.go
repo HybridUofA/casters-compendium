@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+// main exercises local card loading and lookup for command-line diagnostics.
 func main() {
 
 	repository, err := cards.LoadFile("data/cards.json")

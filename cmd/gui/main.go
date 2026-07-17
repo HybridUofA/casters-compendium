@@ -3,15 +3,14 @@ package main
 import (
 	"fmt"
 	"image/color"
-	"log"
 	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/HybridUofA/caster-deckbuilder/internal/cardimages"
@@ -20,6 +19,7 @@ import (
 	deckgui "github.com/HybridUofA/caster-deckbuilder/internal/gui"
 )
 
+// checkedValues returns option names whose corresponding checkboxes are selected.
 func checkedValues(
 	options []string,
 	checks map[string]*widget.Check,
@@ -38,6 +38,7 @@ func checkedValues(
 
 const anyOption = "- Any -"
 
+// withAnyOption prepends the shared no-filter choice to a select-option list.
 func withAnyOption(options []string) []string {
 	result := make(
 		[]string,
@@ -50,6 +51,7 @@ func withAnyOption(options []string) []string {
 	return result
 }
 
+// optionalSelection converts one meaningful select value into a filter slice.
 func optionalSelection(value string) []string {
 	value = strings.TrimSpace(value)
 	if value == "" || value == anyOption {
@@ -58,6 +60,7 @@ func optionalSelection(value string) []string {
 	return []string{value}
 }
 
+// optionalValue converts nonblank entry text into a filter slice.
 func optionalValue(value string) []string {
 	value = strings.TrimSpace(value)
 
@@ -68,7 +71,58 @@ func optionalValue(value string) []string {
 	return []string{value}
 }
 
-func main() {
+// showDeckImageExportDialog saves either deck zone as a Tabletop Simulator PNG sheet.
+func showDeckImageExportDialog(
+	window fyne.Window,
+	deck *decks.Deck,
+	sideboard bool,
+) {
+	writeImage := decks.WriteDeckImage
+	fileSuffix := ""
+	if sideboard {
+		writeImage = decks.WriteSideboardImage
+		fileSuffix = " - Sideboard"
+	}
+
+	exportDialog := dialog.NewFileSave(
+		func(writer fyne.URIWriteCloser, saveErr error) {
+			if saveErr != nil {
+				dialog.ShowError(saveErr, window)
+				return
+			}
+			if writer == nil {
+				return
+			}
+
+			exportErr := writeImage(
+				writer,
+				deck,
+				cardimages.DefaultDirectory,
+			)
+			closeErr := writer.Close()
+			if exportErr != nil {
+				dialog.ShowError(exportErr, window)
+				return
+			}
+			if closeErr != nil {
+				dialog.ShowError(closeErr, window)
+			}
+		},
+		window,
+	)
+	exportDialog.SetFilter(
+		storage.NewExtensionFileFilter([]string{".png"}),
+	)
+	exportDialog.SetFileName(safeDeckFileName(deck.Name) + fileSuffix + ".png")
+	exportDialog.Show()
+}
+
+// showApplication builds the main menu and deck editor around the active card repository.
+func showApplication(
+	window fyne.Window,
+	paths applicationPaths,
+	repository *cards.Repository,
+) {
 
 	const previewWidth float32 = 160
 	const previewHeight float32 = 224
@@ -77,24 +131,18 @@ func main() {
 
 	dragLayer := container.NewWithoutLayout()
 
-	repository, err := cards.LoadFile("data/cards.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	deck, err := decks.NewDeck("New Deck")
 	if err != nil {
-		log.Fatal(err)
+		dialog.ShowError(err, window)
+		return
 	}
-
-	guiApp := app.NewWithID(
-		"io.github.hybriduofa.casterdeckbuilder",
-	)
-
-	window := guiApp.NewWindow(
-		"Caster Chronicles Deckbuilder",
-	)
-	window.Resize(fyne.NewSize(1400, 850))
+	var currentDeckURI fyne.URI
+	var showMainMenu func()
+	var makeNewDeck func()
+	var loadDeck func()
+	var saveDeck func()
+	var saveDeckAs func()
+	var refreshDeckDisplay func()
 
 	/*
 		Left panel: selected card preview and information
@@ -211,21 +259,55 @@ func main() {
 		Center panel: deck controls and deck zones
 	*/
 
-	deckControls := container.NewHBox(
+	deckControls := container.NewGridWithColumns(
+		5,
 		widget.NewButton("New", func() {
-			fmt.Println("New deck is not implemented yet.")
+			makeNewDeck()
 		}),
 		widget.NewButton("Open", func() {
-			fmt.Println("Open deck is not implemented yet.")
+			loadDeck()
 		}),
 		widget.NewButton("Save", func() {
-			fmt.Println("Save deck is not implemented yet.")
+			saveDeck()
 		}),
 		widget.NewButton("Save As", func() {
-			fmt.Println("Save As is not implemented yet.")
+			saveDeckAs()
+		}),
+		widget.NewButton("Export Main", func() {
+			showDeckImageExportDialog(window, deck, false)
+		}),
+		widget.NewButton("Export Sideboard", func() {
+			showDeckImageExportDialog(window, deck, true)
+		}),
+		widget.NewButton("Export Decklist", func() {
+			showDecklistSaveDialog(window, deck, repository)
 		}),
 		widget.NewButton("Rename", func() {
-			fmt.Println("Rename deck is not implemented yet.")
+			nameEntry := widget.NewEntry()
+			nameEntry.SetText(deck.Name)
+			dialog.ShowForm(
+				"Rename Deck",
+				"Rename",
+				"Cancel",
+				[]*widget.FormItem{widget.NewFormItem("Deck Name", nameEntry)},
+				func(confirmed bool) {
+					if !confirmed || strings.TrimSpace(nameEntry.Text) == "" {
+						return
+					}
+					deck.Name = strings.TrimSpace(nameEntry.Text)
+				},
+				window,
+			)
+		}),
+		widget.NewButton("Sort Deck", func() {
+			if err := deck.Sort(repository); err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
+			refreshDeckDisplay()
+		}),
+		widget.NewButton("Main Menu", func() {
+			showMainMenu()
 		}),
 	)
 
@@ -240,7 +322,14 @@ func main() {
 		},
 	)
 
-	sideDeckGrid := container.NewGridWithColumns(decks.MaxSideDeckCards)
+	sideDeckGrid := container.New(
+		&deckgui.CardGridLayout{
+			Columns:          decks.MaxSideDeckCards,
+			HeightToWidth:    cardHeightToWidth,
+			Padding:          4,
+			MinimumCellWidth: 32,
+		},
+	)
 
 	mainDeckLabel := widget.NewLabel(
 		"Main Deck (0)",
@@ -253,16 +342,12 @@ func main() {
 	var mainDeckPanel *fyne.Container
 	var sideDeckPanel *fyne.Container
 
-	mainDeckScroll := container.NewVScroll(
-		mainDeckGrid,
-	)
-
 	mainDeckPanel = container.NewBorder(
 		mainDeckLabel,
 		nil,
 		nil,
 		nil,
-		mainDeckScroll,
+		mainDeckGrid,
 	)
 
 	sideDeckPanel = container.NewBorder(
@@ -274,7 +359,6 @@ func main() {
 	)
 
 	var dragController *deckgui.CardDragController
-	var refreshDeckDisplay func()
 
 	dragController = deckgui.NewCardDragController(dragLayer, mainDeckPanel, sideDeckPanel, mainDeckGrid, sideDeckGrid, func(source deckgui.CardDragSource, target *deckgui.CardDropTarget) {
 		defer refreshDeckDisplay()
@@ -771,9 +855,54 @@ func main() {
 
 	refreshDeckDisplay()
 
-	window.SetContent(
-		container.NewStack(root, dragLayer),
-	)
+	editorContent := container.NewStack(root, dragLayer)
+	showEditor := func() {
+		refreshDeckDisplay()
+		window.SetTitle(deck.Name + " — " + applicationName)
+		window.SetContent(editorContent)
+	}
+
+	makeNewDeck = func() {
+		showNewDeckDialog(window, func(created *decks.Deck) {
+			*deck = *created
+			currentDeckURI = nil
+			showEditor()
+		})
+	}
+	loadDeck = func() {
+		showOpenDeckDialog(window, repository, func(opened *decks.Deck, uri fyne.URI) {
+			*deck = *opened
+			if strings.EqualFold(uri.Extension(), ".json") {
+				currentDeckURI = uri
+			} else {
+				currentDeckURI = nil
+			}
+			showEditor()
+		})
+	}
+	saveDeckAs = func() {
+		showSaveDeckDialog(window, deck, func(uri fyne.URI) {
+			currentDeckURI = uri
+		})
+	}
+	saveDeck = func() {
+		if currentDeckURI == nil {
+			saveDeckAs()
+			return
+		}
+		saveDeckToURI(window, currentDeckURI, deck)
+	}
+	showMainMenu = func() {
+		window.SetTitle(applicationName)
+		window.SetContent(buildMainMenu(window, mainMenuActions{
+			NewDeck:          makeNewDeck,
+			LoadDeck:         loadDeck,
+			GenerateImage:    func() { showGenerateImageFromDecklistDialog(window, repository) },
+			GenerateDecklist: func() { showGenerateDecklistDialog(window, repository) },
+			UpdateDatabase:   func() { confirmManualCardDatabaseUpdate(window, paths, repository) },
+		}))
+	}
+
 	runSearch()
-	window.ShowAndRun()
+	showMainMenu()
 }

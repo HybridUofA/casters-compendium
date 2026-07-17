@@ -1,0 +1,15 @@
+[Details]
+Name = "Caster's Compendium"
+ID = "io.github.hybriduofa.casterdeckbuilder"
+Version = "0.1.0"
+Build = 1
+Icon = "data/images/MTD-back-ver01.png"
+
+[Migrations]
+fyneDo = true
+
+[LinuxAndBSD]
+GenericName = "Card Deck Builder"
+Categories = ["Game"]
+Comment = "Build Caster Chronicles decks and export them for Tabletop Simulator"
+Keywords = ["cards", "deck", "deckbuilder", "tabletop"]

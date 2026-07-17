@@ -18,6 +18,7 @@ const (
 	databaseURL = "https://speedrobogames.com/card-database"
 )
 
+// NewClient constructs the shared timeout and cookie behavior required by Speedrobo endpoints.
 func NewClient() (*http.Client, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -32,6 +33,7 @@ func NewClient() (*http.Client, error) {
 	return client, nil
 }
 
+// ExtractPageConfig parses the AJAX endpoint and nonce embedded in the card-database page.
 func ExtractPageConfig(pageHTML []byte) (PageConfig, error) {
 	var config PageConfig
 
@@ -85,6 +87,7 @@ func ExtractPageConfig(pageHTML []byte) (PageConfig, error) {
 	return config, nil
 }
 
+// FetchDatabasePage retrieves the public HTML page containing runtime API configuration.
 func FetchDatabasePage(client *http.Client) ([]byte, error) {
 	if client == nil {
 		return nil, fmt.Errorf("HTTP client cannot be nil")
@@ -101,7 +104,7 @@ func FetchDatabasePage(client *http.Client) ([]byte, error) {
 
 	req.Header.Set(
 		"User-Agent",
-		"caster-chronicles-deckbuilder/0.1",
+		"casters-compendium/0.1",
 	)
 	req.Header.Set(
 		"Accept",
@@ -132,6 +135,7 @@ func FetchDatabasePage(client *http.Client) ([]byte, error) {
 	return body, nil
 }
 
+// FetchPageConfig downloads the database page and extracts its API configuration.
 func FetchPageConfig(client *http.Client) (PageConfig, error) {
 	var config PageConfig
 
@@ -148,6 +152,7 @@ func FetchPageConfig(client *http.Client) (PageConfig, error) {
 	return config, nil
 }
 
+// FetchPage retrieves one paginated set of card-summary records.
 func FetchPage(
 	client *http.Client,
 	ajaxURL string,
@@ -199,7 +204,7 @@ func FetchPage(
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "caster-chronicles-deckbuilder/0.1")
+	req.Header.Set("User-Agent", "casters-compendium/0.1")
 	req.Header.Set("Origin", "https://speedrobogames.com")
 	req.Header.Set("Referer", databaseURL)
 
@@ -229,6 +234,7 @@ func FetchPage(
 	return result, nil
 }
 
+// FetchCardDetails retrieves the complete field set for one card identifier.
 func FetchCardDetails(
 	client *http.Client,
 	ajaxURL string,
@@ -290,7 +296,7 @@ func FetchCardDetails(
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "caster-chronicles-deckbuilder/0.1")
+	req.Header.Set("User-Agent", "casters-compendium/0.1")
 	req.Header.Set("Origin", "https://speedrobogames.com")
 	req.Header.Set("Referer", databaseURL)
 
@@ -298,6 +304,7 @@ func FetchCardDetails(
 	if err != nil {
 		return result, fmt.Errorf("read card-details response: %w", err)
 	}
+	defer res.Body.Close()
 
 	responseBody, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -330,6 +337,7 @@ func FetchCardDetails(
 	return result, nil
 }
 
+// shortBody trims diagnostic response text to a safe, readable maximum length.
 func shortBody(body []byte) string {
 	const maximumLength = 300
 
@@ -340,4 +348,96 @@ func shortBody(body []byte) string {
 	}
 
 	return text[:maximumLength] + "..."
+}
+
+// FetchAllCards retrieves every summary page and validates the reported total.
+func FetchAllCards(
+	client *http.Client,
+	config PageConfig,
+) ([]CardResponse, error) {
+	firstResponse, err := FetchPage(client, config.AjaxURL, config.Nonce, 1)
+	if err != nil {
+		return nil, fmt.Errorf("error occurred on page 1: %w", err)
+	}
+
+	allCards := append(
+		[]CardResponse{},
+		firstResponse.Data.Cards...,
+	)
+
+	for page := 2; page <= firstResponse.Data.Pages; page++ {
+		pageResponse, err := FetchPage(
+			client,
+			config.AjaxURL,
+			config.Nonce,
+			page,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error occurred on page %d: %w", page, err)
+		}
+
+		if pageResponse.Data.Page != page {
+			return nil, fmt.Errorf(
+				"requested page %d but received page %d",
+				page,
+				pageResponse.Data.Page,
+			)
+		}
+
+		allCards = append(allCards, pageResponse.Data.Cards...)
+	}
+
+	if len(allCards) != firstResponse.Data.Total {
+		return nil, fmt.Errorf(
+			"card count mismatch: expected %d, received %d",
+			firstResponse.Data.Total,
+			len(allCards),
+		)
+	}
+
+	return allCards, nil
+}
+
+// FetchAllCardDetails sequentially downloads full records for a summary list.
+func FetchAllCardDetails(
+	client *http.Client,
+	config PageConfig,
+	summaries []CardResponse,
+) ([]CardDetail, error) {
+	details := make(
+		[]CardDetail,
+		0,
+		len(summaries),
+	)
+
+	for index, summary := range summaries {
+		response, err := FetchCardDetails(
+			client,
+			config.AjaxURL,
+			config.Nonce,
+			summary.ID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"fetch details for card %q (%s): %w",
+				summary.CardKey,
+				summary.ID,
+				err,
+			)
+		}
+		details = append(details, response.Data.Card)
+
+		fmt.Printf(
+			"Fetched card %d/%d: %s\n",
+			index+1,
+			len(summaries),
+			summary.CardKey,
+		)
+
+		if index < len(summaries)-1 {
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+
+	return details, nil
 }

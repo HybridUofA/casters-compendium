@@ -40,6 +40,7 @@ type CardDragController struct {
 	target *CardDropTarget
 }
 
+// NewCardDragController coordinates drag ghosts, placeholders, and zone drop callbacks.
 func NewCardDragController(
 	layer *fyne.Container,
 	mainPanel fyne.CanvasObject,
@@ -61,6 +62,7 @@ func NewCardDragController(
 	}
 }
 
+// Start initializes drag state and creates the floating visual representation.
 func (controller *CardDragController) Start(
 	tile *CardTile,
 	source CardDragSource,
@@ -109,6 +111,7 @@ func (controller *CardDragController) Start(
 	controller.moveGhost(position)
 }
 
+// Move updates the ghost and placeholder for the zone currently under the pointer.
 func (controller *CardDragController) Move(
 	_ *CardTile,
 	_ CardDragSource,
@@ -143,6 +146,7 @@ func (controller *CardDragController) Move(
 	)
 }
 
+// End resolves the final drop target, invokes the callback, and clears drag visuals.
 func (controller *CardDragController) End(
 	_ *CardTile,
 	_ CardDragSource,
@@ -162,6 +166,7 @@ func (controller *CardDragController) End(
 	}
 }
 
+// cancel clears all active drag state without producing a drop.
 func (controller *CardDragController) cancel() {
 	controller.removeGhost()
 	controller.clearPlaceholder()
@@ -169,6 +174,7 @@ func (controller *CardDragController) cancel() {
 	controller.target = nil
 }
 
+// createGhost adds a translucent copy of the dragged tile to the overlay layer.
 func (controller *CardDragController) createGhost(
 	source CardDragSource,
 ) *canvas.Image {
@@ -196,6 +202,7 @@ func (controller *CardDragController) createGhost(
 	return image
 }
 
+// moveGhost centers the floating drag image under the current pointer.
 func (controller *CardDragController) moveGhost(
 	absolutePosition fyne.Position,
 ) {
@@ -215,6 +222,7 @@ func (controller *CardDragController) moveGhost(
 	controller.ghost.Refresh()
 }
 
+// placePlaceholder shows the insertion position in the prospective destination grid.
 func (controller *CardDragController) placePlaceholder(
 	zone decks.Zone,
 	index int,
@@ -242,6 +250,7 @@ func (controller *CardDragController) placePlaceholder(
 	relayout(grid)
 }
 
+// clearPlaceholder removes the insertion marker and restores the affected grid.
 func (controller *CardDragController) clearPlaceholder() {
 	if controller.placeholder == nil {
 		controller.target = nil
@@ -269,6 +278,7 @@ func (controller *CardDragController) clearPlaceholder() {
 	controller.target = nil
 }
 
+// removeGhost removes the floating drag image from the overlay.
 func (controller *CardDragController) removeGhost() {
 	if controller.ghost == nil || controller.Layer == nil {
 		return
@@ -277,6 +287,7 @@ func (controller *CardDragController) removeGhost() {
 	controller.Layer.Objects = removeCanvasObject(controller.Layer.Objects, controller.ghost)
 }
 
+// zoneAt identifies the deck zone containing an absolute pointer position.
 func (controller *CardDragController) zoneAt(
 	position fyne.Position,
 ) (decks.Zone, bool) {
@@ -291,6 +302,7 @@ func (controller *CardDragController) zoneAt(
 	return decks.MainZone, false
 }
 
+// gridForZone returns the card grid associated with a deck zone.
 func (controller *CardDragController) gridForZone(zone decks.Zone) *fyne.Container {
 	switch zone {
 	case decks.MainZone:
@@ -302,6 +314,7 @@ func (controller *CardDragController) gridForZone(zone decks.Zone) *fyne.Contain
 	}
 }
 
+// containsAbsolutePosition reports whether an absolute point lies inside an object.
 func containsAbsolutePosition(object fyne.CanvasObject, position fyne.Position) bool {
 	if object == nil {
 		return false
@@ -314,6 +327,7 @@ func containsAbsolutePosition(object fyne.CanvasObject, position fyne.Position) 
 	return position.X >= origin.X && position.X <= origin.X+size.Width && position.Y >= origin.Y && position.Y <= origin.Y+size.Height
 }
 
+// insertionIndex chooses the nearest before-or-after position for a pointer within a grid.
 func insertionIndex(grid *fyne.Container, absolutePosition fyne.Position) int {
 	origin := fyne.CurrentApp().Driver().AbsolutePositionForObject(grid)
 	localX := absolutePosition.X - origin.X
@@ -335,6 +349,7 @@ func insertionIndex(grid *fyne.Container, absolutePosition fyne.Position) int {
 	return len(grid.Objects)
 }
 
+// insertCanvasObject inserts an object at a clamped container index.
 func insertCanvasObject(
 	objects []fyne.CanvasObject,
 	index int,
@@ -352,6 +367,7 @@ func insertCanvasObject(
 	return objects
 }
 
+// removeCanvasObject removes the first matching object from a container.
 func removeCanvasObject(
 	objects []fyne.CanvasObject,
 	target fyne.CanvasObject,
@@ -365,6 +381,7 @@ func removeCanvasObject(
 	return objects
 }
 
+// relayout reapplies a container's layout after direct object-slice changes.
 func relayout(grid *fyne.Container) {
 	if grid == nil {
 		return

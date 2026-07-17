@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// searchTypeRank assigns the display order used for known card types.
 func searchTypeRank(cardType string) int {
 	switch normalizeText(cardType) {
 	case "caster":
@@ -21,6 +22,7 @@ func searchTypeRank(cardType string) int {
 	}
 }
 
+// searchCostRank parses numeric costs and places nonnumeric values after them.
 func searchCostRank(cost string) int {
 	value, err := strconv.Atoi(
 		strings.TrimSpace(cost),

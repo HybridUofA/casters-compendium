@@ -13,15 +13,22 @@ import (
 	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
 )
 
-const (
-	DefaultDirectory = "data/images"
-	maxImageBytes    = 25 << 20
-)
+const maxImageBytes = 25 << 20
 
+var DefaultDirectory = "data/images"
+
+// ConfigureDirectories selects the runtime locations used for full images and thumbnails.
+func ConfigureDirectories(imageDirectory string, thumbnailDirectory string) {
+	DefaultDirectory = imageDirectory
+	ThumbnailDirectory = thumbnailDirectory
+}
+
+// Find returns the cached full-image path for cardID in the configured directory.
 func Find(cardID string) (string, bool) {
 	return FindIn(DefaultDirectory, cardID)
 }
 
+// FindIn returns the first cached image for cardID in an explicit directory.
 func FindIn(directory string, cardID string) (string, bool) {
 	cardID = sanitizeID(cardID)
 
@@ -51,6 +58,7 @@ func FindIn(directory string, cardID string) (string, bool) {
 	return "", false
 }
 
+// Download caches a card image atomically, returning false when it was already present.
 func Download(
 	ctx context.Context,
 	client *http.Client,
@@ -109,7 +117,7 @@ func Download(
 
 	request.Header.Set(
 		"User-Agent",
-		"CasterDeckbuilder/0.1",
+		"CastersCompendium/0.1",
 	)
 
 	response, err := client.Do(request)
@@ -208,6 +216,7 @@ func Download(
 	return destination, true, nil
 }
 
+// imageExtension selects a supported filename extension from the URL or response media type.
 func imageExtension(
 	rawURL string,
 	contentType string,
@@ -247,6 +256,7 @@ func imageExtension(
 	}
 }
 
+// sanitizeID converts a card identifier into a safe cross-platform filename component.
 func sanitizeID(cardID string) string {
 	cardID = strings.TrimSpace(cardID)
 

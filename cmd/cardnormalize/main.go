@@ -10,10 +10,12 @@ import (
 	"github.com/HybridUofA/caster-deckbuilder/internal/speedrobo"
 )
 
+// main converts raw Speedrobo card details into the normalized local card schema.
 func main() {
 	rawData, err := os.ReadFile("data/cards.raw.json")
 	if err != nil {
-		log.Fatal("read raw card database: %v", err)
+		message := "read raw card database: %v"
+		log.Fatal(message, err)
 	}
 
 	var details []speedrobo.CardDetail

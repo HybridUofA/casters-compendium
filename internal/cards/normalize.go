@@ -6,6 +6,7 @@ import (
 	"github.com/HybridUofA/caster-deckbuilder/internal/speedrobo"
 )
 
+// FromSpeedrobo maps a remote card-detail record into the application's normalized Card model.
 func FromSpeedrobo(detail speedrobo.CardDetail) (Card, error) {
 	var isPlaytesting bool
 	switch detail.IsPlaytesting {

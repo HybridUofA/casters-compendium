@@ -3,12 +3,38 @@ package decks
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
 )
 
+// WriteDeck serializes an editable deck as indented JSON.
+func WriteDeck(writer io.Writer, deck *Deck) error {
+	deckJSON, err := json.MarshalIndent(deck, "", " ")
+	if err != nil {
+		return fmt.Errorf("encode deck: %w", err)
+	}
+	if _, err := writer.Write(deckJSON); err != nil {
+		return fmt.Errorf("write deck: %w", err)
+	}
+	return nil
+}
+
+// ReadDeck decodes an editable JSON deck and enforces its schema version.
+func ReadDeck(reader io.Reader) (*Deck, error) {
+	var deck Deck
+	if err := json.NewDecoder(reader).Decode(&deck); err != nil {
+		return nil, fmt.Errorf("decode deck: %w", err)
+	}
+	if deck.SchemaVersion != 1 {
+		return nil, fmt.Errorf("unsupported deck schema version: %d", deck.SchemaVersion)
+	}
+	return &deck, nil
+}
+
+// SaveFile writes an editable JSON deck to path.
 func SaveFile(path string, deck *Deck) error {
 	deckJson, err := json.MarshalIndent(deck, "", " ")
 	if err != nil {
@@ -23,6 +49,7 @@ func SaveFile(path string, deck *Deck) error {
 	return nil
 }
 
+// LoadFile loads an editable JSON deck from path and validates its schema version.
 func LoadFile(path string) (*Deck, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -43,6 +70,7 @@ func LoadFile(path string) (*Deck, error) {
 	return &deck, nil
 }
 
+// Validate checks the deck's name and supported schema version.
 func (deck *Deck) Validate() error {
 	if strings.TrimSpace(deck.Name) == "" {
 		return fmt.Errorf("deck name cannot be empty")
@@ -57,6 +85,7 @@ func (deck *Deck) Validate() error {
 	return nil
 }
 
+// ValidateCards verifies that every main-deck entry resolves in the repository.
 func (deck *Deck) ValidateCards(repository *cards.Repository) error {
 	for _, entry := range deck.MainDeck {
 		_, found := repository.FindByID(entry.CardID)
@@ -70,18 +99,25 @@ func (deck *Deck) ValidateCards(repository *cards.Repository) error {
 	return nil
 }
 
+// ExportDeckList creates a text decklist file and guarantees close errors are reported.
 func ExportDeckList(
 	path string,
 	deck *Deck,
 	repository *cards.Repository,
-) error {
+) (err error) {
 	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("create decklist file: %w", err)
 	}
 
-	defer file.Close()
-	WriteDeckList(file, deck, repository)
+	defer func() {
+		if closeErr := file.Close(); err == nil && closeErr != nil {
+			err = fmt.Errorf("close decklist file: %w", closeErr)
+		}
+	}()
+	if err := WriteDeckList(file, deck, repository); err != nil {
+		return fmt.Errorf("write decklist file: %w", err)
+	}
 
 	return nil
 }

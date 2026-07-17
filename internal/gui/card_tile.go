@@ -57,6 +57,7 @@ type CardDragCallback func(
 	position fyne.Position,
 )
 
+// SetDraggingVisual toggles translucency while a card is being dragged.
 func (tile *CardTile) SetDraggingVisual(dragging bool) {
 	if tile.image == nil {
 		return
@@ -69,6 +70,7 @@ func (tile *CardTile) SetDraggingVisual(dragging bool) {
 	tile.image.Refresh()
 }
 
+// EnableDrag associates a source description and lifecycle callbacks with the tile.
 func (tile *CardTile) EnableDrag(
 	source CardDragSource,
 	onStart CardDragCallback,
@@ -81,6 +83,7 @@ func (tile *CardTile) EnableDrag(
 	tile.OnDragEnd = onEnd
 }
 
+// Dragged starts or advances a drag using Fyne's absolute pointer position.
 func (tile *CardTile) Dragged(event *fyne.DragEvent) {
 	if tile.dragSource == nil {
 		return
@@ -109,6 +112,7 @@ func (tile *CardTile) Dragged(event *fyne.DragEvent) {
 	}
 }
 
+// DragEnd completes an active drag and resets the tile's drag state.
 func (tile *CardTile) DragEnd() {
 	if !tile.dragging || tile.dragSource == nil {
 		return
@@ -163,6 +167,7 @@ func NewCardTileSized(
 	return tile
 }
 
+// createCardImage loads a thumbnail when available and otherwise creates a placeholder image.
 func createCardImage(card cards.Card) *canvas.Image {
 	thumbnailPath, found := cardimages.FindThumbnail(card.ID)
 
@@ -203,6 +208,7 @@ func createCardImage(card cards.Card) *canvas.Image {
 	return cardImage
 }
 
+// CreateRenderer supplies the image-backed renderer used by the custom card widget.
 func (tile *CardTile) CreateRenderer() fyne.WidgetRenderer {
 	return widget.NewSimpleRenderer(tile.image)
 }
@@ -225,6 +231,7 @@ func (tile *CardTile) Tapped(_ *fyne.PointEvent) {
 func (tile *CardTile) MouseDown(_ *desktop.MouseEvent) {
 }
 
+// MouseUp dispatches secondary-click deck additions and preserves the Shift modifier.
 func (tile *CardTile) MouseUp(event *desktop.MouseEvent) {
 	if event.Button != desktop.MouseButtonSecondary {
 		return

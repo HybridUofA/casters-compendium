@@ -11,6 +11,7 @@ import (
 	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
 )
 
+// main downloads every missing card image in the bundled development database.
 func main() {
 	repository, err := cards.LoadFile(
 		"data/cards.json",

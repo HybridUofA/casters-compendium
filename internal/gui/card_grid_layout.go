@@ -21,6 +21,7 @@ type CardGridLayout struct {
 	MinimumCellWidth float32
 }
 
+// Layout sizes portrait cards to fit both available width and height without clipping rows.
 func (layout *CardGridLayout) Layout(
 	objects []fyne.CanvasObject,
 	size fyne.Size,
@@ -55,12 +56,40 @@ func (layout *CardGridLayout) Layout(
 
 	cellHeight := cellWidth * heightToWidth
 
+	rows := (len(objects) + layout.Columns - 1) / layout.Columns
+	totalVerticalPadding := padding * float32(rows-1)
+	availableHeight := size.Height - totalVerticalPadding
+	if availableHeight > 0 {
+		heightConstrainedWidth :=
+			(availableHeight / float32(rows)) /
+				heightToWidth
+		if heightConstrainedWidth < cellWidth {
+			cellWidth = heightConstrainedWidth
+			cellHeight = cellWidth * heightToWidth
+		}
+	}
+	if cellWidth < 1 {
+		cellWidth = 1
+		cellHeight = cellWidth * heightToWidth
+	}
+
+	usedColumns := layout.Columns
+	if len(objects) < usedColumns {
+		usedColumns = len(objects)
+	}
+	usedWidth := float32(usedColumns)*cellWidth +
+		float32(usedColumns-1)*padding
+	xOffset := (size.Width - usedWidth) / 2
+	if xOffset < 0 {
+		xOffset = 0
+	}
+
 	for index, object := range objects {
 		column := index % layout.Columns
 		row := index / layout.Columns
 
-		x := float32(column) *
-			(cellWidth + padding)
+		x := xOffset + float32(column)*
+			(cellWidth+padding)
 
 		y := float32(row) *
 			(cellHeight + padding)
@@ -75,6 +104,7 @@ func (layout *CardGridLayout) Layout(
 	}
 }
 
+// MinSize reports the grid footprint at its configured minimum cell width.
 func (layout *CardGridLayout) MinSize(
 	objects []fyne.CanvasObject,
 ) fyne.Size {

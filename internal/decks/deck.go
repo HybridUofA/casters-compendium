@@ -2,11 +2,13 @@ package decks
 
 import (
 	"fmt"
-	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
 	"io"
 	"strings"
+
+	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
 )
 
+// NewDeck creates an empty versioned deck with a nonblank name.
 func NewDeck(name string) (*Deck, error) {
 	name = strings.TrimSpace(name)
 
@@ -32,10 +34,12 @@ const (
 	MaxSideDeckCards      = 12
 )
 
+// normalizeCardName prepares names for copy-limit comparisons across alternate printings.
 func normalizeCardName(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }
 
+// CopiesOfCard counts a card across both zones, including alternate printings with the same name.
 func (deck *Deck) CopiesOfCard(
 	target cards.Card,
 	repository *cards.Repository,
@@ -72,6 +76,7 @@ func (deck *Deck) CopiesOfCard(
 	return total
 }
 
+// ValidateCopyLimits verifies that no exact card identifier exceeds the configured copy limit.
 func (deck *Deck) ValidateCopyLimits() error {
 	copyCounts := make(map[string]int)
 
@@ -92,6 +97,7 @@ func (deck *Deck) ValidateCopyLimits() error {
 	return nil
 }
 
+// QuantityOf returns the number of copies of cardID across the complete deck.
 func (deck *Deck) QuantityOf(cardID string) int {
 	cardID = strings.TrimSpace(cardID)
 
@@ -99,6 +105,7 @@ func (deck *Deck) QuantityOf(cardID string) int {
 		quantityIn(deck.SideDeck, cardID)
 }
 
+// QuantityInZone returns the number of copies of cardID in one deck zone.
 func (deck *Deck) QuantityInZone(
 	zone Zone,
 	cardID string,
@@ -113,6 +120,7 @@ func (deck *Deck) QuantityInZone(
 	return quantityIn(*entries, cardID), nil
 }
 
+// AddCard adjusts aggregate zone entries without applying deck-building limits.
 func (deck *Deck) AddCard(
 	zone Zone,
 	cardID string,
@@ -151,6 +159,7 @@ func (deck *Deck) AddCard(
 	return nil
 }
 
+// AddCardChecked adds legal copies to the end of a zone's visible order.
 func (deck *Deck) AddCardChecked(
 	zone Zone,
 	card cards.Card,
@@ -166,6 +175,7 @@ func (deck *Deck) AddCardChecked(
 	)
 }
 
+// AddCardCheckedAt applies copy and zone limits before inserting copies at a visible position.
 func (deck *Deck) AddCardCheckedAt(
 	zone Zone,
 	card cards.Card,
@@ -220,6 +230,7 @@ func (deck *Deck) AddCardCheckedAt(
 	return true, nil
 }
 
+// RemoveCardAt removes the physical card copy at a zone's visible index.
 func (deck *Deck) RemoveCardAt(
 	zone Zone,
 	index int,
@@ -256,6 +267,7 @@ func (deck *Deck) RemoveCardAt(
 	return nil
 }
 
+// SetQuantity replaces the aggregate quantity for one card in a zone.
 func (deck *Deck) SetQuantity(
 	zone Zone,
 	cardID string,
@@ -306,6 +318,7 @@ func (deck *Deck) SetQuantity(
 	return nil
 }
 
+// RemoveCard subtracts copies from an aggregate zone entry after validating availability.
 func (deck *Deck) RemoveCard(
 	zone Zone,
 	cardID string,
@@ -350,6 +363,7 @@ func (deck *Deck) RemoveCard(
 	)
 }
 
+// totalCards sums aggregate quantities in a zone.
 func totalCards(entries []DeckEntry) int {
 	total := 0
 
@@ -360,18 +374,22 @@ func totalCards(entries []DeckEntry) int {
 	return total
 }
 
+// MainTotal returns the physical card count in the main deck.
 func (deck *Deck) MainTotal() int {
 	return totalCards(deck.MainDeck)
 }
 
+// SideTotal returns the physical card count in the side deck.
 func (deck *Deck) SideTotal() int {
 	return totalCards(deck.SideDeck)
 }
 
+// TotalCards returns the combined physical card count of both zones.
 func (deck *Deck) TotalCards() int {
 	return deck.MainTotal() + deck.SideTotal()
 }
 
+// entriesFor resolves a zone to its mutable aggregate entry slice.
 func (deck *Deck) entriesFor(zone Zone) (*[]DeckEntry, error) {
 	switch zone {
 	case MainZone:
@@ -383,6 +401,7 @@ func (deck *Deck) entriesFor(zone Zone) (*[]DeckEntry, error) {
 	}
 }
 
+// quantityIn returns one card's aggregate quantity from a zone entry slice.
 func quantityIn(entries []DeckEntry, cardID string) int {
 	for _, entry := range entries {
 		if entry.CardID == cardID {
@@ -393,25 +412,43 @@ func quantityIn(entries []DeckEntry, cardID string) int {
 	return 0
 }
 
+// WriteDeckList emits the human-readable main- and side-deck interchange format.
 func WriteDeckList(
 	writer io.Writer,
 	deck *Deck,
 	repository *cards.Repository,
 ) error {
-	fmt.Fprintf(writer, "Deck Name: %s\n\n", deck.Name)
-	fmt.Fprintf(writer, "Main Deck (%d)\n", deck.MainTotal())
-	for _, entry := range deck.MainDeck {
-		cardData, _ := repository.FindByID(entry.CardID)
-		fmt.Fprintf(writer, "%dx %s [%s]\n", entry.Quantity, cardData.Name, cardData.Expansion)
+	if _, err := fmt.Fprintf(writer, "Deck Name: %s\n\n", deck.Name); err != nil {
+		return err
 	}
-	fmt.Fprintf(writer, "\nSide Deck (%d)\n", deck.SideTotal())
+	if _, err := fmt.Fprintf(writer, "Main Deck (%d)\n", deck.MainTotal()); err != nil {
+		return err
+	}
+	for _, entry := range deck.MainDeck {
+		cardData, found := repository.FindByID(entry.CardID)
+		if !found {
+			return fmt.Errorf("main deck contains unknown card ID %q", entry.CardID)
+		}
+		if _, err := fmt.Fprintf(writer, "%dx %s [%s]\n", entry.Quantity, cardData.Name, cardData.Expansion); err != nil {
+			return err
+		}
+	}
+	if _, err := fmt.Fprintf(writer, "\nSide Deck (%d)\n", deck.SideTotal()); err != nil {
+		return err
+	}
 	for _, entry := range deck.SideDeck {
-		cardData, _ := repository.FindByID(entry.CardID)
-		fmt.Fprintf(writer, "%dx %s [%s]\n", entry.Quantity, cardData.Name, cardData.Expansion)
+		cardData, found := repository.FindByID(entry.CardID)
+		if !found {
+			return fmt.Errorf("side deck contains unknown card ID %q", entry.CardID)
+		}
+		if _, err := fmt.Fprintf(writer, "%dx %s [%s]\n", entry.Quantity, cardData.Name, cardData.Expansion); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
+// EnsureOrder reconstructs per-copy visual order when it is absent or inconsistent in length.
 func (deck *Deck) EnsureOrder() {
 	if len(deck.MainOrder) != deck.MainTotal() {
 		deck.MainOrder = make(
@@ -448,6 +485,81 @@ func (deck *Deck) EnsureOrder() {
 	}
 }
 
+// Sort orders both deck zones by type, cost, name, card number, and identifier.
+func (deck *Deck) Sort(repository *cards.Repository) error {
+	if repository == nil {
+		return fmt.Errorf("card repository cannot be nil")
+	}
+	deck.EnsureOrder()
+
+	mainEntries, mainOrder, err := sortedDeckZone(
+		deck.MainDeck,
+		deck.MainOrder,
+		repository,
+	)
+	if err != nil {
+		return fmt.Errorf("sort main deck: %w", err)
+	}
+	sideEntries, sideOrder, err := sortedDeckZone(
+		deck.SideDeck,
+		deck.SideOrder,
+		repository,
+	)
+	if err != nil {
+		return fmt.Errorf("sort side deck: %w", err)
+	}
+
+	deck.MainDeck = mainEntries
+	deck.MainOrder = mainOrder
+	deck.SideDeck = sideEntries
+	deck.SideOrder = sideOrder
+	return nil
+}
+
+// sortedDeckZone returns consistently sorted aggregate entries and per-copy order for one zone.
+func sortedDeckZone(
+	entries []DeckEntry,
+	order []string,
+	repository *cards.Repository,
+) ([]DeckEntry, []string, error) {
+	entryCards := make([]cards.Card, len(entries))
+	quantities := make(map[string]int, len(entries))
+	for index, entry := range entries {
+		card, found := repository.FindByID(entry.CardID)
+		if !found {
+			return nil, nil, fmt.Errorf("unknown card ID %q", entry.CardID)
+		}
+		entryCards[index] = card
+		quantities[entry.CardID] = entry.Quantity
+	}
+	cards.SortForSearch(entryCards)
+
+	sortedEntries := make([]DeckEntry, len(entryCards))
+	for index, card := range entryCards {
+		sortedEntries[index] = DeckEntry{
+			CardID:   card.ID,
+			Quantity: quantities[card.ID],
+		}
+	}
+
+	orderedCards := make([]cards.Card, len(order))
+	for index, cardID := range order {
+		card, found := repository.FindByID(cardID)
+		if !found {
+			return nil, nil, fmt.Errorf("unknown card ID %q", cardID)
+		}
+		orderedCards[index] = card
+	}
+	cards.SortForSearch(orderedCards)
+
+	sortedOrder := make([]string, len(orderedCards))
+	for index, card := range orderedCards {
+		sortedOrder[index] = card.ID
+	}
+	return sortedEntries, sortedOrder, nil
+}
+
+// orderForZone resolves a zone to its mutable per-copy order slice.
 func (deck *Deck) orderForZone(
 	zone Zone,
 ) (*[]string, error) {
@@ -466,6 +578,7 @@ func (deck *Deck) orderForZone(
 	}
 }
 
+// insertCardID inserts one identifier at a clamped position in a per-copy order slice.
 func insertCardID(
 	cardIDs []string,
 	index int,
@@ -491,6 +604,7 @@ func insertCardID(
 	return cardIDs
 }
 
+// MoveOrderedCard reorders one physical copy or transfers it between zones within size limits.
 func (deck *Deck) MoveOrderedCard(
 	fromZone Zone,
 	fromIndex int,

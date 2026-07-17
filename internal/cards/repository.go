@@ -24,6 +24,7 @@ type Filter struct {
 	IncludeTesting bool
 }
 
+// LoadFile decodes and validates a normalized card database from disk.
 func LoadFile(path string) (*Repository, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -47,6 +48,7 @@ func LoadFile(path string) (*Repository, error) {
 	return repository, nil
 }
 
+// NewRepository validates cards and builds the lookup indexes used by searches and deck resolution.
 func NewRepository(cards []Card) (*Repository, error) {
 	if len(cards) == 0 {
 		return nil, fmt.Errorf("card list cannot be empty")
@@ -97,15 +99,18 @@ func NewRepository(cards []Card) (*Repository, error) {
 	return repository, nil
 }
 
+// normalizeText trims and case-folds text for case-insensitive matching.
 func normalizeText(text string) string {
 	return strings.ToLower(strings.TrimSpace(text))
 }
 
+// FindByID resolves one exact card identifier.
 func (repository *Repository) FindByID(id string) (Card, bool) {
 	card, found := repository.byID[strings.TrimSpace(id)]
 	return card, found
 }
 
+// FindByName returns all printings with an exact case-insensitive name match.
 func (repository *Repository) FindByName(name string) []Card {
 	matches := repository.byName[normalizeText(name)]
 
@@ -115,6 +120,7 @@ func (repository *Repository) FindByName(name string) []Card {
 	return result
 }
 
+// SearchByName returns cards whose names contain a case-insensitive query.
 func (repository *Repository) SearchByName(query string) []Card {
 	normalizedQuery := normalizeText(query)
 
@@ -135,6 +141,7 @@ func (repository *Repository) SearchByName(query string) []Card {
 	return matches
 }
 
+// matchesAnySelected reports whether a card field contains any selected filter value.
 func matchesAnySelected(
 	cardValue string,
 	selectedValues []string,
@@ -159,6 +166,7 @@ func matchesAnySelected(
 	return false
 }
 
+// Filter applies all populated search filters and playtesting visibility to the repository.
 func (repository *Repository) Filter(options Filter) []Card {
 	normalizedName := normalizeText(options.Name)
 
@@ -205,6 +213,7 @@ func (repository *Repository) Filter(options Filter) []Card {
 	return matches
 }
 
+// All returns a defensive copy of every card in repository order.
 func (repository *Repository) All() []Card {
 	result := make([]Card, len(repository.cards))
 	copy(result, repository.cards)
@@ -212,6 +221,7 @@ func (repository *Repository) All() []Card {
 	return result
 }
 
+// uniqueSortedValues removes blank and case-insensitive duplicate values before sorting them.
 func uniqueSortedValues(values []string) []string {
 	unique := make(map[string]string)
 
@@ -238,6 +248,7 @@ func uniqueSortedValues(values []string) []string {
 	return results
 }
 
+// Elements returns the distinct element values available for filtering.
 func (repository *Repository) Elements() []string {
 	values := make([]string, 0, len(repository.cards))
 
@@ -248,6 +259,7 @@ func (repository *Repository) Elements() []string {
 	return uniqueSortedValues(values)
 }
 
+// Types returns the distinct card-type values available for filtering.
 func (repository *Repository) Types() []string {
 	values := make([]string, 0, len(repository.cards))
 
@@ -258,6 +270,7 @@ func (repository *Repository) Types() []string {
 	return uniqueSortedValues(values)
 }
 
+// Traits returns distinct parsed trait names while preserving their first observed spelling.
 func (repository *Repository) Traits() []string {
 	unique := make(map[string]string)
 
@@ -297,6 +310,7 @@ func (repository *Repository) Traits() []string {
 	return traits
 }
 
+// CostLevels returns the distinct cost or level values available for filtering.
 func (repository *Repository) CostLevels() []string {
 	values := make([]string, 0, len(repository.cards))
 
@@ -307,6 +321,7 @@ func (repository *Repository) CostLevels() []string {
 	return uniqueSortedValues(values)
 }
 
+// Expansions returns the distinct expansion names available for filtering.
 func (repository *Repository) Expansions() []string {
 	values := make([]string, 0, len(repository.cards))
 
@@ -317,6 +332,7 @@ func (repository *Repository) Expansions() []string {
 	return uniqueSortedValues(values)
 }
 
+// matchesAnyExact reports whether target equals one of values after normalization.
 func matchesAnyExact(values []string, target string) bool {
 	normalizedTarget := normalizeText(target)
 
@@ -329,6 +345,7 @@ func matchesAnyExact(values []string, target string) bool {
 	return false
 }
 
+// matchesAnyContained reports whether target contains one of values after normalization.
 func matchesAnyContained(values []string, target string) bool {
 	normalizedTarget := normalizeText(target)
 
@@ -344,6 +361,7 @@ func matchesAnyContained(values []string, target string) bool {
 	return false
 }
 
+// splitTraits parses bracketed traits first and falls back to comma or semicolon separation.
 func splitTraits(value string) []string {
 	raw := strings.TrimSpace(value)
 	if raw == "" {
