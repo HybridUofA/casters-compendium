@@ -21,7 +21,7 @@ type CardGridLayout struct {
 	MinimumCellWidth float32
 }
 
-// Layout sizes portrait cards to fit both available width and height without clipping rows.
+// Layout left-aligns portrait cards and fits them within the available width and height.
 func (layout *CardGridLayout) Layout(
 	objects []fyne.CanvasObject,
 	size fyne.Size,
@@ -73,23 +73,12 @@ func (layout *CardGridLayout) Layout(
 		cellHeight = cellWidth * heightToWidth
 	}
 
-	usedColumns := layout.Columns
-	if len(objects) < usedColumns {
-		usedColumns = len(objects)
-	}
-	usedWidth := float32(usedColumns)*cellWidth +
-		float32(usedColumns-1)*padding
-	xOffset := (size.Width - usedWidth) / 2
-	if xOffset < 0 {
-		xOffset = 0
-	}
-
 	for index, object := range objects {
 		column := index % layout.Columns
 		row := index / layout.Columns
 
-		x := xOffset + float32(column)*
-			(cellWidth+padding)
+		x := float32(column) *
+			(cellWidth + padding)
 
 		y := float32(row) *
 			(cellHeight + padding)
