@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Caster's Compendium
+Comment=Build and export Caster Chronicles decks
+Exec=casters-compendium
+Icon=casters-compendium
+Terminal=false
+Categories=Game;
+Keywords=cards;deck;deckbuilder;tabletop;

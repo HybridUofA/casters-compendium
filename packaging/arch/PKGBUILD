@@ -1,0 +1,72 @@
+pkgname=casters-compendium
+pkgver=0.1.1
+pkgrel=1
+pkgdesc="Desktop deck builder for Caster Chronicles"
+arch=('x86_64')
+url="https://github.com/HybridUofA/caster-deckbuilder"
+license=('custom:unspecified')
+depends=(
+  'glibc'
+  'libglvnd'
+  'libx11'
+  'wayland'
+)
+makedepends=(
+  'git'
+  'go'
+  'libxcursor'
+  'libxi'
+  'libxinerama'
+  'libxkbcommon'
+  'libxrandr'
+  'mesa'
+)
+source=(
+  "$pkgname::git+$url.git#tag=v$pkgver"
+  '../casters-compendium.desktop'
+  '../casters-compendium.1'
+  '../copyright'
+)
+sha256sums=(
+  'SKIP'
+  '6e10e82c918302b93b94590a3cfbe3b2e3f23e013a8902dd63b812f05012fe6d'
+  'd6f0d73cf4075578768b630b9e33b0b70d291265b6e5a51133eb25869c293eb5'
+  '37e637a85b1d3ba2d1c73025889fcd1237e78f47acc58f1ce7ba165361ab5a9e'
+)
+
+check() {
+  cd "$pkgname"
+  go test -tags migrated_fynedo ./...
+}
+
+build() {
+  cd "$pkgname"
+  go build \
+    -tags migrated_fynedo \
+    -buildmode=pie \
+    -trimpath \
+    -ldflags='-s -w' \
+    -o CastersCompendium \
+    ./cmd/gui
+}
+
+package() {
+  install -Dm755 \
+    "$pkgname/CastersCompendium" \
+    "$pkgdir/usr/bin/casters-compendium"
+  install -Dm644 \
+    'casters-compendium.desktop' \
+    "$pkgdir/usr/share/applications/casters-compendium.desktop"
+  install -Dm644 \
+    "$pkgname/data/images/MTD-back-ver01.png" \
+    "$pkgdir/usr/share/pixmaps/casters-compendium.png"
+  install -Dm644 \
+    "$pkgname/README.md" \
+    "$pkgdir/usr/share/doc/casters-compendium/README.md"
+  install -Dm644 \
+    'casters-compendium.1' \
+    "$pkgdir/usr/share/man/man1/casters-compendium.1"
+  install -Dm644 \
+    'copyright' \
+    "$pkgdir/usr/share/licenses/casters-compendium/LICENSE"
+}

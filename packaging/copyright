@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Caster's Compendium
+Source: https://github.com/HybridUofA/caster-deckbuilder
+
+Files: *
+Copyright: 2026 HybridUofA
+License: not-specified
+ No license terms are currently included in the upstream repository.

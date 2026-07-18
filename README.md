@@ -55,6 +55,8 @@ artifacts for:
 - macOS Intel
 - macOS Apple Silicon
 - Linux x64
+- Debian and Ubuntu x64 (`.deb`)
+- Arch Linux x64 (`.pkg.tar.zst`)
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
 such as `v0.1.1` builds the same packages and publishes them as GitHub Release
@@ -65,3 +67,15 @@ Windows signing certificates are available.
 
 Fyne's packaging tool uses `data/images/MTD-back-ver01.png` as the application
 icon and embeds the card back separately for Tabletop Simulator exports.
+
+Debian and Ubuntu users can install the native package with:
+
+```sh
+sudo apt install ./casters-compendium_0.1.1_amd64.deb
+```
+
+Arch Linux users can install the native package with:
+
+```sh
+sudo pacman -U casters-compendium-0.1.1-1-x86_64.pkg.tar.zst
+```

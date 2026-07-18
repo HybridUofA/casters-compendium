@@ -1,0 +1,13 @@
+Package: casters-compendium
+Version: @VERSION@
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: HybridUofA <hybriduofa@users.noreply.github.com>
+Installed-Size: @INSTALLED_SIZE@
+Depends: libc6 (>= 2.35), libgl1, libwayland-client0, libx11-6, libxcursor1, libxi6, libxinerama1, libxkbcommon0, libxrandr2
+Homepage: https://github.com/HybridUofA/caster-deckbuilder
+Description: desktop deck builder for Caster Chronicles
+ Caster's Compendium browses the Caster Chronicles card database, builds main
+ and side decks, imports and exports decklists, and creates Tabletop Simulator
+ image sheets.

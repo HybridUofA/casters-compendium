@@ -3,8 +3,13 @@ name: Package desktop applications
 on:
   workflow_dispatch:
   push:
+    branches:
+      - feature/casters-compendium
     tags:
       - "v*"
+    paths:
+      - ".github/workflows/package-desktop.yml"
+      - "packaging/**"
 
 permissions:
   contents: read
@@ -27,6 +32,14 @@ jobs:
             runner: ubuntu-24.04
             target: linux
             artifact: CastersCompendium-linux-amd64
+          - label: Debian and Ubuntu x64
+            runner: ubuntu-22.04
+            target: debian
+            artifact: casters-compendium_0.1.1_amd64
+          - label: Arch Linux x64
+            runner: ubuntu-24.04
+            target: arch
+            artifact: casters-compendium-0.1.1-1-x86_64
           - label: Windows x64
             runner: windows-2025
             target: windows
@@ -45,18 +58,24 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up Go
+        if: matrix.target != 'arch'
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           cache-dependency-path: go.sum
 
       - name: Install Linux build dependencies
-        if: matrix.target == 'linux'
+        if: matrix.target == 'linux' || matrix.target == 'debian'
         run: |
           sudo apt-get update
           sudo apt-get install --yes gcc libgl1-mesa-dev libwayland-dev xorg-dev libxkbcommon-dev
 
+      - name: Install Debian package tools
+        if: matrix.target == 'debian'
+        run: sudo apt-get install --yes dpkg-dev lintian
+
       - name: Run tests
+        if: matrix.target != 'arch'
         run: go test -tags migrated_fynedo ./...
 
       - name: Package Linux application
@@ -76,6 +95,25 @@ jobs:
             --release
           mv "$APP_NAME.tar.xz" "dist/${{ matrix.artifact }}.tar.xz"
 
+      - name: Package Debian and Ubuntu application
+        if: matrix.target == 'debian'
+        shell: bash
+        run: |
+          env GOCACHE="$RUNNER_TEMP/casters-compendium-go-build" \
+            bash packaging/debian/build.sh "$APP_VERSION" "$PWD/dist"
+          lintian --display-info "dist/${{ matrix.artifact }}.deb"
+
+      - name: Package Arch Linux application
+        if: matrix.target == 'arch'
+        shell: bash
+        run: |
+          mkdir -p dist
+          docker run --rm \
+            --volume "$PWD:/workspace" \
+            --workdir /workspace \
+            archlinux:base-devel \
+            bash packaging/arch/build-in-container.sh
+
       - name: Package Windows application
         if: matrix.target == 'windows'
         shell: pwsh
@@ -93,6 +131,16 @@ jobs:
             --tags migrated_fynedo `
             --release
           Move-Item "cmd/gui/$env:APP_NAME.exe" "dist/${{ matrix.artifact }}.exe"
+
+      - name: Build Windows diagnostic executable
+        if: matrix.target == 'windows' && github.ref_type != 'tag'
+        shell: pwsh
+        run: |
+          go build `
+            -tags migrated_fynedo `
+            -trimpath `
+            -o "dist/${{ matrix.artifact }}.diagnostic.exe" `
+            ./cmd/gui
 
       - name: Package macOS application
         if: startsWith(matrix.target, 'darwin-')
