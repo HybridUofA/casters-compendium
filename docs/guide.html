@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Learn how to build, organize, import, and export Caster Chronicles decks with Caster's Compendium.">
+    <meta name="theme-color" content="#17122b">
+    <title>Guide · Caster's Compendium</title>
+    <link rel="icon" href="assets/shadow.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="guide-page">
+    <a class="skip-link" href="#guide-content">Skip to guide</a>
+
+    <header class="guide-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html" aria-label="Caster's Compendium home">
+          <img src="assets/shadow.png" alt="" width="42" height="42">
+          <span>Caster's Compendium</span>
+        </a>
+        <div class="nav-links">
+          <a href="index.html#features">Features</a>
+          <a href="index.html#downloads">Downloads</a>
+          <a aria-current="page" href="guide.html">Guide</a>
+          <a href="https://github.com/HybridUofA/casters-compendium">GitHub</a>
+        </div>
+      </nav>
+
+      <div class="guide-hero">
+        <p class="eyebrow">Application guide</p>
+        <h1>From card search to finished deck.</h1>
+        <p class="intro">This walkthrough covers the complete deckbuilder workflow: creating or loading a deck, finding cards, organizing both deck zones, saving, and exporting.</p>
+        <a class="button primary" href="index.html#downloads">Download v0.1.3</a>
+      </div>
+    </header>
+
+    <main class="guide-layout" id="guide-content">
+      <aside class="guide-toc" aria-label="Guide contents">
+        <p class="toc-title">On this page</p>
+        <a href="#start">Getting started</a>
+        <a href="#search">Finding cards</a>
+        <a href="#build">Building a deck</a>
+        <a href="#organize">Moving and sorting</a>
+        <a href="#save">Saving and loading</a>
+        <a href="#export">Exporting</a>
+        <a href="#database">Card data and settings</a>
+        <a href="#controls">Quick controls</a>
+      </aside>
+
+      <div class="guide-content">
+        <section id="start">
+          <p class="step-label">01 · Start</p>
+          <h2>Choose what you want to do.</h2>
+          <p>The main menu is the starting point for deck editing and file conversion.</p>
+          <div class="option-grid">
+            <article>
+              <h3>Make a New Deck</h3>
+              <p>Create an empty named deck and open it in the editor.</p>
+            </article>
+            <article>
+              <h3>Load a Deck</h3>
+              <p>Open an editable JSON deck or a human-readable text decklist.</p>
+            </article>
+            <article>
+              <h3>Generate Deck Image from Decklist</h3>
+              <p>Create a Tabletop Simulator sheet directly from a text decklist.</p>
+            </article>
+            <article>
+              <h3>Generate Decklist File</h3>
+              <p>Convert an editable JSON deck into the tournament-friendly text format.</p>
+            </article>
+          </div>
+          <div class="guide-note">
+            <strong>First launch:</strong> The application downloads the card database, artwork, and thumbnails. Later launches reuse the local cache.
+          </div>
+        </section>
+
+        <section id="search">
+          <p class="step-label">02 · Search</p>
+          <h2>Find the exact cards you need.</h2>
+          <p>Use any combination of the Card Search controls. The result list updates as filters change, and the card preview updates when you hover, click, or tap a result.</p>
+          <ul class="check-list">
+            <li><strong>Name</strong> searches card names as you type.</li>
+            <li><strong>Elements</strong> allows one or more element selections.</li>
+            <li><strong>Cost / Level</strong> narrows cards by their printed value.</li>
+            <li><strong>Type and Trait</strong> use values extracted from the database.</li>
+            <li><strong>Keyword</strong> uses declared labels found in current ability text.</li>
+            <li><strong>Expansion</strong> limits results to a specific set.</li>
+            <li><strong>Include playtesting cards</strong> reveals cards hidden from normal searches.</li>
+          </ul>
+          <p>Choose <strong>Clear</strong> to reset every filter at once.</p>
+        </section>
+
+        <section id="build">
+          <p class="step-label">03 · Build</p>
+          <h2>Add cards to the main deck or sideboard.</h2>
+          <div class="method-grid">
+            <article>
+              <p class="method-label">Mouse shortcut</p>
+              <h3>Right-click</h3>
+              <p>Right-click a search result to add one copy to the Main Deck. Hold <kbd>Shift</kbd> while right-clicking to add it to the Side Deck.</p>
+            </article>
+            <article>
+              <p class="method-label">Drag and drop</p>
+              <h3>Place it directly</h3>
+              <p>Drag a search result into either deck area. The insertion marker shows where the new copy will appear.</p>
+            </article>
+          </div>
+          <p>The deck model enforces the total zone sizes and the maximum of four copies across the main deck and sideboard. If a card cannot legally be added, the deck remains unchanged.</p>
+        </section>
+
+        <section id="organize">
+          <p class="step-label">04 · Organize</p>
+          <h2>Reorder, move, remove, or sort.</h2>
+          <ol class="numbered-steps">
+            <li><span>Reorder</span><p>Drag a card to a different position within its current deck area.</p></li>
+            <li><span>Move zones</span><p>Drag a card between the Main Deck and Side Deck.</p></li>
+            <li><span>Remove</span><p>Right-click a deck card, or drag it onto the Card Search panel, to remove one copy.</p></li>
+            <li><span>Sort</span><p>Choose <strong>Sort Deck</strong> to replace custom ordering with the standard automatic order.</p></li>
+          </ol>
+          <div class="guide-note warning">
+            <strong>Custom order is intentional:</strong> Saving preserves the current visible order. Sorting is only performed when you choose the Sort Deck button.
+          </div>
+        </section>
+
+        <section id="save">
+          <p class="step-label">05 · Save and load</p>
+          <h2>Keep an editable deck or share it.</h2>
+          <dl class="definition-list">
+            <div><dt>Save</dt><dd>Updates the current editable JSON file. If the deck has not been saved yet, a save dialog opens.</dd></div>
+            <div><dt>Save As</dt><dd>Writes the deck to a new JSON file and makes that the active save location.</dd></div>
+            <div><dt>Open</dt><dd>Loads either an editable JSON deck or a text decklist into the editor.</dd></div>
+            <div><dt>Rename</dt><dd>Changes the display name and the default filename offered for future exports.</dd></div>
+          </dl>
+          <p>Deck files stay wherever you choose in the system file dialog. They are separate from the application's downloaded card-data cache.</p>
+        </section>
+
+        <section id="export">
+          <p class="step-label">06 · Export</p>
+          <h2>Prepare decks for tournaments or Tabletop Simulator.</h2>
+          <div class="option-grid">
+            <article>
+              <h3>Export Decklist</h3>
+              <p>Writes a readable text file containing quantities and card codes for the main deck and sideboard.</p>
+            </article>
+            <article>
+              <h3>Export Main</h3>
+              <p>Creates a Tabletop Simulator PNG sheet for the main deck, including the bundled card back.</p>
+            </article>
+            <article>
+              <h3>Export Sideboard</h3>
+              <p>Creates a matching Tabletop Simulator PNG sheet containing the sideboard.</p>
+            </article>
+          </div>
+          <p>For file conversion without entering the editor, return to the main menu and use the deck-image or decklist generators.</p>
+        </section>
+
+        <section id="database">
+          <p class="step-label">07 · Data and appearance</p>
+          <h2>Keep the card library current.</h2>
+          <p>At startup, the application compares the installed card-list hash with the published hash and can prompt when an update is available. Choose <strong>Update Card Database</strong> from the main menu whenever you want to force a complete refresh.</p>
+          <p><strong>Settings</strong> lets the application follow the operating-system theme or use a persistent Light or Dark appearance.</p>
+          <div class="guide-note">
+            The stable application ID remains <code>io.github.hybriduofa.casterdeckbuilder</code>, so upgrading or moving to the new repository does not discard existing cached data.
+          </div>
+        </section>
+
+        <section id="controls">
+          <p class="step-label">Quick reference</p>
+          <h2>Controls at a glance.</h2>
+          <div class="control-table" role="table" aria-label="Deckbuilder controls">
+            <div class="control-row heading" role="row"><span role="columnheader">Action</span><span role="columnheader">Result</span></div>
+            <div class="control-row" role="row"><span role="cell">Hover or left-click a card</span><span role="cell">Show its artwork and details</span></div>
+            <div class="control-row" role="row"><span role="cell">Right-click a search result</span><span role="cell">Add one copy to Main Deck</span></div>
+            <div class="control-row" role="row"><span role="cell"><kbd>Shift</kbd> + right-click a search result</span><span role="cell">Add one copy to Side Deck</span></div>
+            <div class="control-row" role="row"><span role="cell">Right-click a deck card</span><span role="cell">Remove one copy</span></div>
+            <div class="control-row" role="row"><span role="cell">Drag a deck card to Card Search</span><span role="cell">Remove one copy</span></div>
+            <div class="control-row" role="row"><span role="cell">Drag within or between deck areas</span><span role="cell">Reorder or move the card</span></div>
+          </div>
+        </section>
+
+        <section class="guide-finish">
+          <p class="eyebrow">Ready to build?</p>
+          <h2>Download the current release.</h2>
+          <p>The download page includes direct links and installation steps for every supported platform.</p>
+          <div class="actions">
+            <a class="button primary" href="index.html#downloads">Choose a download</a>
+            <a class="button secondary" href="https://github.com/HybridUofA/casters-compendium">Browse the source</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <p>Caster's Compendium is a community tool for Caster Chronicles.</p>
+      <p><a href="index.html">Home</a> · <a href="https://github.com/HybridUofA/casters-compendium">GitHub</a></p>
+    </footer>
+  </body>
+</html>

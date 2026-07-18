@@ -21,6 +21,7 @@
         <div class="nav-links">
           <a href="#features">Features</a>
           <a href="#downloads">Downloads</a>
+          <a href="guide.html">Guide</a>
           <a href="#roadmap">Roadmap</a>
           <a href="https://github.com/HybridUofA/casters-compendium">GitHub</a>
         </div>
@@ -36,8 +37,8 @@
             exports. The first simulator is planned for v0.2.0.
           </p>
           <div class="actions">
-            <a class="button primary" href="https://github.com/HybridUofA/casters-compendium/releases/latest">Download v0.1.3</a>
-            <a class="button secondary" href="https://github.com/HybridUofA/casters-compendium#how-to-use-the-deck-builder">Read the guide</a>
+            <a class="button primary" href="#downloads">Download v0.1.3</a>
+            <a class="button secondary" href="guide.html">Read the guide</a>
           </div>
           <ul class="platforms" aria-label="Supported platforms">
             <li>Windows</li>
@@ -107,19 +108,107 @@
       </section>
 
       <section class="section release-section" id="downloads">
-        <div>
+        <div class="release-intro">
           <p class="eyebrow">Latest release</p>
           <h2>Get Caster's Compendium v0.1.3</h2>
-          <p>Choose the native package for your system from the GitHub release. Windows and macOS packages are currently unsigned and may show a first-launch security prompt.</p>
-          <a class="text-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.1.3">View downloads and installation details <span aria-hidden="true">→</span></a>
+          <p>Download the package for your system directly—no GitHub release-page detour required. Windows and macOS packages are currently unsigned and may show a first-launch security prompt.</p>
         </div>
-        <div class="package-list" aria-label="Available packages">
-          <span>Windows x64</span>
-          <span>macOS Intel</span>
-          <span>macOS Apple Silicon</span>
-          <span>Linux x64 archive</span>
-          <span>Debian / Ubuntu .deb</span>
-          <span>Arch Linux package</span>
+
+        <div class="download-grid">
+          <article class="download-card">
+            <p class="platform-label">Windows 10/11 · x64</p>
+            <h3>Windows executable</h3>
+            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/CastersCompendium-windows-amd64.exe">Download .exe</a>
+            <ol class="install-steps">
+              <li>Move the downloaded file to a permanent folder if desired.</li>
+              <li>Double-click it to launch—no installer is required.</li>
+              <li>If SmartScreen appears, choose <strong>More info</strong>, verify the filename, then choose <strong>Run anyway</strong>.</li>
+            </ol>
+            <p class="package-note">A current OpenGL driver is required. Virtual machines may need guest graphics drivers or Mesa software OpenGL.</p>
+          </article>
+
+          <article class="download-card">
+            <p class="platform-label">macOS · Apple Silicon</p>
+            <h3>M1, M2, M3, M4, or later</h3>
+            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/CastersCompendium-macos-apple-silicon.zip">Download ZIP</a>
+            <ol class="install-steps">
+              <li>Unzip the download.</li>
+              <li>Move <strong>Caster's Compendium.app</strong> into Applications.</li>
+              <li>For the first launch, Control-click the app, choose <strong>Open</strong>, then confirm.</li>
+            </ol>
+          </article>
+
+          <article class="download-card">
+            <p class="platform-label">macOS · Intel</p>
+            <h3>Intel-based Macs</h3>
+            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/CastersCompendium-macos-intel.zip">Download ZIP</a>
+            <ol class="install-steps">
+              <li>Unzip the download.</li>
+              <li>Move <strong>Caster's Compendium.app</strong> into Applications.</li>
+              <li>For the first launch, Control-click the app, choose <strong>Open</strong>, then confirm.</li>
+            </ol>
+          </article>
+
+          <article class="download-card">
+            <p class="platform-label">Debian / Ubuntu · x64</p>
+            <h3>Native .deb package</h3>
+            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/casters-compendium_0.1.3_amd64.deb">Download .deb</a>
+            <p>Open a terminal in the download folder and run:</p>
+            <code class="command">sudo apt install ./casters-compendium_0.1.3_amd64.deb</code>
+          </article>
+
+          <article class="download-card">
+            <p class="platform-label">Arch Linux · x64</p>
+            <h3>Native Arch package</h3>
+            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/casters-compendium-0.1.3-1-x86_64.pkg.tar.zst">Download package</a>
+            <p>Open a terminal in the download folder and run:</p>
+            <code class="command">sudo pacman -U ./casters-compendium-0.1.3-1-x86_64.pkg.tar.zst</code>
+          </article>
+
+          <article class="download-card">
+            <p class="platform-label">Other Linux · x64</p>
+            <h3>Portable Linux archive</h3>
+            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/CastersCompendium-linux-amd64.tar.xz">Download .tar.xz</a>
+            <p>Extract it, enter the directory, and install for your user:</p>
+            <code class="command">tar -xJf CastersCompendium-linux-amd64.tar.xz<br>cd CastersCompendium<br>make user-install</code>
+            <p class="package-note">For a system-wide installation, use <code>sudo make install</code> instead.</p>
+          </article>
+        </div>
+
+        <div class="previous-releases">
+          <div>
+            <p class="eyebrow">Previous versions</p>
+            <h2>Need an older build?</h2>
+            <p>These direct downloads come from the legacy repository and remain available for troubleshooting or rollback.</p>
+          </div>
+          <article class="legacy-release">
+            <div>
+              <p class="version">v0.1.2</p>
+              <h3>Keyword filtering and appearance settings</h3>
+            </div>
+            <div class="legacy-links">
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/CastersCompendium-windows-amd64.exe">Windows</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/CastersCompendium-macos-apple-silicon.zip">macOS Apple Silicon</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/CastersCompendium-macos-intel.zip">macOS Intel</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/CastersCompendium-linux-amd64.tar.xz">Linux archive</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/casters-compendium_0.1.2_amd64.deb">Debian / Ubuntu</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/casters-compendium-0.1.2-1-x86_64.pkg.tar.zst">Arch Linux</a>
+            </div>
+          </article>
+          <article class="legacy-release">
+            <div>
+              <p class="version">v0.1.1</p>
+              <h3>Native Linux packages</h3>
+            </div>
+            <div class="legacy-links">
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/CastersCompendium-windows-amd64.exe">Windows</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/CastersCompendium-macos-apple-silicon.zip">macOS Apple Silicon</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/CastersCompendium-macos-intel.zip">macOS Intel</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/CastersCompendium-linux-amd64.tar.xz">Linux archive</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/casters-compendium_0.1.1_amd64.deb">Debian / Ubuntu</a>
+              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/casters-compendium-0.1.1-1-x86_64.pkg.tar.zst">Arch Linux</a>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -150,10 +239,10 @@
       <section class="section callout">
         <div>
           <p class="eyebrow">Open development</p>
-          <h2>Follow the project as it grows.</h2>
-          <p>Source code, documentation, release notes, and development progress live together in the public GitHub repository.</p>
+          <h2>Read the source. Roasts are optional.</h2>
+          <p>Source code, documentation, release notes, and development progress live together in the public GitHub repository. Constructive feedback is always welcome.</p>
         </div>
-        <a class="button primary" href="https://github.com/HybridUofA/casters-compendium">View on GitHub</a>
+        <a class="button primary" href="https://github.com/HybridUofA/casters-compendium">Browse the source on GitHub</a>
       </section>
     </main>
 

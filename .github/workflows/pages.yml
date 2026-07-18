@@ -31,8 +31,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site/assets
-          cp docs/index.html docs/styles.css _site/
+          cp docs/index.html docs/guide.html docs/styles.css _site/
           cp data/images/shadow.png _site/assets/
+          cp -R docs/screenshots _site/screenshots
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v4
