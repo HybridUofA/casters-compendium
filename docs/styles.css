@@ -1051,6 +1051,13 @@ kbd {
   grid-template-columns: 1fr;
 }
 
+.source-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+
 footer {
   display: flex;
   justify-content: space-between;
@@ -1126,17 +1133,7 @@ footer a:focus-visible {
   }
 }
 
-@media (max-width: 650px) {
-  .hero,
-  .page-header,
-  .section,
-  .guide-header,
-  .guide-layout,
-  .statement-main,
-  footer {
-    width: min(100% - 1.5rem, 1180px);
-  }
-
+@media (max-width: 780px) {
   .nav {
     align-items: flex-start;
     gap: 1rem;
@@ -1151,6 +1148,18 @@ footer a:focus-visible {
     display: grid;
     grid-template-columns: repeat(2, auto);
     gap: 0.35rem 0.9rem;
+  }
+}
+
+@media (max-width: 650px) {
+  .hero,
+  .page-header,
+  .section,
+  .guide-header,
+  .guide-layout,
+  .statement-main,
+  footer {
+    width: min(100% - 1.5rem, 1180px);
   }
 
   h1 {
