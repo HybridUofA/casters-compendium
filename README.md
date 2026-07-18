@@ -6,18 +6,66 @@ Tabletop Simulator image sheets for both the main deck and sideboard.
 
 ## Features
 
-- Build, load, rename, sort, and save decks.
-- Import and export the text format used by `Arthur Test Deck.txt`.
-- Export main-deck and sideboard sheets for Tabletop Simulator.
-- Install the required card back from the bundled application asset.
-- Download card data, artwork, and thumbnails concurrently during first setup.
-- Compare a deterministic `cardlist.sha256` digest at startup and prompt when the
-  published card list changes.
-- Force a full card-database refresh from the main menu.
+### Deck building
+
+- Build, load, rename, sort, and save complete main decks and sideboards while
+  preserving each card's maximum copy limit.
+- Drag cards from search results into either deck area, move them between the
+  main deck and sideboard, and reorder them for personal theorycrafting and
+  custom organization. **Sort Deck** restores the standard ordering.
+- Preview card artwork on hover or click and read the card's full details in the
+  information panel.
 - Follow the operating-system theme or select a persistent light or dark theme.
-- Reuse a hash-verified GitHub data and image snapshot during initial setup.
-- Filter cards by rules keywords extracted automatically from current ability
-  text instead of relying on a fixed keyword list.
+
+### Search and card data
+
+- Search the full card database by name, card type, trait, rules keyword,
+  element, expansion, cost/level, and playtesting status.
+- Extract keyword filters automatically from current card ability text instead
+  of relying on a fixed keyword list.
+- Download and cache the card database, artwork, and thumbnails locally for
+  convenient reuse and faster subsequent launches.
+- Download initial card assets concurrently and reuse a hash-verified GitHub
+  snapshot when available.
+- Compare a deterministic `cardlist.sha256` digest at startup, prompt when the
+  published card list changes, or force a full database refresh from the main
+  menu.
+
+### Import, sharing, and export
+
+- Import and save editable JSON deck files for sharing between players.
+- Import and export human-readable text decklists containing card codes for
+  tournament submission.
+- Export both main-deck and sideboard image sheets for Tabletop Simulator using
+  the bundled card-back asset.
+
+### Desktop applications
+
+- Download precompiled applications for Windows, macOS Intel, macOS Apple
+  Silicon, and Linux x64.
+- Install native packages on Debian and Ubuntu (`.deb`) or Arch Linux
+  (`.pkg.tar.zst`).
+
+## Roadmap
+
+### Upcoming in v0.1.3
+
+v0.1.3 is planned as a deckbuilder-focused refinement release before simulator
+development becomes user-visible. Work targeted for this release includes:
+
+- Working directly with Speedrobo on art assets and prototype cards.
+- Showing card previews on hover instead of requiring a click.
+- Allowing a card to be dragged from the main deck or sideboard back to the
+  search area to remove it.
+- Adding optional backgrounds, primarily eight element-themed designs and
+  potentially five designs for the OC-tier Casters, subject to their creators'
+  permission.
+
+### Planned for v0.2.0
+
+v0.2.0 is planned to introduce the first rudimentary simulator. Simulator work
+is a large, experimental undertaking and remains a work in progress without a
+promised delivery date.
 
 ## How to use the deck builder
 
