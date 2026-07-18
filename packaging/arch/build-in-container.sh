@@ -26,12 +26,20 @@ install -m644 \
 	/build/arch/
 chown -R builder:builder /build
 
-runuser -u builder -- env HOME=/home/builder bash -lc '
+source_fragment="${CASTERS_COMPENDIUM_SOURCE_FRAGMENT:-tag=v0.1.2}"
+
+runuser -u builder -- env \
+	HOME=/home/builder \
+	CASTERS_COMPENDIUM_SOURCE_FRAGMENT="$source_fragment" \
+	bash -lc '
   cd /build/arch
   makepkg --cleanbuild --noconfirm
 '
 
-package_path="$(runuser -u builder -- env HOME=/home/builder bash -lc '
+package_path="$(runuser -u builder -- env \
+	HOME=/home/builder \
+	CASTERS_COMPENDIUM_SOURCE_FRAGMENT="$source_fragment" \
+	bash -lc '
   cd /build/arch
   makepkg --packagelist
 ' | tail -n 1)"

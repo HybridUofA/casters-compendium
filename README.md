@@ -14,6 +14,40 @@ Tabletop Simulator image sheets for both the main deck and sideboard.
 - Compare a deterministic `cardlist.sha256` digest at startup and prompt when the
   published card list changes.
 - Force a full card-database refresh from the main menu.
+- Follow the operating-system theme or select a persistent light or dark theme.
+- Reuse a hash-verified GitHub data and image snapshot during initial setup.
+- Filter cards by rules keywords extracted automatically from current ability
+  text instead of relying on a fixed keyword list.
+
+## How to use the deck builder
+
+1. Choose **Make a New Deck**, or choose **Load a Deck** to open an existing
+   editable JSON deck or text decklist.
+2. Find cards with the name, element, cost/level, type, trait, keyword,
+   expansion, and playtesting filters in the Card Search panel. Keyword choices
+   are extracted from the current card ability data, so newly published rules
+   labels can appear without an application update.
+3. Left-click a search result to display its full image and card details.
+4. Right-click a search result to add one copy to the Main Deck. Hold **Shift**
+   while right-clicking to add one copy to the Side Deck. A search result can
+   also be dragged directly into either deck area.
+5. **Right-click a card already in the Main Deck or Side Deck to remove one
+   copy.** Drag a deck card to reorder it or move it between deck areas.
+6. Choose **Sort Deck** to restore the standard automatic ordering.
+
+The deck controls provide the following file and export operations:
+
+- **Save** and **Save As** write the editable JSON deck format.
+- **Export Decklist** writes the human-readable text format used by
+  `Arthur Test Deck.txt`.
+- **Export Main** and **Export Sideboard** create Tabletop Simulator PNG sheets.
+- **Rename** changes the deck's display and default export name.
+- **Main Menu** returns to deck creation, file conversion, database update,
+  appearance settings, and the built-in **How to Use** guide.
+
+From the main menu, **Generate Deck Image from Decklist** creates a Tabletop
+Simulator sheet without opening the deck editor, while **Generate Decklist
+File** converts an editable JSON deck to the text interchange format.
 
 ## Running from source
 
@@ -59,7 +93,7 @@ artifacts for:
 - Arch Linux x64 (`.pkg.tar.zst`)
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
-such as `v0.1.1` builds the same packages and publishes them as GitHub Release
+such as `v0.1.2` builds the same packages and publishes them as GitHub Release
 assets. The macOS and Windows packages are currently unsigned; operating-system
 security prompts may therefore require the user to explicitly allow the first
 launch. Code signing can be added later when the appropriate Apple Developer and
@@ -71,11 +105,11 @@ icon and embeds the card back separately for Tabletop Simulator exports.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.1_amd64.deb
+sudo apt install ./casters-compendium_0.1.2_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.1-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.2-1-x86_64.pkg.tar.zst
 ```

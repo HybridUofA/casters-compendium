@@ -538,6 +538,12 @@ func showApplication(
 	)
 	traitSelect.SetSelected(anyOption)
 
+	keywordSelect := widget.NewSelect(
+		withAnyOption(repository.Keywords()),
+		nil,
+	)
+	keywordSelect.SetSelected(anyOption)
+
 	expansionSelect := widget.NewSelect(
 		withAnyOption(repository.Expansions()),
 		nil,
@@ -610,6 +616,10 @@ func showApplication(
 
 			Traits: optionalSelection(
 				traitSelect.Selected,
+			),
+
+			Keywords: optionalSelection(
+				keywordSelect.Selected,
 			),
 
 			CostLevels: optionalValue(
@@ -720,6 +730,12 @@ func showApplication(
 		}
 	}
 
+	keywordSelect.OnChanged = func(_ string) {
+		if !updatingFilters {
+			runSearch()
+		}
+	}
+
 	expansionSelect.OnChanged = func(_ string) {
 		if !updatingFilters {
 			runSearch()
@@ -782,6 +798,7 @@ func showApplication(
 
 			typeSelect.SetSelected(anyOption)
 			traitSelect.SetSelected(anyOption)
+			keywordSelect.SetSelected(anyOption)
 			expansionSelect.SetSelected(anyOption)
 
 			includeTestingCheck.SetChecked(false)
@@ -812,6 +829,9 @@ func showApplication(
 
 		widget.NewLabel("Trait"),
 		traitSelect,
+
+		widget.NewLabel("Keyword"),
+		keywordSelect,
 
 		widget.NewLabel("Expansion"),
 		expansionSelect,
@@ -900,6 +920,7 @@ func showApplication(
 			GenerateImage:    func() { showGenerateImageFromDecklistDialog(window, repository) },
 			GenerateDecklist: func() { showGenerateDecklistDialog(window, repository) },
 			UpdateDatabase:   func() { confirmManualCardDatabaseUpdate(window, paths, repository) },
+			HowToUse:         func() { showHowToUseDialog(window) },
 			Settings:         func() { showSettingsDialog(window, fyne.CurrentApp()) },
 		}))
 	}

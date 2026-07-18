@@ -19,6 +19,7 @@ type Filter struct {
 	Elements       []string
 	Types          []string
 	Traits         []string
+	Keywords       []string
 	CostLevels     []string
 	Expansions     []string
 	IncludeTesting bool
@@ -190,6 +191,11 @@ func (repository *Repository) Filter(options Filter) []Card {
 
 		if len(options.Traits) > 0 &&
 			!matchesAnySelected(card.Traits, options.Traits) {
+			continue
+		}
+
+		if len(options.Keywords) > 0 &&
+			!matchesAnyKeyword(card.Ability, options.Keywords) {
 			continue
 		}
 
