@@ -70,6 +70,20 @@ becomes user-visible. It includes:
 - Correcting the alignment of cards in the main deck and sideboard.
 - Bundling the new `shadow.png` application icon.
 
+### Planned for v0.1.4
+
+- Select multiple individual card copies with Control-click, or Command-click on
+  macOS.
+- Drag the selected cards to a new position as one batch while preserving their
+  relative order.
+- Preload the Duel Deck decklists and provide a deck-selection dropdown for
+  choosing which bundled deck to edit.
+- Check automatically for newer application releases and notify users when one
+  is available, with direct access to its release notes and downloads.
+- Check manually for application updates from the main menu. The first updater
+  version will guide users to the appropriate release rather than replace
+  installed application files automatically.
+
 ### Future deckbuilder work
 
 - Continue working directly with Speedrobo on art assets and prototype cards.

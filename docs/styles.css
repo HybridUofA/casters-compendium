@@ -536,12 +536,180 @@ h3 {
   border-color: rgba(174, 140, 255, 0.45);
 }
 
-.roadmap-timeline {
-  grid-template-columns: repeat(2, 1fr);
+.release-timeline {
+  position: relative;
+  display: grid;
+  gap: 1.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.release-timeline::before {
+  position: absolute;
+  top: 2rem;
+  bottom: 2rem;
+  left: 1.05rem;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--violet),
+    var(--cyan) 67%,
+    rgba(112, 230, 220, 0.2)
+  );
+  content: "";
+}
+
+.release-timeline > li {
+  position: relative;
+  padding-left: 4rem;
+}
+
+.release-timeline > li::before {
+  position: absolute;
+  top: 1.75rem;
+  left: 0.58rem;
+  z-index: 1;
+  width: 0.95rem;
+  height: 0.95rem;
+  background: #0e0b1b;
+  border: 3px solid var(--violet);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.4rem rgba(174, 140, 255, 0.1);
+  content: "";
+}
+
+.release-timeline > .release-current::before {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 0.45rem rgba(112, 230, 220, 0.14);
+}
+
+.release-timeline > .release-planned::before {
+  border-color: var(--cyan);
+}
+
+.release-timeline > .release-future::before {
+  border-color: rgba(112, 230, 220, 0.45);
+  box-shadow: none;
+}
+
+.release-card {
+  padding: clamp(1.4rem, 4vw, 2rem);
+  background: linear-gradient(145deg, rgba(39, 30, 68, 0.72), rgba(22, 17, 41, 0.82));
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: 0 16px 44px rgba(3, 1, 12, 0.18);
+}
+
+.release-current .release-card {
+  border-color: rgba(112, 230, 220, 0.48);
+  box-shadow: 0 18px 50px rgba(42, 167, 164, 0.12);
+}
+
+.release-planned .release-card {
+  border-color: rgba(112, 230, 220, 0.32);
+  border-style: dashed;
+}
+
+.release-future .release-card {
+  background: linear-gradient(145deg, rgba(39, 30, 68, 0.45), rgba(14, 11, 27, 0.72));
+  border-color: rgba(112, 230, 220, 0.2);
+}
+
+.release-card-heading {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+
+.release-card-heading .version {
+  margin-top: 0;
+}
+
+.release-card-heading h2 {
+  max-width: 22ch;
+  margin-bottom: 0;
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  letter-spacing: -0.035em;
+}
+
+.release-meta {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: flex-end;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.release-status {
+  padding: 0.25rem 0.65rem;
+  color: var(--ink);
+  background: rgba(174, 140, 255, 0.12);
+  border: 1px solid rgba(174, 140, 255, 0.28);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.release-current .release-status,
+.release-planned .release-status {
+  background: rgba(112, 230, 220, 0.1);
+  border-color: rgba(112, 230, 220, 0.3);
+}
+
+.release-card > p {
+  max-width: 76ch;
+  color: var(--muted);
+}
+
+.release-highlights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 2rem;
+  margin: 1.25rem 0 0;
+  padding-left: 1.25rem;
+  color: var(--muted);
+}
+
+.release-highlights li::marker {
+  color: var(--cyan);
+}
+
+.release-link {
+  display: inline-block;
+  margin-top: 1.35rem;
+}
+
+.roadmap-parallel {
+  margin: 4rem 0 1.5rem 4rem;
+  padding: clamp(1.5rem, 4vw, 2.2rem);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+
+.roadmap-parallel h2 {
+  margin-bottom: 0.7rem;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+}
+
+.roadmap-parallel p:last-child {
+  max-width: 74ch;
+  margin-bottom: 0;
+  color: var(--muted);
 }
 
 .roadmap-note {
   max-width: 760px;
+  margin-left: 4rem;
 }
 
 .callout {
@@ -999,6 +1167,37 @@ footer a:focus-visible {
 
   .legacy-links {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .release-timeline::before {
+    left: 0.55rem;
+  }
+
+  .release-timeline > li {
+    padding-left: 2.35rem;
+  }
+
+  .release-timeline > li::before {
+    left: 0.08rem;
+  }
+
+  .release-card-heading {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .release-meta {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .release-highlights {
+    grid-template-columns: 1fr;
+  }
+
+  .roadmap-parallel,
+  .roadmap-note {
+    margin-left: 0;
   }
 
   .option-grid,

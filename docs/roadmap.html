@@ -29,34 +29,161 @@
       <div class="page-hero">
         <p class="eyebrow">Project roadmap</p>
         <h1>The deckbuilder is the foundation.</h1>
-        <p class="intro">Near-term work focuses on refinement and community collaboration before the simulator becomes the central development effort.</p>
+        <p class="intro">Follow each release from the first packaged deckbuilder through the planned simulator, with dates and a summary of what changed along the way.</p>
       </div>
     </header>
 
     <main id="main-content">
       <section class="section">
-        <div class="timeline roadmap-timeline">
-          <article class="complete">
-            <p class="version">v0.1.3 · Released</p>
-            <h2>Deckbuilder refinement</h2>
-            <p>Hover previews, drag-to-search removal, corrected card alignment, a new application icon, and a shared architecture for card data and game rules.</p>
-          </article>
-          <article>
-            <p class="version">Future deckbuilder work</p>
-            <h2>Art and personalization</h2>
-            <p>Continued collaboration with Speedrobo on assets and prototypes, plus optional element and Caster backgrounds when artwork and permissions are ready.</p>
-          </article>
-          <article>
-            <p class="version">Future deckbuilder work</p>
-            <h2>Application update awareness</h2>
-            <p>A background version check could notify users when a newer release is available and link directly to its changelog and downloads. Package-specific self-updating is not planned for the first version.</p>
-          </article>
-          <article class="future">
-            <p class="version">v0.2.0 · Simulator begins</p>
-            <h2>A first playable foundation</h2>
-            <p>The initial simulator will be intentionally rudimentary. It is a large experimental project with no promised delivery date.</p>
-          </article>
+        <div class="section-heading">
+          <p class="eyebrow">Release timeline</p>
+          <h2>How the project is evolving.</h2>
+          <p>Completed entries use their Git tag dates. Planned releases remain undated until their scope and implementation are ready.</p>
         </div>
+
+        <ol class="release-timeline" aria-label="Caster's Compendium release history and roadmap">
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.1.0</p>
+                  <h2>First packaged deckbuilder</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Released</span>
+                  <time datetime="2026-07-17">July 17, 2026</time>
+                </div>
+              </div>
+              <p>The first downloadable desktop release brought the established card browser and deckbuilding workflow to Windows, Linux, and both Intel and Apple Silicon Macs.</p>
+              <ul class="release-highlights">
+                <li>Search and filter the local card catalog.</li>
+                <li>Build and order main decks and sideboards.</li>
+                <li>Import and export JSON and text deck formats.</li>
+                <li>Create Tabletop Simulator image sheets.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/caster-deckbuilder/releases/tag/v0.1.0">View the v0.1.0 release <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.1.1</p>
+                  <h2>Linux build reliability</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Released</span>
+                  <time datetime="2026-07-17">July 17, 2026</time>
+                </div>
+              </div>
+              <p>A focused maintenance release corrected the Linux packaging prerequisites needed by Fyne's Wayland support, making the automated desktop build more dependable.</p>
+              <ul class="release-highlights">
+                <li>Repaired the Linux release workflow.</li>
+                <li>Kept the existing deckbuilder behavior stable.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/caster-deckbuilder/releases/tag/v0.1.1">View the v0.1.1 release <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.1.2</p>
+                  <h2>Search, appearance, and Linux packages</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Released</span>
+                  <time datetime="2026-07-17">July 17, 2026</time>
+                </div>
+              </div>
+              <p>The deckbuilder gained more expressive search and personalization while expanding from a general Linux archive to native Debian, Ubuntu, and Arch packages.</p>
+              <ul class="release-highlights">
+                <li>Added data-driven rules-keyword filtering.</li>
+                <li>Added system, light, and dark appearance settings.</li>
+                <li>Added a hash-verified GitHub data bootstrap.</li>
+                <li>Corrected canonical card-printing matches.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/caster-deckbuilder/releases/tag/v0.1.2">View the v0.1.2 release <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete release-current">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.1.3</p>
+                  <h2>Refinement and shared architecture</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Current release</span>
+                  <time datetime="2026-07-18">July 18, 2026</time>
+                </div>
+              </div>
+              <p>A refinement release improved everyday deck editing and reorganized the project around shared card and game packages in preparation for simulator development.</p>
+              <ul class="release-highlights">
+                <li>Added hover previews and drag-to-search removal.</li>
+                <li>Corrected deck-grid alignment and sizing.</li>
+                <li>Introduced the new application icon.</li>
+                <li>Established the shared repository and project website.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.1.3">View the v0.1.3 release <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-planned">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.1.4</p>
+                  <h2>Batch movement, Duel Decks, and updates</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Planned</span>
+                  <span>Date not set</span>
+                </div>
+              </div>
+              <p>The next deckbuilder release is planned to make custom organization faster, provide ready-to-edit Duel Decks, and help users discover new application versions.</p>
+              <ul class="release-highlights">
+                <li>Select card copies with Control-click or Command-click.</li>
+                <li>Move selected cards as one ordered batch.</li>
+                <li>Preload the Duel Deck decklists.</li>
+                <li>Choose a bundled deck to edit from a deck selector.</li>
+                <li>Check automatically and manually for application updates.</li>
+                <li>Link users directly to release notes and downloads.</li>
+              </ul>
+            </article>
+          </li>
+
+          <li class="release-future">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.2.0</p>
+                  <h2>A first playable simulator foundation</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Future</span>
+                  <span>Date not set</span>
+                </div>
+              </div>
+              <p>The initial simulator will be intentionally rudimentary: a first playable foundation for the project's largest and most experimental development phase.</p>
+              <ul class="release-highlights">
+                <li>Begin user-visible simulator development.</li>
+                <li>Reuse the shared card, deck, and local-data packages.</li>
+                <li>Iterate without promising a completion date.</li>
+              </ul>
+            </article>
+          </li>
+        </ol>
+
+        <aside class="roadmap-parallel" aria-labelledby="ongoing-work-title">
+          <p class="eyebrow">Ongoing alongside releases</p>
+          <h2 id="ongoing-work-title">Art and personalization</h2>
+          <p>Continued collaboration with Speedrobo on assets and prototypes, plus optional element and Caster backgrounds when artwork and permissions are ready.</p>
+        </aside>
+
         <div class="guide-note roadmap-note">
           <strong>Plans can change:</strong> Tester feedback, available art, game-data changes, and the complexity of simulator rules may shift priorities or timing.
         </div>
