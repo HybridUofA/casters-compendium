@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 )
 
 // TestReadDeckListArthurFormat verifies the reference text format loads both zones and order.

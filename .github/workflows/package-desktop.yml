@@ -4,8 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feature/casters-compendium
-      - refactor/compendium-monorepo
+      - main
     tags:
       - "v*"
     paths:
@@ -23,7 +22,7 @@ permissions:
 env:
   APP_NAME: "Caster's Compendium"
   APP_ID: io.github.hybriduofa.casterdeckbuilder
-  APP_VERSION: 0.1.2
+  APP_VERSION: 0.1.3
   APP_BUILD: 1
 
 jobs:
@@ -41,11 +40,11 @@ jobs:
           - label: Debian and Ubuntu x64
             runner: ubuntu-22.04
             target: debian
-            artifact: casters-compendium_0.1.2_amd64
+            artifact: casters-compendium_0.1.3_amd64
           - label: Arch Linux x64
             runner: ubuntu-24.04
             target: arch
-            artifact: casters-compendium-0.1.2-1-x86_64
+            artifact: casters-compendium-0.1.3-1-x86_64
           - label: Windows x64
             runner: windows-2025
             target: windows
@@ -181,6 +180,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out release notes
+        uses: actions/checkout@v6
+
       - name: Download packaged applications
         uses: actions/download-artifact@v5
         with:
@@ -191,4 +193,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create "$GITHUB_REF_NAME" release-assets/* --verify-tag --generate-notes
+        shell: bash
+        run: |
+          notes_file="docs/releases/${GITHUB_REF_NAME}.md"
+          if [[ -f "$notes_file" ]]; then
+            gh release create "$GITHUB_REF_NAME" release-assets/* \
+              --verify-tag \
+              --title "Caster's Compendium $GITHUB_REF_NAME" \
+              --notes-file "$notes_file"
+          else
+            gh release create "$GITHUB_REF_NAME" release-assets/* \
+              --verify-tag \
+              --generate-notes
+          fi

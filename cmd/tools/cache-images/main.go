@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
-	cardimages "github.com/HybridUofA/caster-deckbuilder/internal/carddata/images"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 )
 
 // main caches every missing card image in the bundled development database.

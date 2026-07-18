@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/game/cards"
 )
 
 // TestCardTileMouseInSelectsCard verifies entering a tile updates the card preview once.

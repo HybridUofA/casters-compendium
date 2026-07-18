@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	cardupdate "github.com/HybridUofA/caster-deckbuilder/internal/carddata/update"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/cards"
-	"github.com/HybridUofA/caster-deckbuilder/internal/sources/speedrobo"
+	cardupdate "github.com/HybridUofA/casters-compendium/internal/carddata/update"
+	"github.com/HybridUofA/casters-compendium/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
 )
 
 // main converts raw Speedrobo card details into the normalized shared card schema.

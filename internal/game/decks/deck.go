@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	gamecards "github.com/HybridUofA/caster-deckbuilder/internal/game/cards"
+	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
 )
 
 // CardCatalog supplies the card lookups required by deck rules and ordering.

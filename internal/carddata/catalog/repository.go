@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	gamecards "github.com/HybridUofA/caster-deckbuilder/internal/game/cards"
+	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
 )
 
 // Card aliases the shared game card model for catalog consumers.

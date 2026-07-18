@@ -18,10 +18,10 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
-	cardimages "github.com/HybridUofA/caster-deckbuilder/internal/carddata/images"
-	localdata "github.com/HybridUofA/caster-deckbuilder/internal/carddata/local"
-	"github.com/HybridUofA/caster-deckbuilder/internal/sources/speedrobo"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
+	localdata "github.com/HybridUofA/casters-compendium/internal/carddata/local"
+	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
 )
 
 const (
@@ -32,10 +32,10 @@ const (
 const setupDownloadWorkers = 6
 
 const (
-	githubCardDataRootURL = "https://raw.githubusercontent.com/HybridUofA/caster-deckbuilder/main/data"
+	githubCardDataRootURL = "https://raw.githubusercontent.com/HybridUofA/casters-compendium/main/data"
 	githubCardDatabaseURL = githubCardDataRootURL + "/cards.json"
 	maxCardDatabaseBytes  = 10 << 20
-	cardDatabaseUserAgent = "CastersCompendium/0.1"
+	cardDatabaseUserAgent = "CastersCompendium/0.1.3"
 )
 
 type applicationPaths = localdata.Paths

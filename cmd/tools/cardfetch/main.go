@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 	"log"
 )
 

@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
-	"github.com/HybridUofA/caster-deckbuilder/internal/sources/speedrobo"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
 )
 
 // TestCardListHashesMatchAcrossLocalAndRemoteRepresentations verifies canonical ordering and casing.

@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)

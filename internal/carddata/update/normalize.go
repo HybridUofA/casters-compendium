@@ -4,8 +4,8 @@ package cardupdate
 import (
 	"fmt"
 
-	gamecards "github.com/HybridUofA/caster-deckbuilder/internal/game/cards"
-	"github.com/HybridUofA/caster-deckbuilder/internal/sources/speedrobo"
+	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
 )
 
 // FromSpeedrobo maps a remote card-detail record into the application's normalized Card model.

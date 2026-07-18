@@ -13,11 +13,11 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
-	cardimages "github.com/HybridUofA/caster-deckbuilder/internal/carddata/images"
-	deckexport "github.com/HybridUofA/caster-deckbuilder/internal/deckbuilder/export"
-	deckgui "github.com/HybridUofA/caster-deckbuilder/internal/deckbuilder/ui"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/decks"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
+	deckexport "github.com/HybridUofA/casters-compendium/internal/deckbuilder/export"
+	deckgui "github.com/HybridUofA/casters-compendium/internal/deckbuilder/ui"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
 // checkedValues returns option names whose corresponding checkboxes are selected.
@@ -116,6 +116,47 @@ func showDeckImageExportDialog(
 	)
 	exportDialog.SetFileName(safeDeckFileName(deck.Name) + fileSuffix + ".png")
 	exportDialog.Show()
+}
+
+// applyCardDrop applies a completed drag operation to the active deck.
+func applyCardDrop(
+	deck *decks.Deck,
+	repository decks.CardCatalog,
+	source deckgui.CardDragSource,
+	target *deckgui.CardDropTarget,
+) error {
+	if target == nil {
+		return nil
+	}
+
+	if target.Remove {
+		if source.Kind != deckgui.DragFromDeck {
+			return nil
+		}
+		return deck.RemoveCardAt(source.Zone, source.Index)
+	}
+
+	switch source.Kind {
+	case deckgui.DragFromSearch:
+		_, err := deck.AddCardCheckedAt(
+			target.Zone,
+			source.Card,
+			1,
+			repository,
+			target.Index,
+		)
+		return err
+	case deckgui.DragFromDeck:
+		_, err := deck.MoveOrderedCard(
+			source.Zone,
+			source.Index,
+			target.Zone,
+			target.Index,
+		)
+		return err
+	default:
+		return fmt.Errorf("unknown card drag source %d", source.Kind)
+	}
 }
 
 // showApplication builds the main menu and deck editor around the active card repository.
@@ -363,20 +404,8 @@ func showApplication(
 
 	dragController = deckgui.NewCardDragController(dragLayer, mainDeckPanel, sideDeckPanel, mainDeckGrid, sideDeckGrid, func(source deckgui.CardDragSource, target *deckgui.CardDropTarget) {
 		defer refreshDeckDisplay()
-		if target == nil {
-			return
-		}
-		switch source.Kind {
-		case deckgui.DragFromSearch:
-			_, err := deck.AddCardCheckedAt(target.Zone, source.Card, 1, repository, target.Index)
-			if err != nil {
-				dialog.ShowError(err, window)
-			}
-		case deckgui.DragFromDeck:
-			_, err := deck.MoveOrderedCard(source.Zone, source.Index, target.Zone, target.Index)
-			if err != nil {
-				dialog.ShowError(err, window)
-			}
+		if err := applyCardDrop(deck, repository, source, target); err != nil {
+			dialog.ShowError(err, window)
 		}
 	},
 	)
@@ -816,6 +845,7 @@ func showApplication(
 
 	searchControls := container.NewVBox(
 		widget.NewLabel("Card Search"),
+		widget.NewLabel("Drag a deck card into this panel to remove it."),
 
 		searchEntry,
 
@@ -857,6 +887,7 @@ func showApplication(
 		),
 	)
 	rightPanel.SetOffset(0.58)
+	dragController.SetRemovalTarget(rightPanel)
 
 	/*
 		Complete application layout

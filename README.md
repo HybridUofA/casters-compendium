@@ -4,6 +4,8 @@ Caster's Compendium is a desktop card browser and deck builder for Caster
 Chronicles. It supports editable JSON decks, human-readable text decklists, and
 Tabletop Simulator image sheets for both the main deck and sideboard.
 
+Project website: <https://hybriduofa.github.io/casters-compendium/>
+
 ## Features
 
 ### Deck building
@@ -13,6 +15,7 @@ Tabletop Simulator image sheets for both the main deck and sideboard.
 - Drag cards from search results into either deck area, move them between the
   main deck and sideboard, and reorder them for personal theorycrafting and
   custom organization. **Sort Deck** restores the standard ordering.
+- Drag a deck card onto the Card Search panel to remove one copy.
 - Preview card artwork on hover or click and read the card's full details in the
   information panel.
 - Follow the operating-system theme or select a persistent light or dark theme.
@@ -48,15 +51,20 @@ Tabletop Simulator image sheets for both the main deck and sideboard.
 
 ## Roadmap
 
-### Upcoming in v0.1.3
+### What's new in v0.1.3
 
-v0.1.3 is planned as a deckbuilder-focused refinement release before simulator
-development becomes user-visible. Work targeted for this release includes:
+v0.1.3 is a deckbuilder-focused refinement release before simulator development
+becomes user-visible. It includes:
 
-- Working directly with Speedrobo on art assets and prototype cards.
 - Showing card previews on hover instead of requiring a click.
 - Allowing a card to be dragged from the main deck or sideboard back to the
   search area to remove it.
+- Correcting the alignment of cards in the main deck and sideboard.
+- Bundling the new `shadow.png` application icon.
+
+### Future deckbuilder work
+
+- Continue working directly with Speedrobo on art assets and prototype cards.
 - Adding optional backgrounds, primarily eight element-themed designs and
   potentially five designs for the OC-tier Casters, subject to their creators'
   permission.
@@ -81,7 +89,8 @@ promised delivery date.
    while right-clicking to add one copy to the Side Deck. A search result can
    also be dragged directly into either deck area.
 5. **Right-click a card already in the Main Deck or Side Deck to remove one
-   copy.** Drag a deck card to reorder it or move it between deck areas.
+   copy, or drag it onto the Card Search panel.** Drag a deck card within or
+   between deck areas to reorder or move it.
 6. Choose **Sort Deck** to restore the standard automatic ordering.
 
 The deck controls provide the following file and export operations:
@@ -168,7 +177,7 @@ artifacts for:
 - Arch Linux x64 (`.pkg.tar.zst`)
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
-such as `v0.1.2` builds the same packages and publishes them as GitHub Release
+such as `v0.1.3` builds the same packages and publishes them as GitHub Release
 assets. The macOS and Windows packages are currently unsigned; operating-system
 security prompts may therefore require the user to explicitly allow the first
 launch. Code signing can be added later when the appropriate Apple Developer and
@@ -180,11 +189,11 @@ embeds `MTD-back-ver01.png` separately for Tabletop Simulator exports.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.2_amd64.deb
+sudo apt install ./casters-compendium_0.1.3_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.2-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.3-1-x86_64.pkg.tar.zst
 ```

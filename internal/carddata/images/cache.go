@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/game/cards"
 )
 
 const maxImageBytes = 25 << 20

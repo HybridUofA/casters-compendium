@@ -7,20 +7,22 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/theme"
 
-	cardimages "github.com/HybridUofA/caster-deckbuilder/internal/carddata/images"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/decks"
+	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
 type CardDropTarget struct {
-	Zone  decks.Zone
-	Index int
+	Zone   decks.Zone
+	Index  int
+	Remove bool
 }
 
 type CardDragController struct {
 	Layer *fyne.Container
 
-	MainPanel fyne.CanvasObject
-	SidePanel fyne.CanvasObject
+	MainPanel     fyne.CanvasObject
+	SidePanel     fyne.CanvasObject
+	RemovalTarget fyne.CanvasObject
 
 	MainGrid *fyne.Container
 	SideGrid *fyne.Container
@@ -38,6 +40,11 @@ type CardDragController struct {
 	placeholder *canvas.Rectangle
 
 	target *CardDropTarget
+}
+
+// SetRemovalTarget configures the area where deck cards can be dropped to remove them.
+func (controller *CardDragController) SetRemovalTarget(target fyne.CanvasObject) {
+	controller.RemovalTarget = target
 }
 
 // NewCardDragController coordinates drag ghosts, placeholders, and zone drop callbacks.
@@ -122,6 +129,12 @@ func (controller *CardDragController) Move(
 	}
 
 	controller.moveGhost(position)
+	if controller.source.Kind == DragFromDeck && containsAbsolutePosition(controller.RemovalTarget, position) {
+		controller.clearPlaceholder()
+		controller.target = &CardDropTarget{Remove: true}
+		return
+	}
+
 	zone, found := controller.zoneAt(position)
 	if !found {
 		controller.clearPlaceholder()

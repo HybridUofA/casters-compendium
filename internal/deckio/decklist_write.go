@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/decks"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
 // WriteDeckList emits the human-readable main- and side-deck interchange format.

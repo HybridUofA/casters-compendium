@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/decks"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
 // ReadDeckList parses the text format produced by WriteDeckList.

@@ -25,6 +25,7 @@ You can also drag a search result directly into either deck area.
 ## Remove or move cards
 
 - **Right-click a card already in the Main Deck or Side Deck to remove one copy.**
+- Drag a deck card onto the **Card Search** panel to remove one copy.
 - Drag a deck card to reorder it or move it between the Main Deck and Side Deck.
 - Choose **Sort Deck** to restore the standard automatic ordering.
 

@@ -7,9 +7,9 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
-	cardimages "github.com/HybridUofA/caster-deckbuilder/internal/carddata/images"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/cards"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/decks"
+	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
+	"github.com/HybridUofA/casters-compendium/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
 var defaultCardTileSize = fyne.NewSize(130, 182)

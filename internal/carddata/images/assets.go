@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	dataassets "github.com/HybridUofA/caster-deckbuilder/data"
+	dataassets "github.com/HybridUofA/casters-compendium/data"
 )
 
 // CardBackFileName is the stable filename used by Tabletop Simulator exports.

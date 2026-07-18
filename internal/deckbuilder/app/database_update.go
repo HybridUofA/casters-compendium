@@ -18,10 +18,10 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
-	cardimages "github.com/HybridUofA/caster-deckbuilder/internal/carddata/images"
-	cardupdate "github.com/HybridUofA/caster-deckbuilder/internal/carddata/update"
-	"github.com/HybridUofA/caster-deckbuilder/internal/sources/speedrobo"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
+	cardupdate "github.com/HybridUofA/casters-compendium/internal/carddata/update"
+	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
 )
 
 type remoteCardList struct {

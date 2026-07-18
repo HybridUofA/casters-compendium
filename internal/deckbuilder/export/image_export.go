@@ -13,8 +13,8 @@ import (
 	"os"
 	"path/filepath"
 
-	cardimages "github.com/HybridUofA/caster-deckbuilder/internal/carddata/images"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/decks"
+	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 	xdraw "golang.org/x/image/draw"
 	_ "golang.org/x/image/webp"
 )

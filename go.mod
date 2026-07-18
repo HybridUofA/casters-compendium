@@ -1,4 +1,4 @@
-module github.com/HybridUofA/caster-deckbuilder
+module github.com/HybridUofA/casters-compendium
 
 go 1.26.5
 

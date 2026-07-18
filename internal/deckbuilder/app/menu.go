@@ -9,9 +9,9 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
-	"github.com/HybridUofA/caster-deckbuilder/internal/deckio"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/decks"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	"github.com/HybridUofA/casters-compendium/internal/deckio"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
 type mainMenuActions struct {

@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	cards "github.com/HybridUofA/caster-deckbuilder/internal/carddata/catalog"
-	"github.com/HybridUofA/caster-deckbuilder/internal/deckio"
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/decks"
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	"github.com/HybridUofA/casters-compendium/internal/deckio"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
 // main provides the legacy deck CLI entry point; interactive behavior is exposed through InitCLI.

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/HybridUofA/caster-deckbuilder/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/game/cards"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)

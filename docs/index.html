@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Caster's Compendium is a desktop deck builder and card browser for Caster Chronicles.">
+    <meta name="theme-color" content="#17122b">
+    <title>Caster's Compendium</title>
+    <link rel="icon" href="assets/shadow.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <header class="hero">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="#top" aria-label="Caster's Compendium home">
+          <img src="assets/shadow.png" alt="" width="42" height="42">
+          <span>Caster's Compendium</span>
+        </a>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#downloads">Downloads</a>
+          <a href="#roadmap">Roadmap</a>
+          <a href="https://github.com/HybridUofA/casters-compendium">GitHub</a>
+        </div>
+      </nav>
+
+      <div class="hero-grid" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow">A desktop toolkit for Caster Chronicles</p>
+          <h1>Build, organize, share, and play your way.</h1>
+          <p class="intro">
+            Caster's Compendium combines a searchable card library with a
+            flexible deck editor, tournament decklists, and Tabletop Simulator
+            exports. The first simulator is planned for v0.2.0.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/HybridUofA/casters-compendium/releases/latest">Download v0.1.3</a>
+            <a class="button secondary" href="https://github.com/HybridUofA/casters-compendium#how-to-use-the-deck-builder">Read the guide</a>
+          </div>
+          <ul class="platforms" aria-label="Supported platforms">
+            <li>Windows</li>
+            <li>macOS Intel</li>
+            <li>macOS Apple Silicon</li>
+            <li>Linux</li>
+          </ul>
+        </div>
+
+        <aside class="app-card" aria-label="Application overview">
+          <div class="window-bar" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="app-card-body">
+            <img class="app-icon" src="assets/shadow.png" alt="Caster's Compendium shadow icon">
+            <p class="app-label">Version 0.1.3</p>
+            <h2>Deckbuilding without busywork</h2>
+            <div class="stat-grid">
+              <div><strong>2</strong><span>deck zones</span></div>
+              <div><strong>8+</strong><span>search filters</span></div>
+              <div><strong>3</strong><span>export formats</span></div>
+              <div><strong>6</strong><span>desktop packages</span></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="section" id="features">
+        <div class="section-heading">
+          <p class="eyebrow">Current features</p>
+          <h2>Everything needed to move from an idea to a playable deck.</h2>
+        </div>
+        <div class="feature-grid">
+          <article>
+            <span class="feature-number">01</span>
+            <h3>Flexible deck editing</h3>
+            <p>Build main decks and sideboards with copy limits enforced. Drag cards to add, move, reorder, or remove them, then sort whenever you want the standard order back.</p>
+          </article>
+          <article>
+            <span class="feature-number">02</span>
+            <h3>Full card search</h3>
+            <p>Filter by name, type, trait, ability keyword, element, expansion, cost or level, and playtesting status. Preview artwork and rules text on hover.</p>
+          </article>
+          <article>
+            <span class="feature-number">03</span>
+            <h3>Sharing and tournaments</h3>
+            <p>Save editable JSON decks, import human-readable decklists, and export card-code text files suitable for sharing or tournament submission.</p>
+          </article>
+          <article>
+            <span class="feature-number">04</span>
+            <h3>Tabletop Simulator</h3>
+            <p>Generate image sheets for both the main deck and sideboard using the bundled card back, ready to import into Tabletop Simulator.</p>
+          </article>
+          <article>
+            <span class="feature-number">05</span>
+            <h3>Local card library</h3>
+            <p>Download card data, full artwork, and thumbnails concurrently. Cached assets are shared by the deckbuilder and the future simulator.</p>
+          </article>
+          <article>
+            <span class="feature-number">06</span>
+            <h3>Update awareness</h3>
+            <p>A deterministic card-list hash detects published database changes, while a manual update action keeps control in the player's hands.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section release-section" id="downloads">
+        <div>
+          <p class="eyebrow">Latest release</p>
+          <h2>Get Caster's Compendium v0.1.3</h2>
+          <p>Choose the native package for your system from the GitHub release. Windows and macOS packages are currently unsigned and may show a first-launch security prompt.</p>
+          <a class="text-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.1.3">View downloads and installation details <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="package-list" aria-label="Available packages">
+          <span>Windows x64</span>
+          <span>macOS Intel</span>
+          <span>macOS Apple Silicon</span>
+          <span>Linux x64 archive</span>
+          <span>Debian / Ubuntu .deb</span>
+          <span>Arch Linux package</span>
+        </div>
+      </section>
+
+      <section class="section roadmap-section" id="roadmap">
+        <div class="section-heading">
+          <p class="eyebrow">Roadmap</p>
+          <h2>The deckbuilder is the foundation, not the finish line.</h2>
+        </div>
+        <div class="timeline">
+          <article>
+            <p class="version">v0.1.3 · Deckbuilder refinement</p>
+            <h3>Faster, clearer deck editing</h3>
+            <p>Hover previews, drag-to-search removal, corrected card alignment, a new application icon, and a shared architecture for card data and game rules.</p>
+          </article>
+          <article>
+            <p class="version">Future deckbuilder work</p>
+            <h3>Art and personalization</h3>
+            <p>Continued collaboration with Speedrobo on assets and prototypes, plus optional element and Caster backgrounds when artwork and permissions are ready.</p>
+          </article>
+          <article class="future">
+            <p class="version">v0.2.0 · Simulator begins</p>
+            <h3>A first playable foundation</h3>
+            <p>The initial simulator will be intentionally rudimentary. It is a large experimental project with no promised delivery date.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section callout">
+        <div>
+          <p class="eyebrow">Open development</p>
+          <h2>Follow the project as it grows.</h2>
+          <p>Source code, documentation, release notes, and development progress live together in the public GitHub repository.</p>
+        </div>
+        <a class="button primary" href="https://github.com/HybridUofA/casters-compendium">View on GitHub</a>
+      </section>
+    </main>
+
+    <footer>
+      <p>Caster's Compendium is a community tool for Caster Chronicles.</p>
+      <p>This site uses no analytics and collects no visitor data.</p>
+    </footer>
+  </body>
+</html>
