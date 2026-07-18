@@ -3,12 +3,24 @@ package main
 import (
 	"context"
 	"errors"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/HybridUofA/caster-deckbuilder/internal/cards"
 )
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+// RoundTrip lets tests provide an in-memory HTTP transport without opening sockets.
+func (function roundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) {
+	return function(request)
+}
 
 // TestNewApplicationPathsUsesApplicationRoot verifies all managed files stay under Fyne storage.
 func TestNewApplicationPathsUsesApplicationRoot(t *testing.T) {
@@ -32,7 +44,7 @@ func TestLoadOrDownloadCardDatabaseUsesLocalDatabase(t *testing.T) {
 	}
 
 	progressCalled := false
-	repository, err := loadOrDownloadCardDatabase(
+	repository, useGitHubImages, err := loadOrDownloadCardDatabase(
 		context.Background(),
 		path,
 		func(string, int, int) { progressCalled = true },
@@ -43,8 +55,79 @@ func TestLoadOrDownloadCardDatabaseUsesLocalDatabase(t *testing.T) {
 	if progressCalled {
 		t.Fatal("download progress was reported for an existing local database")
 	}
+	if useGitHubImages {
+		t.Fatal("existing local database unexpectedly selected GitHub images")
+	}
 	if len(repository.All()) != 1 {
 		t.Fatalf("loaded %d cards", len(repository.All()))
+	}
+}
+
+// TestDownloadGitHubCardDatabase verifies normalized snapshots are requested and validated.
+func TestDownloadGitHubCardDatabase(t *testing.T) {
+	client := &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		if request.Header.Get("User-Agent") != cardDatabaseUserAgent {
+			t.Errorf("User-Agent = %q", request.Header.Get("User-Agent"))
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     "200 OK",
+			Header:     http.Header{"Content-Type": []string{"application/json"}},
+			Body: io.NopCloser(strings.NewReader(
+				`[{"id":"1","name":"GitHub Card","image_url":"https://example.com/1.png","expansion":"Test","card_number":"T-1"}]`,
+			)),
+			Request: request,
+		}, nil
+	})}
+
+	progressCalled := false
+	repository, err := downloadGitHubCardDatabase(
+		context.Background(),
+		client,
+		"https://example.test/cards.json",
+		func(string, int, int) { progressCalled = true },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !progressCalled {
+		t.Fatal("download progress was not reported")
+	}
+	card, found := repository.FindByID("1")
+	if !found || card.Name != "GitHub Card" {
+		t.Fatalf("downloaded card = %#v, found = %t", card, found)
+	}
+}
+
+// TestDownloadGitHubCardDatabaseRejectsInvalidData verifies malformed snapshots are not installed.
+func TestDownloadGitHubCardDatabaseRejectsInvalidData(t *testing.T) {
+	client := &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     "200 OK",
+			Header:     make(http.Header),
+			Body:       io.NopCloser(strings.NewReader(`{"not":"a card list"}`)),
+			Request:    request,
+		}, nil
+	})}
+
+	_, err := downloadGitHubCardDatabase(
+		context.Background(),
+		client,
+		"https://example.test/cards.json",
+		nil,
+	)
+	if err == nil || !strings.Contains(err.Error(), "decode GitHub card database") {
+		t.Fatalf("downloadGitHubCardDatabase() error = %v", err)
+	}
+}
+
+// TestGitHubCardImageURL verifies card IDs map to the version-controlled PNG path.
+func TestGitHubCardImageURL(t *testing.T) {
+	got := githubCardImageURL(cards.Card{ID: " 123 "})
+	want := githubCardDataRootURL + "/images/123.png"
+	if got != want {
+		t.Fatalf("githubCardImageURL() = %q, want %q", got, want)
 	}
 }
 

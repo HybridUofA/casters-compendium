@@ -65,6 +65,17 @@ func Download(
 	directory string,
 	card cards.Card,
 ) (string, bool, error) {
+	return DownloadFromURL(ctx, client, directory, card, card.ImageURL)
+}
+
+// DownloadFromURL caches a card image from an explicit source URL.
+func DownloadFromURL(
+	ctx context.Context,
+	client *http.Client,
+	directory string,
+	card cards.Card,
+	imageURL string,
+) (string, bool, error) {
 	if client == nil {
 		return "", false, fmt.Errorf(
 			"HTTP client cannot be nil",
@@ -86,7 +97,7 @@ func Download(
 		return existingPath, false, nil
 	}
 
-	imageURL := strings.TrimSpace(card.ImageURL)
+	imageURL = strings.TrimSpace(imageURL)
 	if imageURL == "" {
 		return "", false, fmt.Errorf(
 			"card %q has no image URL",

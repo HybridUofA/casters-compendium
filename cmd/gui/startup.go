@@ -2,9 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"fyne.io/fyne/v2"
@@ -23,6 +29,13 @@ const (
 )
 
 const setupDownloadWorkers = 6
+
+const (
+	githubCardDataRootURL = "https://raw.githubusercontent.com/HybridUofA/caster-deckbuilder/main/data"
+	githubCardDatabaseURL = githubCardDataRootURL + "/cards.json"
+	maxCardDatabaseBytes  = 10 << 20
+	cardDatabaseUserAgent = "CastersCompendium/0.1"
+)
 
 type applicationPaths struct {
 	Root          string
@@ -50,6 +63,7 @@ type setupProgress func(message string, current int, total int)
 // main creates the desktop application, prepares local data, and enters the Fyne event loop.
 func main() {
 	guiApp := app.NewWithID(applicationID)
+	loadAppearanceTheme(guiApp)
 	window := guiApp.NewWindow(applicationName)
 	window.Resize(fyne.NewSize(1400, 850))
 
@@ -167,12 +181,20 @@ func initializeApplicationData(
 		return nil, err
 	}
 
-	repository, err := loadOrDownloadCardDatabase(ctx, paths.CardDatabase, progress)
+	repository, useGitHubImages, err := loadOrDownloadCardDatabase(
+		ctx,
+		paths.CardDatabase,
+		progress,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := cacheCardImages(ctx, paths, repository, progress); err != nil {
+	cacheImages := cacheCardImages
+	if useGitHubImages {
+		cacheImages = cacheGitHubCardImages
+	}
+	if err := cacheImages(ctx, paths, repository, progress); err != nil {
 		return nil, err
 	}
 
@@ -198,6 +220,27 @@ func cacheCardImages(
 	repository *cards.Repository,
 	progress setupProgress,
 ) error {
+	return cacheCardImagesUsing(ctx, paths, repository, nil, progress)
+}
+
+// cacheGitHubCardImages downloads the version-controlled image snapshot.
+func cacheGitHubCardImages(
+	ctx context.Context,
+	paths applicationPaths,
+	repository *cards.Repository,
+	progress setupProgress,
+) error {
+	return cacheCardImagesUsing(ctx, paths, repository, githubCardImageURL, progress)
+}
+
+// cacheCardImagesUsing downloads missing images from card or override URLs and builds thumbnails.
+func cacheCardImagesUsing(
+	ctx context.Context,
+	paths applicationPaths,
+	repository *cards.Repository,
+	imageURL func(cards.Card) string,
+	progress setupProgress,
+) error {
 	httpClient, err := speedrobo.NewClient()
 	if err != nil {
 		return err
@@ -207,8 +250,20 @@ func cacheCardImages(
 	var imageProgress sync.Mutex
 	err = runSetupWorkers(ctx, len(cardList), setupDownloadWorkers, func(index int) error {
 		card := cardList[index]
-		if _, _, err := cardimages.Download(ctx, httpClient, paths.Images, card); err != nil {
-			return fmt.Errorf("download image for %q: %w", card.Name, err)
+		var downloadErr error
+		if imageURL == nil {
+			_, _, downloadErr = cardimages.Download(ctx, httpClient, paths.Images, card)
+		} else {
+			_, _, downloadErr = cardimages.DownloadFromURL(
+				ctx,
+				httpClient,
+				paths.Images,
+				card,
+				imageURL(card),
+			)
+		}
+		if downloadErr != nil {
+			return fmt.Errorf("download image for %q: %w", card.Name, downloadErr)
 		}
 		if _, found := cardimages.FindThumbnail(card.ID); !found {
 			if _, err := cardimages.CreateThumbnail(card.ID); err != nil {
@@ -239,28 +294,118 @@ func cacheCardImages(
 	return nil
 }
 
-// loadOrDownloadCardDatabase uses a valid local database or downloads and stores a new one.
+// githubCardImageURL returns the raw GitHub URL for one version-controlled card image.
+func githubCardImageURL(card cards.Card) string {
+	return githubCardDataRootURL + "/images/" +
+		url.PathEscape(strings.TrimSpace(card.ID)) + ".png"
+}
+
+// downloadGitHubCardDatabase retrieves and validates a normalized GitHub snapshot.
+func downloadGitHubCardDatabase(
+	ctx context.Context,
+	client *http.Client,
+	databaseURL string,
+	progress setupProgress,
+) (*cards.Repository, error) {
+	if client == nil {
+		return nil, fmt.Errorf("download GitHub card database: HTTP client cannot be nil")
+	}
+	if progress != nil {
+		progress("Downloading the GitHub card database snapshot…", 0, 1)
+	}
+
+	request, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		strings.TrimSpace(databaseURL),
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("create GitHub card database request: %w", err)
+	}
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("User-Agent", cardDatabaseUserAgent)
+
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("download GitHub card database: %w", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf(
+			"download GitHub card database: server returned %s",
+			response.Status,
+		)
+	}
+
+	encoded, err := io.ReadAll(io.LimitReader(response.Body, maxCardDatabaseBytes+1))
+	if err != nil {
+		return nil, fmt.Errorf("read GitHub card database: %w", err)
+	}
+	if len(encoded) > maxCardDatabaseBytes {
+		return nil, fmt.Errorf("GitHub card database exceeds %d MiB", maxCardDatabaseBytes>>20)
+	}
+
+	var cardList []cards.Card
+	if err := json.Unmarshal(encoded, &cardList); err != nil {
+		return nil, fmt.Errorf("decode GitHub card database: %w", err)
+	}
+	repository, err := cards.NewRepository(cardList)
+	if err != nil {
+		return nil, fmt.Errorf("validate GitHub card database: %w", err)
+	}
+	return repository, nil
+}
+
+// loadOrDownloadCardDatabase uses local data or installs the fastest current remote source.
 func loadOrDownloadCardDatabase(
 	ctx context.Context,
 	path string,
 	progress setupProgress,
-) (*cards.Repository, error) {
+) (*cards.Repository, bool, error) {
 	if repository, err := cards.LoadFile(path); err == nil {
-		return repository, nil
+		return repository, false, nil
 	}
 
 	remote, err := fetchRemoteCardList(ctx, progress)
 	if err != nil {
-		return nil, err
+		return nil, false, err
+	}
+
+	githubRepository, githubErr := downloadGitHubCardDatabase(
+		ctx,
+		remote.client,
+		githubCardDatabaseURL,
+		progress,
+	)
+	if githubErr == nil {
+		githubHash, hashErr := hashRepositoryCardList(githubRepository)
+		if hashErr == nil && githubHash == remote.hash {
+			if err := writeCardDatabase(path, githubRepository); err != nil {
+				return nil, false, err
+			}
+			return githubRepository, true, nil
+		}
+		if hashErr != nil {
+			githubErr = hashErr
+		} else {
+			githubErr = fmt.Errorf("GitHub card database snapshot is not current")
+		}
+	}
+	if githubErr != nil {
+		log.Printf("GitHub card database fast path skipped: %v", githubErr)
+		if progress != nil {
+			progress("GitHub snapshot is not current; rebuilding card data…", 0, 1)
+		}
 	}
 	repository, err := downloadRemoteCardDatabase(ctx, remote, progress)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if err := writeCardDatabase(path, repository); err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	return repository, nil
+	return repository, false, nil
 }
 
 // runSetupWorkers executes indexed work with bounded concurrency and cancels after the first error.

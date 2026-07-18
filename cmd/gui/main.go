@@ -900,6 +900,7 @@ func showApplication(
 			GenerateImage:    func() { showGenerateImageFromDecklistDialog(window, repository) },
 			GenerateDecklist: func() { showGenerateDecklistDialog(window, repository) },
 			UpdateDatabase:   func() { confirmManualCardDatabaseUpdate(window, paths, repository) },
+			Settings:         func() { showSettingsDialog(window, fyne.CurrentApp()) },
 		}))
 	}
 

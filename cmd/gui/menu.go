@@ -19,6 +19,7 @@ type mainMenuActions struct {
 	GenerateImage    func()
 	GenerateDecklist func()
 	UpdateDatabase   func()
+	Settings         func()
 }
 
 // buildMainMenu constructs the application's primary workflow chooser.
@@ -40,6 +41,7 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 		widget.NewButton("Generate Deck Image from Decklist", actions.GenerateImage),
 		widget.NewButton("Generate Decklist File", actions.GenerateDecklist),
 		widget.NewButton("Update Card Database", actions.UpdateDatabase),
+		widget.NewButton("Settings", actions.Settings),
 		widget.NewSeparator(),
 		widget.NewButton("Quit", func() { window.Close() }),
 	)
