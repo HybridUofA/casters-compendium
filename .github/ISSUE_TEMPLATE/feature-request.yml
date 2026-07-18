@@ -1,0 +1,61 @@
+name: Feature request
+description: Propose an improvement to the deckbuilder, simulator, packaging, or documentation.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea. Explaining the problem and desired outcome helps the project evaluate the request without committing to a specific implementation too early.
+
+  - type: dropdown
+    id: project-area
+    attributes:
+      label: Project area
+      options:
+        - Deck editor
+        - Card search or data
+        - Import or export
+        - Simulator
+        - Packaging or installation
+        - Website or documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the workflow, accessibility need, or limitation behind the request.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain what you would like the application or project to do.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Note any current workaround or different approach you have considered.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add sketches, examples, screenshots, related rules, or links that clarify the request.
+
+  - type: checkboxes
+    id: existing-issues
+    attributes:
+      label: Existing issues
+      options:
+        - label: I searched the existing issues and did not find the same request.
+          required: true

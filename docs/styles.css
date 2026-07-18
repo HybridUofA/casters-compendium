@@ -53,6 +53,7 @@ a {
 }
 
 .hero,
+.page-header,
 .section,
 footer {
   width: min(1180px, calc(100% - 2.5rem));
@@ -104,12 +105,29 @@ footer {
   color: var(--ink);
 }
 
+.nav-links a[aria-current="page"] {
+  color: var(--cyan);
+}
+
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(330px, 0.85fr);
   gap: clamp(3rem, 8vw, 8rem);
   align-items: center;
   padding-top: clamp(5rem, 11vw, 9rem);
+}
+
+.page-header {
+  min-height: 520px;
+}
+
+.page-hero {
+  max-width: 920px;
+  padding: clamp(5rem, 11vw, 8rem) 0 clamp(4rem, 9vw, 7rem);
+}
+
+.page-hero h1 {
+  max-width: 14ch;
 }
 
 .eyebrow {
@@ -298,6 +316,40 @@ h3 {
   gap: 1rem;
 }
 
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.portal-grid a {
+  padding: 1.6rem;
+  background: linear-gradient(145deg, rgba(39, 30, 68, 0.65), rgba(22, 17, 41, 0.7));
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  text-decoration: none;
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.portal-grid a:hover,
+.portal-grid a:focus-visible {
+  border-color: rgba(112, 230, 220, 0.5);
+  transform: translateY(-3px);
+}
+
+.portal-grid span {
+  display: inline-block;
+  margin-bottom: 2.8rem;
+  color: var(--cyan);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.portal-grid p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
 .feature-grid article,
 .timeline article {
   padding: 1.6rem;
@@ -321,6 +373,14 @@ h3 {
   font-weight: 900;
 }
 
+.feature-grid h2,
+.timeline h2 {
+  margin-bottom: 0.65rem;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  letter-spacing: normal;
+}
+
 .callout {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -331,6 +391,12 @@ h3 {
 .release-intro {
   max-width: 760px;
   margin-bottom: 3rem;
+}
+
+.text-link {
+  color: var(--cyan);
+  font-weight: 800;
+  text-underline-offset: 0.28rem;
 }
 
 .download-grid {
@@ -464,6 +530,18 @@ h3 {
 
 .timeline .future {
   border-color: rgba(112, 230, 220, 0.38);
+}
+
+.timeline .complete {
+  border-color: rgba(174, 140, 255, 0.45);
+}
+
+.roadmap-timeline {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.roadmap-note {
+  max-width: 760px;
 }
 
 .callout {
@@ -740,6 +818,71 @@ kbd {
   border-radius: 1.2rem;
 }
 
+.feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.feedback-grid article {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  background: linear-gradient(145deg, rgba(39, 30, 68, 0.72), rgba(22, 17, 41, 0.82));
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+
+.feedback-grid article p:not(.platform-label) {
+  color: var(--muted);
+}
+
+.feedback-grid .button {
+  margin-top: auto;
+}
+
+.feedback-details {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr;
+  gap: clamp(2rem, 7vw, 6rem);
+  align-items: center;
+  margin-top: 5rem;
+  padding-top: 4rem;
+  border-top: 1px solid var(--line);
+}
+
+.feedback-steps {
+  font-size: 1rem;
+}
+
+.feedback-steps a {
+  color: var(--cyan);
+}
+
+.statement-main {
+  width: min(900px, calc(100% - 2.5rem));
+  margin-inline: auto;
+}
+
+.statement-main section {
+  padding: clamp(4rem, 9vw, 7rem) 0;
+  border-top: 1px solid var(--line);
+}
+
+.statement-main p,
+.statement-main li {
+  color: var(--muted);
+}
+
+.statement-main code {
+  color: var(--cyan);
+}
+
+.statement-list {
+  grid-template-columns: 1fr;
+}
+
 footer {
   display: flex;
   justify-content: space-between;
@@ -752,6 +895,11 @@ footer {
 
 footer p {
   margin: 0;
+}
+
+footer a:hover,
+footer a:focus-visible {
+  color: var(--ink);
 }
 
 @media (max-width: 900px) {
@@ -771,7 +919,8 @@ footer p {
 
   .feature-grid,
   .timeline,
-  .download-grid {
+  .download-grid,
+  .portal-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -780,6 +929,10 @@ footer p {
   }
 
   .guide-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .feedback-details {
     grid-template-columns: 1fr;
   }
 
@@ -807,9 +960,11 @@ footer p {
 
 @media (max-width: 650px) {
   .hero,
+  .page-header,
   .section,
   .guide-header,
   .guide-layout,
+  .statement-main,
   footer {
     width: min(100% - 1.5rem, 1180px);
   }
@@ -836,7 +991,9 @@ footer p {
 
   .feature-grid,
   .timeline,
-  .download-grid {
+  .download-grid,
+  .portal-grid,
+  .feedback-grid {
     grid-template-columns: 1fr;
   }
 
@@ -877,6 +1034,10 @@ footer p {
   }
 
   .button {
+    transition: none;
+  }
+
+  .portal-grid a {
     transition: none;
   }
 }

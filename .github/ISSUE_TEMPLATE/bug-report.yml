@@ -1,0 +1,97 @@
+name: Bug report
+description: Report reproducible behavior that is not working as expected.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Caster's Compendium. Please include enough detail for someone else to reproduce the problem.
+
+  - type: dropdown
+    id: version
+    attributes:
+      label: Application version
+      description: Select the version where you observed the problem.
+      options:
+        - v0.1.3
+        - v0.1.2
+        - v0.1.1
+        - Built from source
+        - Unknown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating system
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS — Apple Silicon
+        - macOS — Intel
+        - Debian or Ubuntu
+        - Arch Linux
+        - Other Linux
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: package
+    attributes:
+      label: Package or installation method
+      description: For example, Windows .exe, macOS ZIP, .deb, Arch package, Linux archive, or source.
+      placeholder: Windows .exe
+
+  - type: textarea
+    id: observed-behavior
+    attributes:
+      label: What happened?
+      description: Describe the behavior you observed, including any visible error message.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: List the smallest reliable sequence that causes the problem.
+      placeholder: |
+        1. Open ...
+        2. Choose ...
+        3. Drag ...
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: What did you expect?
+      description: Explain what you expected to happen instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or diagnostic output
+      description: Paste relevant terminal output or logs. Remove usernames, personal paths, and other private information first.
+      render: shell
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add screenshots, sample deck files, graphics-driver details, or anything else that may help.
+
+  - type: checkboxes
+    id: existing-issues
+    attributes:
+      label: Existing issues
+      options:
+        - label: I searched the existing issues and did not find the same report.
+          required: true

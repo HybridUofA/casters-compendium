@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Application guide
+    url: https://hybriduofa.github.io/casters-compendium/guide.html
+    about: Check the controls and supported workflows before opening an issue.
+  - name: Downloads and installation
+    url: https://hybriduofa.github.io/casters-compendium/downloads.html
+    about: Find current packages and platform-specific installation instructions.

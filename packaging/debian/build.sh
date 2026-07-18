@@ -49,7 +49,7 @@ changelog="casters-compendium (${version}) stable; urgency=medium
 
   * Package Caster's Compendium ${version} for Debian and Ubuntu.
 
- -- HybridUofA <hybriduofa@users.noreply.github.com>  Fri, 17 Jul 2026 00:00:00 +0000
+ -- Hybrid <hybriduofa@users.noreply.github.com>  Fri, 17 Jul 2026 00:00:00 +0000
 "
 printf '%s' "$changelog" | gzip -9n > \
 	"$package_root/usr/share/doc/casters-compendium/changelog.gz"

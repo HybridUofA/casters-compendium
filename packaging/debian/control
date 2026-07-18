@@ -3,7 +3,7 @@ Version: @VERSION@
 Section: utils
 Priority: optional
 Architecture: amd64
-Maintainer: HybridUofA <hybriduofa@users.noreply.github.com>
+Maintainer: Hybrid <hybriduofa@users.noreply.github.com>
 Installed-Size: @INSTALLED_SIZE@
 Depends: libc6 (>= 2.35), libgl1, libwayland-client0, libx11-6, libxcursor1, libxi6, libxinerama1, libxkbcommon0, libxrandr2
 Homepage: https://github.com/HybridUofA/casters-compendium

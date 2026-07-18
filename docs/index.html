@@ -14,20 +14,20 @@
 
     <header class="hero">
       <nav class="nav" aria-label="Main navigation">
-        <a class="brand" href="#top" aria-label="Caster's Compendium home">
+        <a class="brand" href="index.html" aria-current="page" aria-label="Caster's Compendium home">
           <img src="assets/shadow.png" alt="" width="42" height="42">
           <span>Caster's Compendium</span>
         </a>
         <div class="nav-links">
-          <a href="#features">Features</a>
-          <a href="#downloads">Downloads</a>
+          <a href="features.html">Features</a>
+          <a href="downloads.html">Downloads</a>
           <a href="guide.html">Guide</a>
-          <a href="#roadmap">Roadmap</a>
-          <a href="https://github.com/HybridUofA/casters-compendium">GitHub</a>
+          <a href="roadmap.html">Roadmap</a>
+          <a href="feedback.html">Feedback</a>
         </div>
       </nav>
 
-      <div class="hero-grid" id="top">
+      <div class="hero-grid">
         <div class="hero-copy">
           <p class="eyebrow">A desktop toolkit for Caster Chronicles</p>
           <h1>Build, organize, share, and play your way.</h1>
@@ -37,7 +37,7 @@
             exports. The first simulator is planned for v0.2.0.
           </p>
           <div class="actions">
-            <a class="button primary" href="#downloads">Download v0.1.3</a>
+            <a class="button primary" href="downloads.html">Download v0.1.3</a>
             <a class="button secondary" href="guide.html">Read the guide</a>
           </div>
           <ul class="platforms" aria-label="Supported platforms">
@@ -68,187 +68,33 @@
     </header>
 
     <main id="main-content">
-      <section class="section" id="features">
+      <section class="section">
         <div class="section-heading">
-          <p class="eyebrow">Current features</p>
-          <h2>Everything needed to move from an idea to a playable deck.</h2>
+          <p class="eyebrow">Explore the project</p>
+          <h2>Find what you need without one oversized page.</h2>
         </div>
-        <div class="feature-grid">
-          <article>
-            <span class="feature-number">01</span>
-            <h3>Flexible deck editing</h3>
-            <p>Build main decks and sideboards with copy limits enforced. Drag cards to add, move, reorder, or remove them, then sort whenever you want the standard order back.</p>
-          </article>
-          <article>
-            <span class="feature-number">02</span>
-            <h3>Full card search</h3>
-            <p>Filter by name, type, trait, ability keyword, element, expansion, cost or level, and playtesting status. Preview artwork and rules text on hover.</p>
-          </article>
-          <article>
-            <span class="feature-number">03</span>
-            <h3>Sharing and tournaments</h3>
-            <p>Save editable JSON decks, import human-readable decklists, and export card-code text files suitable for sharing or tournament submission.</p>
-          </article>
-          <article>
-            <span class="feature-number">04</span>
-            <h3>Tabletop Simulator</h3>
-            <p>Generate image sheets for both the main deck and sideboard using the bundled card back, ready to import into Tabletop Simulator.</p>
-          </article>
-          <article>
-            <span class="feature-number">05</span>
-            <h3>Local card library</h3>
-            <p>Download card data, full artwork, and thumbnails concurrently. Cached assets are shared by the deckbuilder and the future simulator.</p>
-          </article>
-          <article>
-            <span class="feature-number">06</span>
-            <h3>Update awareness</h3>
-            <p>A deterministic card-list hash detects published database changes, while a manual update action keeps control in the player's hands.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section release-section" id="downloads">
-        <div class="release-intro">
-          <p class="eyebrow">Latest release</p>
-          <h2>Get Caster's Compendium v0.1.3</h2>
-          <p>Download the package for your system directly—no GitHub release-page detour required. Windows and macOS packages are currently unsigned and may show a first-launch security prompt.</p>
-        </div>
-
-        <div class="download-grid">
-          <article class="download-card">
-            <p class="platform-label">Windows 10/11 · x64</p>
-            <h3>Windows executable</h3>
-            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/CastersCompendium-windows-amd64.exe">Download .exe</a>
-            <ol class="install-steps">
-              <li>Move the downloaded file to a permanent folder if desired.</li>
-              <li>Double-click it to launch—no installer is required.</li>
-              <li>If SmartScreen appears, choose <strong>More info</strong>, verify the filename, then choose <strong>Run anyway</strong>.</li>
-            </ol>
-            <p class="package-note">A current OpenGL driver is required. Virtual machines may need guest graphics drivers or Mesa software OpenGL.</p>
-          </article>
-
-          <article class="download-card">
-            <p class="platform-label">macOS · Apple Silicon</p>
-            <h3>M1, M2, M3, M4, or later</h3>
-            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/CastersCompendium-macos-apple-silicon.zip">Download ZIP</a>
-            <ol class="install-steps">
-              <li>Unzip the download.</li>
-              <li>Move <strong>Caster's Compendium.app</strong> into Applications.</li>
-              <li>For the first launch, Control-click the app, choose <strong>Open</strong>, then confirm.</li>
-            </ol>
-          </article>
-
-          <article class="download-card">
-            <p class="platform-label">macOS · Intel</p>
-            <h3>Intel-based Macs</h3>
-            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/CastersCompendium-macos-intel.zip">Download ZIP</a>
-            <ol class="install-steps">
-              <li>Unzip the download.</li>
-              <li>Move <strong>Caster's Compendium.app</strong> into Applications.</li>
-              <li>For the first launch, Control-click the app, choose <strong>Open</strong>, then confirm.</li>
-            </ol>
-          </article>
-
-          <article class="download-card">
-            <p class="platform-label">Debian / Ubuntu · x64</p>
-            <h3>Native .deb package</h3>
-            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/casters-compendium_0.1.3_amd64.deb">Download .deb</a>
-            <p>Open a terminal in the download folder and run:</p>
-            <code class="command">sudo apt install ./casters-compendium_0.1.3_amd64.deb</code>
-          </article>
-
-          <article class="download-card">
-            <p class="platform-label">Arch Linux · x64</p>
-            <h3>Native Arch package</h3>
-            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/casters-compendium-0.1.3-1-x86_64.pkg.tar.zst">Download package</a>
-            <p>Open a terminal in the download folder and run:</p>
-            <code class="command">sudo pacman -U ./casters-compendium-0.1.3-1-x86_64.pkg.tar.zst</code>
-          </article>
-
-          <article class="download-card">
-            <p class="platform-label">Other Linux · x64</p>
-            <h3>Portable Linux archive</h3>
-            <a class="button primary download-button" href="https://github.com/HybridUofA/casters-compendium/releases/latest/download/CastersCompendium-linux-amd64.tar.xz">Download .tar.xz</a>
-            <p>Extract it, enter the directory, and install for your user:</p>
-            <code class="command">tar -xJf CastersCompendium-linux-amd64.tar.xz<br>cd CastersCompendium<br>make user-install</code>
-            <p class="package-note">For a system-wide installation, use <code>sudo make install</code> instead.</p>
-          </article>
-        </div>
-
-        <div class="previous-releases">
-          <div>
-            <p class="eyebrow">Previous versions</p>
-            <h2>Need an older build?</h2>
-            <p>These direct downloads come from the legacy repository and remain available for troubleshooting or rollback.</p>
-          </div>
-          <article class="legacy-release">
-            <div>
-              <p class="version">v0.1.2</p>
-              <h3>Keyword filtering and appearance settings</h3>
-            </div>
-            <div class="legacy-links">
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/CastersCompendium-windows-amd64.exe">Windows</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/CastersCompendium-macos-apple-silicon.zip">macOS Apple Silicon</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/CastersCompendium-macos-intel.zip">macOS Intel</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/CastersCompendium-linux-amd64.tar.xz">Linux archive</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/casters-compendium_0.1.2_amd64.deb">Debian / Ubuntu</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.2/casters-compendium-0.1.2-1-x86_64.pkg.tar.zst">Arch Linux</a>
-            </div>
-          </article>
-          <article class="legacy-release">
-            <div>
-              <p class="version">v0.1.1</p>
-              <h3>Native Linux packages</h3>
-            </div>
-            <div class="legacy-links">
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/CastersCompendium-windows-amd64.exe">Windows</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/CastersCompendium-macos-apple-silicon.zip">macOS Apple Silicon</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/CastersCompendium-macos-intel.zip">macOS Intel</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/CastersCompendium-linux-amd64.tar.xz">Linux archive</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/casters-compendium_0.1.1_amd64.deb">Debian / Ubuntu</a>
-              <a href="https://github.com/HybridUofA/caster-deckbuilder/releases/download/v0.1.1/casters-compendium-0.1.1-1-x86_64.pkg.tar.zst">Arch Linux</a>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="section roadmap-section" id="roadmap">
-        <div class="section-heading">
-          <p class="eyebrow">Roadmap</p>
-          <h2>The deckbuilder is the foundation, not the finish line.</h2>
-        </div>
-        <div class="timeline">
-          <article>
-            <p class="version">v0.1.3 · Deckbuilder refinement</p>
-            <h3>Faster, clearer deck editing</h3>
-            <p>Hover previews, drag-to-search removal, corrected card alignment, a new application icon, and a shared architecture for card data and game rules.</p>
-          </article>
-          <article>
-            <p class="version">Future deckbuilder work</p>
-            <h3>Art and personalization</h3>
-            <p>Continued collaboration with Speedrobo on assets and prototypes, plus optional element and Caster backgrounds when artwork and permissions are ready.</p>
-          </article>
-          <article class="future">
-            <p class="version">v0.2.0 · Simulator begins</p>
-            <h3>A first playable foundation</h3>
-            <p>The initial simulator will be intentionally rudimentary. It is a large experimental project with no promised delivery date.</p>
-          </article>
+        <div class="portal-grid">
+          <a href="features.html"><span>01</span><h3>Features</h3><p>See the complete deckbuilder, search, sharing, export, and card-data toolset.</p></a>
+          <a href="downloads.html"><span>02</span><h3>Downloads</h3><p>Choose a current or previous release and follow platform-specific installation steps.</p></a>
+          <a href="guide.html"><span>03</span><h3>Guide</h3><p>Learn the complete workflow from finding a card to exporting a finished deck.</p></a>
+          <a href="roadmap.html"><span>04</span><h3>Roadmap</h3><p>Follow planned deckbuilder refinements and the path toward the simulator.</p></a>
+          <a href="feedback.html"><span>05</span><h3>Feedback</h3><p>Report a reproducible bug or propose a feature through a structured form.</p></a>
         </div>
       </section>
 
       <section class="section callout">
         <div>
           <p class="eyebrow">Open development</p>
-          <h2>Read the source. Roasts are optional.</h2>
-          <p>Source code, documentation, release notes, and development progress live together in the public GitHub repository. Constructive feedback is always welcome.</p>
+          <h2>Keep up with development on GitHub.</h2>
+          <p>Browse the source, read release notes, follow development progress, and share constructive feedback in the public repository.</p>
         </div>
-        <a class="button primary" href="https://github.com/HybridUofA/casters-compendium">Browse the source on GitHub</a>
+        <a class="button primary" href="https://github.com/HybridUofA/casters-compendium">View the project on GitHub</a>
       </section>
     </main>
 
     <footer>
       <p>Caster's Compendium is a community tool for Caster Chronicles.</p>
-      <p>This site uses no analytics and collects no visitor data.</p>
+      <p><a href="transparency.html">AI transparency</a> · This site uses no analytics.</p>
     </footer>
   </body>
 </html>

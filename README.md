@@ -6,6 +6,14 @@ Tabletop Simulator image sheets for both the main deck and sideboard.
 
 Project website: <https://hybriduofa.github.io/casters-compendium/>
 
+AI assistance and project authorship are documented in
+[AI_STATEMENT.md](AI_STATEMENT.md). The original foundation through the
+`Checkpoint before Codex` commit was maintainer-written; implementation through
+the v0.1.3 repository and website migration included Codex assistance under
+maintainer direction and review. After that migration, new code on development
+branches is intended to be maintainer-written with AI limited to guidance,
+review, test ideas, and debugging support.
+
 ## Features
 
 ### Deck building
