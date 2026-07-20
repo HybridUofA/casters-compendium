@@ -1,0 +1,74 @@
+name: Announce Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post release to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+          RELEASE_NOTES: ${{ github.event.release.body }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          if [ "$PRERELEASE" = "true" ]; then
+            release_type="Prerelease"
+          else
+            release_type="Stable release"
+          fi
+
+          payload="$(
+            jq -n \
+              --arg title "${RELEASE_NAME:-$RELEASE_TAG}" \
+              --arg tag "$RELEASE_TAG" \
+              --arg url "$RELEASE_URL" \
+              --arg notes "$RELEASE_NOTES" \
+              --arg release_type "$release_type" \
+              '{
+                username: "Caster Deckbuilder Releases",
+                allowed_mentions: {
+                  parse: []
+                },
+                embeds: [{
+                  title: ("New release: " + $title),
+                  url: $url,
+                  description: (
+                    if ($notes | length) > 3500
+                    then ($notes[0:3500] + "\n\n…See GitHub for complete release notes.")
+                    elif ($notes | length) == 0
+                    then "A new version of the Caster Chronicles deckbuilder is available."
+                    else $notes
+                    end
+                  ),
+                  color: 3447003,
+                  fields: [
+                    {
+                      name: "Version",
+                      value: $tag,
+                      inline: true
+                    },
+                    {
+                      name: "Release type",
+                      value: $release_type,
+                      inline: true
+                    }
+                  ]
+                }]
+              }'
+          )"
+
+          curl \
+            --fail-with-body \
+            --header "Content-Type: application/json" \
+            --data "$payload" \
+            "$WEBHOOK_URL"
