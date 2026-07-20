@@ -744,5 +744,60 @@ func (deck *Deck) MoveOrderedCards(
 		*source = resultSlice
 		return true, nil
 	}
-	return false, fmt.Errorf("cross-zone batch movement is not implemented")
+	destination, err := deck.orderForZone(toZone)
+	if err != nil {
+		return false, err
+	}
+	switch toZone {
+	case MainZone:
+		if len(*destination)+len(selectedIDs) > MaxMainDeckCards {
+			return false, nil
+		}
+	case SideZone:
+		if len(*destination)+len(selectedIDs) > MaxSideDeckCards {
+			return false, nil
+		}
+	}
+
+	if toIndex < 0 {
+		toIndex = 0
+	}
+	if toIndex > len(*destination) {
+		toIndex = len(*destination)
+	}
+
+	newDest := []string{}
+	newDest = append(newDest, (*destination)[:toIndex]...)
+	newDest = append(newDest, selectedIDs...)
+	newDest = append(newDest, (*destination)[toIndex:]...)
+
+	counts := make(map[string]int)
+	for _, cardID := range selectedIDs {
+		counts[cardID]++
+	}
+
+	candidate := *deck
+	candidate.MainDeck = slices.Clone(deck.MainDeck)
+	candidate.SideDeck = slices.Clone(deck.SideDeck)
+	candidate.MainOrder = slices.Clone(deck.MainOrder)
+	candidate.SideOrder = slices.Clone(deck.SideOrder)
+
+	candidateSource, _ := candidate.orderForZone(fromZone)
+	candidateDest, _ := candidate.orderForZone(toZone)
+
+	for cardID, quantity := range counts {
+		err := candidate.RemoveCard(fromZone, cardID, quantity)
+		if err != nil {
+			return false, err
+		}
+		err = candidate.AddCard(toZone, cardID, quantity)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	*candidateSource = remainingIDs
+	*candidateDest = newDest
+	*deck = candidate
+	return true, nil
 }
