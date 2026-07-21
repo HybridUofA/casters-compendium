@@ -1,0 +1,119 @@
+name: Sync Discord Roadmap
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - .github/workflows/discord-roadmap.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out roadmap source
+        uses: actions/checkout@v4
+
+      - name: Create or update Discord roadmap
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_ROADMAP_WEBHOOK }}
+          MESSAGE_ID: ${{ vars.DISCORD_ROADMAP_MESSAGE_ID }}
+          ROADMAP_URL: https://hybriduofa.github.io/casters-compendium/roadmap.html
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "DISCORD_ROADMAP_WEBHOOK is not configured" >&2
+            exit 1
+          fi
+
+          roadmap="$(
+            awk '
+              /^## Roadmap$/ {
+                capture = 1
+                next
+              }
+              capture && /^## / {
+                exit
+              }
+              capture {
+                print
+              }
+            ' README.md
+          )"
+
+          if [ -z "$roadmap" ]; then
+            echo "README.md does not contain a Roadmap section" >&2
+            exit 1
+          fi
+
+          updated_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          payload="$(
+            jq -n \
+              --arg username "Caster's Compendium Roadmap" \
+              --arg title "Caster's Compendium Roadmap" \
+              --arg description "$roadmap" \
+              --arg url "$ROADMAP_URL" \
+              --arg timestamp "$updated_at" \
+              --arg commit "${COMMIT_SHA:0:7}" \
+              '{
+                username: $username,
+                allowed_mentions: {
+                  parse: []
+                },
+                embeds: [{
+                  title: $title,
+                  description: (
+                    if ($description | length) > 3800
+                    then ($description[0:3800] + "\n\n[View the complete roadmap](" + $url + ")")
+                    else $description
+                    end
+                  ),
+                  url: $url,
+                  color: 10181046,
+                  footer: {
+                    text: ("Automatically updated from main · " + $commit)
+                  },
+                  timestamp: $timestamp
+                }]
+              }'
+          )"
+
+          if [ -z "$MESSAGE_ID" ]; then
+            response="$(
+              curl \
+                --fail-with-body \
+                --silent \
+                --show-error \
+                --header "Content-Type: application/json" \
+                --data "$payload" \
+                "${WEBHOOK_URL}?wait=true"
+            )"
+
+            message_id="$(jq -r '.id // empty' <<<"$response")"
+            if [ -z "$message_id" ]; then
+              echo "Discord did not return a roadmap message ID" >&2
+              exit 1
+            fi
+
+            echo "::notice title=Discord roadmap message created::Set DISCORD_ROADMAP_MESSAGE_ID to $message_id"
+            echo "### Discord roadmap message created" >> "$GITHUB_STEP_SUMMARY"
+            echo "Set repository variable \`DISCORD_ROADMAP_MESSAGE_ID\` to \`$message_id\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            curl \
+              --fail-with-body \
+              --silent \
+              --show-error \
+              --request PATCH \
+              --header "Content-Type: application/json" \
+              --data "$payload" \
+              "${WEBHOOK_URL}/messages/${MESSAGE_ID}" \
+              > /dev/null
+
+            echo "Updated Discord roadmap message $MESSAGE_ID"
+          fi
