@@ -1,0 +1,78 @@
+name: Post Development Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: Update title
+        required: true
+        type: string
+
+      message:
+        description: Update text
+        required: true
+        type: string
+
+      link:
+        description: Optional related URL
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post development update
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_UPDATE_WEBHOOK }}
+          UPDATE_TITLE: ${{ inputs.title }}
+          UPDATE_MESSAGE: ${{ inputs.message }}
+          UPDATE_LINK: ${{ inputs.link }}
+          ROLE_ID: ${{ vars.DISCORD_DEV_UPDATE_ROLE_ID }}
+        run: |
+          if [ -z "$ROLE_ID" ]; then
+            echo "DISCORD_DEV_UPDATE_ROLE_ID is not configured" >&2
+            exit 1
+          fi
+
+          payload="$(
+            jq -n \
+              --arg title "$UPDATE_TITLE" \
+              --arg message "$UPDATE_MESSAGE" \
+              --arg url "$UPDATE_LINK" \
+              --arg role_id "$ROLE_ID" \
+              '{
+                username: "Caster Deckbuilder Development",
+                content: ("<@&" + $role_id + ">"),
+                allowed_mentions: {
+                  parse: [],
+                  roles: [$role_id]
+                },
+                embeds: [{
+                  title: $title,
+                  description: (
+                    if ($message | length) > 4000
+                    then ($message[0:4000] + "\n\n…Update shortened for Discord.")
+                    else $message
+                    end
+                  ),
+                  url: (
+                    if ($url | length) > 0
+                    then $url
+                    else null
+                    end
+                  ),
+                  color: 10181046
+                }]
+              }'
+          )"
+
+          curl \
+            --fail-with-body \
+            --header "Content-Type: application/json" \
+            --data "$payload" \
+            "$WEBHOOK_URL"
