@@ -26,6 +26,7 @@ jobs:
           RELEASE_URL: ${{ github.event.release.html_url }}
           RELEASE_NOTES: ${{ github.event.release.body }}
           PRERELEASE: ${{ github.event.release.prerelease }}
+          RELEASE_ASSETS_JSON: ${{ toJson(github.event.release.assets) }}
           ROLE_ID: ${{ vars.DISCORD_RELEASE_ROLE_ID }}
           EVENT_NAME: ${{ github.event_name }}
           REQUESTED_TAG: ${{ inputs.tag }}
@@ -58,6 +59,11 @@ jobs:
             RELEASE_URL="$(jq -r '.html_url' <<<"$release_json")"
             RELEASE_NOTES="$(jq -r '.body // ""' <<<"$release_json")"
             PRERELEASE="$(jq -r '.prerelease' <<<"$release_json")"
+            RELEASE_ASSETS_JSON="$(jq -c '.assets // []' <<<"$release_json")"
+          fi
+
+          if [ -z "$RELEASE_ASSETS_JSON" ] || [ "$RELEASE_ASSETS_JSON" = "null" ]; then
+            RELEASE_ASSETS_JSON="[]"
           fi
 
           if [ "$PRERELEASE" = "true" ]; then
@@ -65,6 +71,59 @@ jobs:
           else
             release_type="Stable release"
           fi
+
+          downloads="$(
+            jq -r \
+              --arg release_url "$RELEASE_URL" \
+              '
+                def download_label:
+                  if (.name | test("windows"; "i")) then "Windows x64 (.exe)"
+                  elif (.name | test("macos-apple-silicon"; "i")) then "macOS Apple Silicon"
+                  elif (.name | test("macos-intel"; "i")) then "macOS Intel"
+                  elif (.name | test("linux-amd64"; "i")) then "Linux x64 (portable)"
+                  elif (.name | endswith(".deb")) then "Debian / Ubuntu x64 (.deb)"
+                  elif (.name | endswith(".pkg.tar.zst")) then "Arch Linux x64"
+                  else .name
+                  end;
+
+                def download_rank:
+                  if (.name | test("windows"; "i")) then 1
+                  elif (.name | test("macos-apple-silicon"; "i")) then 2
+                  elif (.name | test("macos-intel"; "i")) then 3
+                  elif (.name | test("linux-amd64"; "i")) then 4
+                  elif (.name | endswith(".deb")) then 5
+                  elif (.name | endswith(".pkg.tar.zst")) then 6
+                  else 7
+                  end;
+
+                map(. + {
+                  friendly_label: download_label,
+                  platform_rank: download_rank
+                })
+                | sort_by(.platform_rank, .name)
+                | map("[\(.friendly_label)](\(.browser_download_url))")
+                | . as $links
+                | ($links | join("\n")) as $all_links
+                | ("[View all downloads](" + $release_url + ")") as $fallback
+                | if ($all_links | length) <= 1024
+                  then $all_links
+                  else (
+                    reduce $links[] as $link (
+                      "";
+                      if (
+                        (length + ($link | length))
+                        + (if length > 0 then 1 else 0 end)
+                      ) <= (1023 - ($fallback | length))
+                      then . + (if length > 0 then "\n" else "" end) + $link
+                      else .
+                      end
+                    )
+                    + "\n"
+                    + $fallback
+                  )
+                  end
+              ' <<<"$RELEASE_ASSETS_JSON"
+          )"
 
           payload="$(
             jq -n \
@@ -76,6 +135,7 @@ jobs:
               --arg role_id "$ROLE_ID" \
               --arg username "Caster's Compendium Releases" \
               --arg empty_notes "A new version of Caster's Compendium is available." \
+              --arg downloads "$downloads" \
               '{
                 username: $username,
                 content: ("<@&" + $role_id + ">"),
@@ -95,18 +155,28 @@ jobs:
                     end
                   ),
                   color: 3447003,
-                  fields: [
-                    {
-                      name: "Version",
-                      value: $tag,
-                      inline: true
-                    },
-                    {
-                      name: "Release type",
-                      value: $release_type,
-                      inline: true
-                    }
-                  ]
+                  fields: (
+                    [
+                      {
+                        name: "Version",
+                        value: $tag,
+                        inline: true
+                      },
+                      {
+                        name: "Release type",
+                        value: $release_type,
+                        inline: true
+                      }
+                    ]
+                    + if ($downloads | length) > 0
+                      then [{
+                        name: "Downloads",
+                        value: $downloads,
+                        inline: false
+                      }]
+                      else []
+                      end
+                  )
                 }]
               }'
           )"
