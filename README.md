@@ -141,7 +141,7 @@ Install Go and the native prerequisites listed in the
 [Fyne quick-start documentation](https://docs.fyne.io/started/quick/), then run:
 
 ```sh
-go run ./cmd/deckbuilder
+go run -tags migrated_fynedo ./cmd/deckbuilder
 ```
 
 Tests, including the stricter Fyne threading migration, run with:
