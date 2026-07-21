@@ -83,6 +83,12 @@ becomes user-visible. It includes:
 - Check manually for application updates from the main menu. The first updater
   version will guide users to the appropriate release rather than replace
   installed application files automatically.
+- Export a complete deck to Tabletop Simulator in one action.
+- Import and export text decklists using the format published by Speedrobo
+  Games.
+
+The one-click Tabletop Simulator export and Speedrobo-compatible text decklist
+support were requested directly by Speedrobo Games.
 
 ### Future deckbuilder work
 
