@@ -178,6 +178,9 @@ func showApplication(
 		dialog.ShowError(err, window)
 		return
 	}
+
+	var selection SelectedState
+
 	var currentDeckURI fyne.URI
 	var showMainMenu func()
 	var makeNewDeck func()
@@ -452,10 +455,18 @@ func showApplication(
 						dialog.ShowError(err, window)
 						return
 					}
+					selection.Clear()
 
 					refreshDeckDisplay()
 				},
 			)
+
+			tile.SetSelectedVisual(selection.Contains(decks.MainZone, currentIndex))
+
+			tile.OnToggleSelection = func() {
+				selection.Toggle(decks.MainZone, currentIndex)
+				refreshDeckDisplay()
+			}
 
 			tile.EnableDrag(
 				deckgui.CardDragSource{
@@ -502,10 +513,18 @@ func showApplication(
 						dialog.ShowError(err, window)
 						return
 					}
+					selection.Clear()
 
 					refreshDeckDisplay()
 				},
 			)
+
+			tile.SetSelectedVisual(selection.Contains(decks.SideZone, currentIndex))
+
+			tile.OnToggleSelection = func() {
+				selection.Toggle(decks.SideZone, currentIndex)
+				refreshDeckDisplay()
+			}
 
 			tile.EnableDrag(
 				deckgui.CardDragSource{
