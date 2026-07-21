@@ -32,16 +32,25 @@ jobs:
           UPDATE_TITLE: ${{ inputs.title }}
           UPDATE_MESSAGE: ${{ inputs.message }}
           UPDATE_LINK: ${{ inputs.link }}
+          ROLE_ID: ${{ vars.DISCORD_DEV_UPDATE_ROLE_ID }}
         run: |
+          if [ -z "$ROLE_ID" ]; then
+            echo "DISCORD_DEV_UPDATE_ROLE_ID is not configured" >&2
+            exit 1
+          fi
+
           payload="$(
             jq -n \
               --arg title "$UPDATE_TITLE" \
               --arg message "$UPDATE_MESSAGE" \
               --arg url "$UPDATE_LINK" \
+              --arg role_id "$ROLE_ID" \
               '{
                 username: "Caster Deckbuilder Development",
+                content: ("<@&" + $role_id + ">"),
                 allowed_mentions: {
-                  parse: []
+                  parse: [],
+                  roles: [$role_id]
                 },
                 embeds: [{
                   title: $title,
