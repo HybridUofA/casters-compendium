@@ -2,6 +2,7 @@ package deckui
 
 import (
 	"image/color"
+	"slices"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -109,9 +110,23 @@ func (controller *CardDragController) Start(
 	if source.Kind == DragFromDeck {
 		sourceGrid := controller.gridForZone(source.Zone)
 		if sourceGrid != nil {
-			sourceGrid.Objects = removeCanvasObject(sourceGrid.Objects, tile)
+			dragIndices := slices.Clone(source.Indices)
+			if len(dragIndices) == 0 {
+				dragIndices = []int{source.Index}
+			}
+			slices.Sort(dragIndices)
+			for position := len(dragIndices); position > 0; position-- {
+				objectIndex := dragIndices[position-1]
+
+				if objectIndex < 0 || objectIndex >= len(sourceGrid.Objects) {
+					continue
+				}
+
+				sourceGrid.Objects = append(sourceGrid.Objects[:objectIndex], sourceGrid.Objects[objectIndex+1:]...)
+			}
+
 			relayout(sourceGrid)
-			controller.placePlaceholder(source.Zone, source.Index)
+			controller.placePlaceholder(source.Zone, dragIndices[0])
 		}
 	}
 
