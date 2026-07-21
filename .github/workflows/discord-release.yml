@@ -3,6 +3,12 @@ name: Announce Release
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing GitHub release tag to announce
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -21,10 +27,37 @@ jobs:
           RELEASE_NOTES: ${{ github.event.release.body }}
           PRERELEASE: ${{ github.event.release.prerelease }}
           ROLE_ID: ${{ vars.DISCORD_RELEASE_ROLE_ID }}
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$ROLE_ID" ]; then
             echo "DISCORD_RELEASE_ROLE_ID is not configured" >&2
             exit 1
+          fi
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ -z "$REQUESTED_TAG" ]; then
+              echo "A release tag is required for a manual announcement" >&2
+              exit 1
+            fi
+
+            release_json="$(
+              curl \
+                --fail-with-body \
+                --silent \
+                --show-error \
+                --header "Accept: application/vnd.github+json" \
+                --header "Authorization: Bearer $GH_TOKEN" \
+                --header "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/$REQUESTED_TAG"
+            )"
+
+            RELEASE_NAME="$(jq -r '.name // ""' <<<"$release_json")"
+            RELEASE_TAG="$(jq -r '.tag_name' <<<"$release_json")"
+            RELEASE_URL="$(jq -r '.html_url' <<<"$release_json")"
+            RELEASE_NOTES="$(jq -r '.body // ""' <<<"$release_json")"
+            PRERELEASE="$(jq -r '.prerelease' <<<"$release_json")"
           fi
 
           if [ "$PRERELEASE" = "true" ]; then
