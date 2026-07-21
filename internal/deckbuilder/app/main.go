@@ -147,9 +147,13 @@ func applyCardDrop(
 		)
 		return err
 	case deckgui.DragFromDeck:
-		_, err := deck.MoveOrderedCard(
+		moveIndices := source.Indices
+		if len(moveIndices) == 0 {
+			moveIndices = []int{source.Index}
+		}
+		_, err := deck.MoveOrderedCards(
 			source.Zone,
-			source.Index,
+			moveIndices,
 			target.Zone,
 			target.Index,
 		)
@@ -178,6 +182,9 @@ func showApplication(
 		dialog.ShowError(err, window)
 		return
 	}
+
+	var selection SelectedState
+
 	var currentDeckURI fyne.URI
 	var showMainMenu func()
 	var makeNewDeck func()
@@ -406,7 +413,9 @@ func showApplication(
 		defer refreshDeckDisplay()
 		if err := applyCardDrop(deck, repository, source, target); err != nil {
 			dialog.ShowError(err, window)
+			return
 		}
+		selection.Clear()
 	},
 	)
 
@@ -452,17 +461,32 @@ func showApplication(
 						dialog.ShowError(err, window)
 						return
 					}
+					selection.Clear()
 
 					refreshDeckDisplay()
 				},
 			)
+			isSelected := selection.Contains(decks.MainZone, currentIndex)
+			tile.SetSelectedVisual(isSelected)
+
+			tile.OnToggleSelection = func() {
+				selection.Toggle(decks.MainZone, currentIndex)
+				refreshDeckDisplay()
+			}
+
+			dragIndices := []int{currentIndex}
+
+			if isSelected {
+				dragIndices = selection.SortedIndices()
+			}
 
 			tile.EnableDrag(
 				deckgui.CardDragSource{
-					Kind:  deckgui.DragFromDeck,
-					Card:  currentCard,
-					Zone:  decks.MainZone,
-					Index: currentIndex,
+					Kind:    deckgui.DragFromDeck,
+					Card:    currentCard,
+					Zone:    decks.MainZone,
+					Index:   currentIndex,
+					Indices: dragIndices,
 				},
 				dragController.Start,
 				dragController.Move,
@@ -502,17 +526,32 @@ func showApplication(
 						dialog.ShowError(err, window)
 						return
 					}
+					selection.Clear()
 
 					refreshDeckDisplay()
 				},
 			)
 
+			isSelected := selection.Contains(decks.SideZone, currentIndex)
+			tile.SetSelectedVisual(isSelected)
+
+			tile.OnToggleSelection = func() {
+				selection.Toggle(decks.SideZone, currentIndex)
+				refreshDeckDisplay()
+			}
+
+			dragIndices := []int{currentIndex}
+			if isSelected {
+				dragIndices = selection.SortedIndices()
+			}
+
 			tile.EnableDrag(
 				deckgui.CardDragSource{
-					Kind:  deckgui.DragFromDeck,
-					Card:  currentCard,
-					Zone:  decks.SideZone,
-					Index: currentIndex,
+					Kind:    deckgui.DragFromDeck,
+					Card:    currentCard,
+					Zone:    decks.SideZone,
+					Index:   currentIndex,
+					Indices: dragIndices,
 				},
 				dragController.Start,
 				dragController.Move,

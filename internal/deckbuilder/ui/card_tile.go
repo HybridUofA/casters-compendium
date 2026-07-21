@@ -1,8 +1,11 @@
 package deckui
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -19,11 +22,13 @@ type CardTile struct {
 
 	Card cards.Card
 
-	preferredSize fyne.Size
-	image         *canvas.Image
+	preferredSize   fyne.Size
+	image           *canvas.Image
+	selectionBorder *canvas.Rectangle
 
-	OnSelected   func(cards.Card)
-	OnRightClick func(cards.Card, bool)
+	OnSelected        func(cards.Card)
+	OnRightClick      func(cards.Card, bool)
+	OnToggleSelection func()
 
 	dragSource  *CardDragSource
 	OnDragStart CardDragCallback
@@ -46,10 +51,11 @@ const (
 )
 
 type CardDragSource struct {
-	Kind  CardDragSourceKind
-	Card  cards.Card
-	Zone  decks.Zone
-	Index int
+	Kind    CardDragSourceKind
+	Card    cards.Card
+	Zone    decks.Zone
+	Index   int
+	Indices []int
 }
 
 type CardDragCallback func(
@@ -69,6 +75,20 @@ func (tile *CardTile) SetDraggingVisual(dragging bool) {
 		tile.image.Translucency = 0
 	}
 	tile.image.Refresh()
+}
+
+func (tile *CardTile) SetSelectedVisual(selected bool) {
+	if tile.selectionBorder == nil {
+		return
+	}
+
+	if selected {
+		tile.selectionBorder.Show()
+	} else {
+		tile.selectionBorder.Hide()
+	}
+
+	tile.selectionBorder.Refresh()
 }
 
 // EnableDrag associates a source description and lifecycle callbacks with the tile.
@@ -162,7 +182,10 @@ func NewCardTileSized(
 	}
 
 	tile.image = createCardImage(card)
-
+	tile.selectionBorder = canvas.NewRectangle(color.Transparent)
+	tile.selectionBorder.StrokeColor = theme.Color(theme.ColorNamePrimary)
+	tile.selectionBorder.StrokeWidth = 4
+	tile.selectionBorder.Hide()
 	tile.ExtendBaseWidget(tile)
 
 	return tile
@@ -211,7 +234,8 @@ func createCardImage(card cards.Card) *canvas.Image {
 
 // CreateRenderer supplies the image-backed renderer used by the custom card widget.
 func (tile *CardTile) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(tile.image)
+	stack := container.NewStack(tile.image, tile.selectionBorder)
+	return widget.NewSimpleRenderer(stack)
 }
 
 // MinSize establishes a baseline size.
@@ -250,8 +274,15 @@ func (tile *CardTile) selectCard() {
 func (tile *CardTile) MouseDown(_ *desktop.MouseEvent) {
 }
 
-// MouseUp dispatches secondary-click deck additions and preserves the Shift modifier.
+// MouseUp dispatches secondary-click deck additions and preserves the Shift modifier. Also handles cmd/ctrl+click for batch selection
 func (tile *CardTile) MouseUp(event *desktop.MouseEvent) {
+	if event.Button == desktop.MouseButtonPrimary {
+		shortcutHeld := event.Modifier&fyne.KeyModifierShortcutDefault != 0
+		if shortcutHeld && tile.OnToggleSelection != nil {
+			tile.OnToggleSelection()
+			return
+		}
+	}
 	if event.Button != desktop.MouseButtonSecondary {
 		return
 	}

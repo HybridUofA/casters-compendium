@@ -2,6 +2,7 @@ package decks
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
@@ -679,5 +680,124 @@ func (deck *Deck) MoveOrderedCard(
 		cardID,
 	)
 
+	return true, nil
+}
+
+/* MoveOrderedCards creates a list of indices to move that dynamically keeps track of the current cards selected with ctrl/cmd+click and moves them to target index */
+func (deck *Deck) MoveOrderedCards(
+	fromZone Zone,
+	fromIndices []int,
+	toZone Zone,
+	toIndex int,
+) (bool, error) {
+	deck.EnsureOrder()
+
+	source, err := deck.orderForZone(fromZone)
+	if err != nil {
+		return false, err
+	}
+
+	indicesCopy := make([]int, len(fromIndices))
+	copy(indicesCopy, fromIndices)
+	slices.Sort(indicesCopy)
+	for index := range len(indicesCopy) {
+		if index != 0 && indicesCopy[index] == indicesCopy[index-1] {
+			return false, fmt.Errorf("invalid index array")
+		}
+	}
+
+	if len(indicesCopy) == 0 {
+		return false, nil
+	}
+	for index := range len(indicesCopy) {
+		if indicesCopy[index] < 0 || indicesCopy[index] >= len(*source) {
+			return false, fmt.Errorf("source index %d is outside deck", indicesCopy[index])
+		}
+	}
+
+	selectedIDs := []string{}
+	remainingIDs := []string{}
+	selectionCursor := 0
+
+	for sourceIndex, cardID := range *source {
+		if selectionCursor < len(indicesCopy) && sourceIndex == indicesCopy[selectionCursor] {
+			selectedIDs = append(selectedIDs, cardID)
+			selectionCursor++
+		} else {
+			remainingIDs = append(remainingIDs, cardID)
+		}
+	}
+
+	if fromZone == toZone {
+		if toIndex < 0 {
+			toIndex = 0
+		}
+		if toIndex > len(remainingIDs) {
+			toIndex = len(remainingIDs)
+		}
+
+		resultSlice := []string{}
+		resultSlice = append(resultSlice, remainingIDs[:toIndex]...)
+		resultSlice = append(resultSlice, selectedIDs...)
+		resultSlice = append(resultSlice, remainingIDs[toIndex:]...)
+
+		*source = resultSlice
+		return true, nil
+	}
+	destination, err := deck.orderForZone(toZone)
+	if err != nil {
+		return false, err
+	}
+	switch toZone {
+	case MainZone:
+		if len(*destination)+len(selectedIDs) > MaxMainDeckCards {
+			return false, nil
+		}
+	case SideZone:
+		if len(*destination)+len(selectedIDs) > MaxSideDeckCards {
+			return false, nil
+		}
+	}
+
+	if toIndex < 0 {
+		toIndex = 0
+	}
+	if toIndex > len(*destination) {
+		toIndex = len(*destination)
+	}
+
+	newDest := []string{}
+	newDest = append(newDest, (*destination)[:toIndex]...)
+	newDest = append(newDest, selectedIDs...)
+	newDest = append(newDest, (*destination)[toIndex:]...)
+
+	counts := make(map[string]int)
+	for _, cardID := range selectedIDs {
+		counts[cardID]++
+	}
+
+	candidate := *deck
+	candidate.MainDeck = slices.Clone(deck.MainDeck)
+	candidate.SideDeck = slices.Clone(deck.SideDeck)
+	candidate.MainOrder = slices.Clone(deck.MainOrder)
+	candidate.SideOrder = slices.Clone(deck.SideOrder)
+
+	candidateSource, _ := candidate.orderForZone(fromZone)
+	candidateDest, _ := candidate.orderForZone(toZone)
+
+	for cardID, quantity := range counts {
+		err := candidate.RemoveCard(fromZone, cardID, quantity)
+		if err != nil {
+			return false, err
+		}
+		err = candidate.AddCard(toZone, cardID, quantity)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	*candidateSource = remainingIDs
+	*candidateDest = newDest
+	*deck = candidate
 	return true, nil
 }

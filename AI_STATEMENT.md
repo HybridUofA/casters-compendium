@@ -45,11 +45,19 @@ the change.
 
 ## Policy after the v0.1.3 migration
 
-Once the v0.1.3 repository and website migration is complete, new code on
-development branches is intended to be written by Hybrid. AI tools may be
-used for guidance, explanations, design discussion, code review, test ideas,
-and debugging suggestions, but not to directly author the implementation.
+Once the v0.1.3 repository and website migration is complete, new production
+application code on development branches is intended to be written by Hybrid.
+AI tools may be used for guidance, explanations, design discussion, code
+review, test ideas, and debugging suggestions, but not to directly author the
+production implementation.
 
-If that policy changes for a specific contribution, the exception should be
-disclosed in the relevant pull request, commit, or release notes so project
-users can evaluate it with accurate context.
+Automated tests, test fixtures, testing utilities, and testing scripts may be
+implemented by OpenAI Codex under Hybrid's direction and review. This standing
+exception applies only to test and test-support code; it does not extend to the
+application's production behavior. Codex-authored automated testing work is
+covered by this blanket disclosure and may also be identified in relevant pull
+requests or release notes when useful.
+
+If the production-code policy changes for a specific contribution, the
+exception should be disclosed in the relevant pull request, commit, or release
+notes so project users can evaluate it with accurate context.
