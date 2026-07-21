@@ -46,6 +46,19 @@ func ReadDeckList(reader io.Reader, repository *cards.Repository) (*decks.Deck, 
 			}
 			continue
 		}
+		if strings.HasPrefix(line, "Deck:") {
+			if deckName != "" {
+				return nil, decklistLineError(lineNumber, "duplicate deck name")
+			}
+			deckName = strings.TrimSpace(strings.TrimPrefix(line, "Deck:"))
+			if deckName == "" {
+				return nil, decklistLineError(lineNumber, "deck name cannot be empty")
+			}
+
+			zone = decks.MainZone
+			seenZones[decks.MainZone] = true
+			continue
+		}
 
 		if total, found, err := parseDecklistHeader(line, "Main Deck"); found {
 			if err != nil {
@@ -60,9 +73,48 @@ func ReadDeckList(reader io.Reader, repository *cards.Repository) (*decks.Deck, 
 			if err != nil {
 				return nil, decklistLineError(lineNumber, err.Error())
 			}
+
 			zone = decks.SideZone
 			declaredTotals[zone] = total
 			seenZones[zone] = true
+			continue
+		}
+		if strings.HasPrefix(line, "Game:") {
+			gameName := strings.TrimSpace(strings.TrimPrefix(line, "Game:"))
+			if !strings.EqualFold(gameName, "The Caster Chronicles") {
+				return nil, decklistLineError(lineNumber, fmt.Sprintf("unsupported game %q", gameName))
+			}
+			continue
+		}
+
+		if found := strings.HasPrefix(line, "Total:"); found {
+
+			totalCards := strings.TrimSpace(strings.TrimPrefix(line, "Total:"))
+			totalCards = strings.TrimSpace(strings.TrimSuffix(totalCards, "cards"))
+
+			total, err := strconv.Atoi(totalCards)
+			if err != nil || total < 0 {
+				return nil, decklistLineError(lineNumber, fmt.Sprintf("invalid main deck total %q", totalCards))
+			}
+			declaredTotals[decks.MainZone] = total
+			continue
+		}
+
+		if line == "--- Side Deck ---" {
+			zone = decks.SideZone
+			seenZones[decks.SideZone] = true
+			continue
+		}
+
+		if found := strings.HasPrefix(line, "Side Total:"); found {
+			totalCards := strings.TrimSpace(strings.TrimPrefix(line, "Side Total:"))
+			totalCards = strings.TrimSpace(strings.TrimSuffix(totalCards, "cards"))
+
+			total, err := strconv.Atoi(totalCards)
+			if err != nil || total < 0 {
+				return nil, decklistLineError(lineNumber, fmt.Sprintf("invalid side deck total %q", totalCards))
+			}
+			declaredTotals[decks.SideZone] = total
 			continue
 		}
 
@@ -132,7 +184,7 @@ func parseDecklistHeader(line string, name string) (int, bool, error) {
 func parseDecklistCard(line string) (int, string, string, error) {
 	x := strings.Index(line, "x ")
 	if x <= 0 {
-		return 0, "", "", fmt.Errorf("expected '<quantity>x <name> [<expansion>]'")
+		return 0, "", "", fmt.Errorf("expected '<quantity>x <name> [<expansion>]' or '<quantity>x <name> (<expansion>)")
 	}
 	quantity, err := strconv.Atoi(line[:x])
 	if err != nil || quantity <= 0 {
@@ -140,9 +192,20 @@ func parseDecklistCard(line string) (int, string, string, error) {
 	}
 
 	details := line[x+2:]
-	expansionStart := strings.LastIndex(details, " [")
-	if expansionStart <= 0 || !strings.HasSuffix(details, "]") {
-		return 0, "", "", fmt.Errorf("expected card expansion in brackets")
+	var opening string
+	var closing string
+	if strings.HasSuffix(details, "]") {
+		opening = " ["
+		closing = "]"
+	} else if strings.HasSuffix(details, ")") {
+		opening = " ("
+		closing = ")"
+	} else {
+		return 0, "", "", fmt.Errorf("formatting error: expected card expansion in brackets or parentheses")
+	}
+	expansionStart := strings.LastIndex(details, opening)
+	if expansionStart <= 0 || !strings.HasSuffix(details, closing) {
+		return 0, "", "", fmt.Errorf("improper expansion formatting")
 	}
 	name := strings.TrimSpace(details[:expansionStart])
 	expansion := strings.TrimSpace(details[expansionStart+2 : len(details)-1])
