@@ -74,8 +74,10 @@ jobs:
               --arg notes "$RELEASE_NOTES" \
               --arg release_type "$release_type" \
               --arg role_id "$ROLE_ID" \
+              --arg username "Caster's Compendium Releases" \
+              --arg empty_notes "A new version of Caster's Compendium is available." \
               '{
-                username: "Caster Deckbuilder Releases",
+                username: $username,
                 content: ("<@&" + $role_id + ">"),
                 allowed_mentions: {
                   parse: [],
@@ -88,7 +90,7 @@ jobs:
                     if ($notes | length) > 3500
                     then ($notes[0:3500] + "\n\n…See GitHub for complete release notes.")
                     elif ($notes | length) == 0
-                    then "A new version of the Caster Chronicles deckbuilder is available."
+                    then $empty_notes
                     else $notes
                     end
                   ),

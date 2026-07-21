@@ -45,8 +45,9 @@ jobs:
               --arg message "$UPDATE_MESSAGE" \
               --arg url "$UPDATE_LINK" \
               --arg role_id "$ROLE_ID" \
+              --arg username "Caster's Compendium Development" \
               '{
-                username: "Caster Deckbuilder Development",
+                username: $username,
                 content: ("<@&" + $role_id + ">"),
                 allowed_mentions: {
                   parse: [],
