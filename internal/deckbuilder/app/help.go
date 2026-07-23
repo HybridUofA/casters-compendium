@@ -27,13 +27,19 @@ You can also drag a search result directly into either deck area.
 - **Right-click a card already in the Main Deck or Side Deck to remove one copy.**
 - Drag a deck card onto the **Card Search** panel to remove one copy.
 - Drag a deck card to reorder it or move it between the Main Deck and Side Deck.
+- Hold **Control**, or **Command** on macOS, and click individual deck copies to
+  select a batch. Release the key, then drag any selected copy to move the batch
+  within or between deck areas.
 - Choose **Sort Deck** to restore the standard automatic ordering.
 
 ## Save and export
 
 - **Save** and **Save As** store an editable JSON deck.
-- **Export Decklist** creates a human-readable text decklist.
+- **Export Decklist** creates a Speedrobo-compatible text decklist.
 - **Export Main** and **Export Sideboard** create Tabletop Simulator PNG sheets.
+- **Install to TTS** installs a complete saved object using the bundled MTD card
+  back. Standard TTS data locations are detected automatically; a custom
+  location only needs to be selected once.
 - The main menu can also create an image directly from a text decklist or convert a JSON deck into a text decklist.
 
 ## Card data and appearance

@@ -1,6 +1,7 @@
 package deckbuilder
 
 import (
+	"bytes"
 	"fmt"
 	"image/color"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
+	dataassets "github.com/HybridUofA/casters-compendium/data"
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	deckexport "github.com/HybridUofA/casters-compendium/internal/deckbuilder/export"
@@ -38,6 +40,13 @@ func checkedValues(
 }
 
 const anyOption = "- Any -"
+const ttsRootPreferenceKey = "tts.root"
+
+// defaultTTSCardBack returns a fresh reader for the bundled MTD card back.
+// A new reader is required for each export because copying consumes it.
+func defaultTTSCardBack() *bytes.Reader {
+	return bytes.NewReader(dataassets.CardBackPNG)
+}
 
 // withAnyOption prepends the shared no-filter choice to a select-option list.
 func withAnyOption(options []string) []string {
@@ -116,6 +125,68 @@ func showDeckImageExportDialog(
 	)
 	exportDialog.SetFileName(safeDeckFileName(deck.Name) + fileSuffix + ".png")
 	exportDialog.Show()
+}
+
+// showTTSInstallDialog installs to the remembered or standard TTS directory,
+// falling back to a folder picker when automatic location is unavailable.
+func showTTSInstallDialog(
+	window fyne.Window,
+	deck *decks.Deck,
+	repository *cards.Repository,
+) {
+	preferences := fyne.CurrentApp().Preferences()
+	root, locateErr := deckexport.LocateTTSRoot(
+		preferences.String(ttsRootPreferenceKey),
+	)
+	if locateErr == nil {
+		installDeckToTTSRoot(window, deck, repository, root)
+		return
+	}
+
+	folderDialog := dialog.NewFolderOpen(
+		func(root fyne.ListableURI, openErr error) {
+			if openErr != nil {
+				dialog.ShowError(openErr, window)
+				return
+			}
+			if root == nil {
+				return
+			}
+
+			installDeckToTTSRoot(window, deck, repository, root.Path())
+		},
+		window,
+	)
+	folderDialog.Show()
+}
+
+func installDeckToTTSRoot(
+	window fyne.Window,
+	deck *decks.Deck,
+	repository *cards.Repository,
+	root string,
+) {
+	paths, installErr := deckexport.InstallTTSDeck(
+		root,
+		deck,
+		repository,
+		cardimages.DefaultDirectory,
+		defaultTTSCardBack(),
+	)
+	if installErr != nil {
+		dialog.ShowError(installErr, window)
+		return
+	}
+	fyne.CurrentApp().Preferences().SetString(ttsRootPreferenceKey, paths.Root)
+	dialog.ShowInformation(
+		"Tabletop Simulator Export Complete",
+		fmt.Sprintf(
+			"%q is ready in Tabletop Simulator.\n\nSaved object:\n%s",
+			deck.Name,
+			paths.JSONPath,
+		),
+		window,
+	)
 }
 
 // applyCardDrop applies a completed drag operation to the active deck.
@@ -327,6 +398,9 @@ func showApplication(
 		}),
 		widget.NewButton("Export Sideboard", func() {
 			showDeckImageExportDialog(window, deck, true)
+		}),
+		widget.NewButton("Install to TTS", func() {
+			showTTSInstallDialog(window, deck, repository)
 		}),
 		widget.NewButton("Export Decklist", func() {
 			showDecklistSaveDialog(window, deck, repository)

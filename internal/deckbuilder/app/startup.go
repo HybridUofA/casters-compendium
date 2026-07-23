@@ -35,7 +35,7 @@ const (
 	githubCardDataRootURL = "https://raw.githubusercontent.com/HybridUofA/casters-compendium/main/data"
 	githubCardDatabaseURL = githubCardDataRootURL + "/cards.json"
 	maxCardDatabaseBytes  = 10 << 20
-	cardDatabaseUserAgent = "CastersCompendium/0.1.3"
+	cardDatabaseUserAgent = "CastersCompendium/0.1.4"
 )
 
 type applicationPaths = localdata.Paths
