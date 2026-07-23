@@ -79,3 +79,44 @@ func genDeckIDs(
 	}
 	return physicalDeckIDs, uniqueSheetIDs, nil
 }
+
+func sheetDimensions(uniqueCardCount int) (int, int, error) {
+	var width int
+	var height int
+	if uniqueCardCount <= 0 {
+		return 0, 0, fmt.Errorf("card count must be positive: %d", uniqueCardCount)
+	}
+	if uniqueCardCount > ttsSheetMaxCards {
+		return 0, 0, fmt.Errorf("card count must be at most %d max cards: %d", ttsSheetMaxCards, uniqueCardCount)
+	}
+	if uniqueCardCount < ttsSheetColumns {
+		width = uniqueCardCount
+	} else {
+		width = ttsSheetColumns
+	}
+	height = (uniqueCardCount + width - 1) / width
+	return width, height, nil
+}
+
+func buildCustomDeckState(faceURL string, backURL string, uniqueCardCount int) (CustomDeckState, error) {
+	if faceURL == "" {
+		return CustomDeckState{}, fmt.Errorf("face path must be specified")
+	}
+	if backURL == "" {
+		return CustomDeckState{}, fmt.Errorf("back path must be specified")
+	}
+	width, height, err := sheetDimensions(uniqueCardCount)
+	if err != nil {
+		return CustomDeckState{}, err
+	}
+	state := CustomDeckState{
+		FaceURL:      faceURL,
+		BackURL:      backURL,
+		NumWidth:     width,
+		NumHeight:    height,
+		BackIsHidden: true,
+		UniqueBack:   false,
+		Type:         0,
+	}
+	return state, nil
+}
