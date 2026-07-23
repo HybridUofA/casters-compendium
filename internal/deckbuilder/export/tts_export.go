@@ -1,6 +1,9 @@
 package deckexport
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type SavedObject struct {
 	SaveName     string       `json:"SaveName"`
@@ -119,4 +122,40 @@ func buildCustomDeckState(faceURL string, backURL string, uniqueCardCount int) (
 		Type:         0,
 	}
 	return state, nil
+}
+
+func buildCardObject(ttsCardID int, cardName string, deckKey int, state CustomDeckState) (CardObject, error) {
+	if ttsCardID <= 0 {
+		return CardObject{}, fmt.Errorf("card ID cannot be less than or equal to zero: %d", ttsCardID)
+	}
+	if deckKey <= 0 {
+		return CardObject{}, fmt.Errorf("deck key cannot be less than or equal to zero: %d", deckKey)
+	}
+	if ttsCardID/100 != deckKey {
+		return CardObject{}, fmt.Errorf("card ID does not match deck key: %d, %d", ttsCardID, deckKey)
+	}
+	if cardName == "" {
+		return CardObject{}, fmt.Errorf("card name cannot be empty")
+	}
+	if state.FaceURL == "" {
+		return CardObject{}, fmt.Errorf("card face path must not be empty")
+	}
+	if state.BackURL == "" {
+		return CardObject{}, fmt.Errorf("card back path must not be empty")
+	}
+	key := strconv.Itoa(deckKey)
+	card := CardObject{
+		Name:     "Card",
+		Nickname: cardName,
+		CardID:   ttsCardID,
+		CustomDeck: map[string]CustomDeckState{
+			key: state,
+		},
+		Transform: Transform{
+			ScaleX: 1,
+			ScaleY: 1,
+			ScaleZ: 1,
+		},
+	}
+	return card, nil
 }

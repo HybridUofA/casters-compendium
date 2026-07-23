@@ -2,6 +2,7 @@ package deckexport
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -340,6 +341,147 @@ func TestBuildCustomDeckStateRejectsInvalidCount(t *testing.T) {
 			}
 			if state != (CustomDeckState{}) {
 				t.Fatalf("error state = %#v, want zero value", state)
+			}
+		})
+	}
+}
+
+// TestBuildCardObject verifies one physical TTS card references the expected
+// custom-deck namespace and receives safe default transform values.
+func TestBuildCardObject(t *testing.T) {
+	state, err := buildCustomDeckState("main faces.png", "card back.png", 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	card, err := buildCardObject(102, "Grace", 1, state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if card.Name != "Card" {
+		t.Fatalf("Name = %q, want Card", card.Name)
+	}
+	if card.Nickname != "Grace" {
+		t.Fatalf("Nickname = %q, want Grace", card.Nickname)
+	}
+	if card.Description != "" {
+		t.Fatalf("Description = %q, want empty", card.Description)
+	}
+	if card.CardID != 102 {
+		t.Fatalf("CardID = %d, want 102", card.CardID)
+	}
+	if card.Transform.ScaleX != 1 ||
+		card.Transform.ScaleY != 1 ||
+		card.Transform.ScaleZ != 1 {
+		t.Fatalf("Transform scale = %#v, want 1x1x1", card.Transform)
+	}
+	if len(card.CustomDeck) != 1 {
+		t.Fatalf("CustomDeck length = %d, want 1", len(card.CustomDeck))
+	}
+	gotState, found := card.CustomDeck["1"]
+	if !found {
+		t.Fatalf("CustomDeck = %#v, want key 1", card.CustomDeck)
+	}
+	if gotState != state {
+		t.Fatalf("CustomDeck[1] = %#v, want %#v", gotState, state)
+	}
+}
+
+// TestBuildCardObjectUsesSuppliedNamespace verifies non-main deck keys are
+// converted to decimal JSON map keys.
+func TestBuildCardObjectUsesSuppliedNamespace(t *testing.T) {
+	state, err := buildCustomDeckState("side faces.png", "card back.png", 12)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	card, err := buildCardObject(211, "Call Forth", 2, state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, found := card.CustomDeck["2"]; !found {
+		t.Fatalf("CustomDeck = %#v, want key 2", card.CustomDeck)
+	}
+}
+
+// TestBuildCardObjectRejectsInvalidIdentity verifies IDs and custom-deck keys
+// must be positive and must refer to the same hundreds namespace.
+func TestBuildCardObjectRejectsInvalidIdentity(t *testing.T) {
+	state, err := buildCustomDeckState("faces.png", "back.png", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name      string
+		ttsCardID int
+		deckKey   int
+		wantError string
+	}{
+		{name: "zero card ID", ttsCardID: 0, deckKey: 1, wantError: "card ID"},
+		{name: "negative card ID", ttsCardID: -1, deckKey: 1, wantError: "card ID"},
+		{name: "zero deck key", ttsCardID: 100, deckKey: 0, wantError: "deck key"},
+		{name: "negative deck key", ttsCardID: 100, deckKey: -1, wantError: "deck key"},
+		{name: "namespace mismatch", ttsCardID: 200, deckKey: 1, wantError: "does not match"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			card, err := buildCardObject(
+				test.ttsCardID,
+				"Grace",
+				test.deckKey,
+				state,
+			)
+			if err == nil || !strings.Contains(err.Error(), test.wantError) {
+				t.Fatalf("buildCardObject() error = %v", err)
+			}
+			if !reflect.DeepEqual(card, CardObject{}) {
+				t.Fatalf("error card = %#v, want zero value", card)
+			}
+		})
+	}
+}
+
+// TestBuildCardObjectRejectsMissingMetadata verifies a physical card cannot be
+// emitted without a display name and both required TTS asset references.
+func TestBuildCardObjectRejectsMissingMetadata(t *testing.T) {
+	validState, err := buildCustomDeckState("faces.png", "back.png", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name      string
+		cardName  string
+		state     CustomDeckState
+		wantError string
+	}{
+		{name: "missing name", cardName: "", state: validState, wantError: "card name"},
+		{
+			name:     "missing face",
+			cardName: "Grace",
+			state: CustomDeckState{
+				BackURL: "back.png",
+			},
+			wantError: "face path",
+		},
+		{
+			name:     "missing back",
+			cardName: "Grace",
+			state: CustomDeckState{
+				FaceURL: "faces.png",
+			},
+			wantError: "back path",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			card, err := buildCardObject(100, test.cardName, 1, test.state)
+			if err == nil || !strings.Contains(err.Error(), test.wantError) {
+				t.Fatalf("buildCardObject() error = %v", err)
+			}
+			if !reflect.DeepEqual(card, CardObject{}) {
+				t.Fatalf("error card = %#v, want zero value", card)
 			}
 		})
 	}
