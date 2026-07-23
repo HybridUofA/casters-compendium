@@ -1,8 +1,9 @@
 # Caster's Compendium
 
 Caster's Compendium is a desktop card browser and deck builder for Caster
-Chronicles. It supports editable JSON decks, human-readable text decklists, and
-Tabletop Simulator image sheets for both the main deck and sideboard.
+Chronicles. It supports editable JSON decks, Speedrobo-compatible text
+decklists, Tabletop Simulator image sheets, and direct local installation of
+complete decks into Tabletop Simulator.
 
 Project website: <https://hybriduofa.github.io/casters-compendium/>
 
@@ -10,9 +11,9 @@ AI assistance and project authorship are documented in
 [AI_STATEMENT.md](AI_STATEMENT.md). The original foundation through the
 `Checkpoint before Codex` commit was maintainer-written; implementation through
 the v0.1.3 repository and website migration included Codex assistance under
-maintainer direction and review. After that migration, new code on development
-branches is intended to be maintainer-written with AI limited to guidance,
-review, test ideas, and debugging support.
+maintainer direction and review. The statement also documents the automated
+tests and limited, explicitly authorized production assistance used for
+v0.1.4's Tabletop Simulator integration.
 
 ## Features
 
@@ -23,6 +24,9 @@ review, test ideas, and debugging support.
 - Drag cards from search results into either deck area, move them between the
   main deck and sideboard, and reorder them for personal theorycrafting and
   custom organization. **Sort Deck** restores the standard ordering.
+- Select individual card copies with Control-click, or Command-click on macOS,
+  then drag the selected batch within or between deck zones while preserving
+  its relative order.
 - Drag a deck card onto the Card Search panel to remove one copy.
 - Preview card artwork on hover or click and read the card's full details in the
   information panel.
@@ -45,10 +49,13 @@ review, test ideas, and debugging support.
 ### Import, sharing, and export
 
 - Import and save editable JSON deck files for sharing between players.
-- Import and export human-readable text decklists containing card codes for
-  tournament submission.
+- Import and export the human-readable decklist format published by Speedrobo
+  Games, including deck metadata, set names, totals, and sideboards.
 - Export both main-deck and sideboard image sheets for Tabletop Simulator using
   the bundled card-back asset.
+- Install a complete deck directly into Tabletop Simulator with one click. The
+  application detects standard Windows, macOS, and Linux data locations,
+  remembers custom locations, and uses the bundled MTD card back by default.
 
 ### Desktop applications
 
@@ -59,39 +66,25 @@ review, test ideas, and debugging support.
 
 ## Roadmap
 
-### What's new in v0.1.3
-
-v0.1.3 is a deckbuilder-focused refinement release before simulator development
-becomes user-visible. It includes:
-
-- Showing card previews on hover instead of requiring a click.
-- Allowing a card to be dragged from the main deck or sideboard back to the
-  search area to remove it.
-- Correcting the alignment of cards in the main deck and sideboard.
-- Bundling the new `shadow.png` application icon.
-
-### Planned for v0.1.4
+### What's new in v0.1.4
 
 - Select multiple individual card copies with Control-click, or Command-click on
   macOS.
 - Drag the selected cards to a new position as one batch while preserving their
   relative order.
-- Preload the Duel Deck decklists and provide a deck-selection dropdown for
-  choosing which bundled deck to edit.
-- Check automatically for newer application releases and notify users when one
-  is available, with direct access to its release notes and downloads.
-- Check manually for application updates from the main menu. The first updater
-  version will guide users to the appropriate release rather than replace
-  installed application files automatically.
 - Export a complete deck to Tabletop Simulator in one action.
 - Import and export text decklists using the format published by Speedrobo
   Games.
+- Complete the migration to Fyne's current UI-thread dispatch model.
 
 The one-click Tabletop Simulator export and Speedrobo-compatible text decklist
 support were requested directly by Speedrobo Games.
 
 ### Future deckbuilder work
 
+- Preload the Duel Deck decklists and provide a deck-selection dropdown.
+- Check automatically and manually for new application releases, linking users
+  directly to release notes and downloads.
 - Continue working directly with Speedrobo on art assets and prototype cards.
 - Adding optional backgrounds, primarily eight element-themed designs and
   potentially five designs for the OC-tier Casters, subject to their creators'
@@ -119,14 +112,19 @@ promised delivery date.
 5. **Right-click a card already in the Main Deck or Side Deck to remove one
    copy, or drag it onto the Card Search panel.** Drag a deck card within or
    between deck areas to reorder or move it.
-6. Choose **Sort Deck** to restore the standard automatic ordering.
+6. Hold **Control**, or **Command** on macOS, and click individual deck copies
+   to select a batch. Release the key, then drag any selected copy to move the
+   batch within or between deck areas.
+7. Choose **Sort Deck** to restore the standard automatic ordering.
 
 The deck controls provide the following file and export operations:
 
 - **Save** and **Save As** write the editable JSON deck format.
 - **Export Decklist** writes the human-readable text format used by
-  `Arthur Test Deck.txt`.
+  Speedrobo Games decklists.
 - **Export Main** and **Export Sideboard** create Tabletop Simulator PNG sheets.
+- **Install to TTS** writes a complete saved object and its local image assets
+  into the detected Tabletop Simulator data directory.
 - **Rename** changes the deck's display and default export name.
 - **Main Menu** returns to deck creation, file conversion, database update,
   appearance settings, and the built-in **How to Use** guide.
@@ -205,7 +203,7 @@ artifacts for:
 - Arch Linux x64 (`.pkg.tar.zst`)
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
-such as `v0.1.3` builds the same packages and publishes them as GitHub Release
+such as `v0.1.4` builds the same packages and publishes them as GitHub Release
 assets. The macOS and Windows packages are currently unsigned; operating-system
 security prompts may therefore require the user to explicitly allow the first
 launch. Code signing can be added later when the appropriate Apple Developer and
@@ -217,11 +215,11 @@ embeds `MTD-back-ver01.png` separately for Tabletop Simulator exports.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.3_amd64.deb
+sudo apt install ./casters-compendium_0.1.4_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.3-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.4-1-x86_64.pkg.tar.zst
 ```

@@ -61,3 +61,20 @@ requests or release notes when useful.
 If the production-code policy changes for a specific contribution, the
 exception should be disclosed in the relevant pull request, commit, or release
 notes so project users can evaluate it with accurate context.
+
+## Disclosed v0.1.4 exception
+
+Hybrid designed and implemented the core v0.1.4 batch-selection, text-format,
+and Tabletop Simulator export behavior with Codex providing guided assistance,
+review, debugging support, and comprehensive automated tests.
+
+To reduce repetitive hand strain during final integration, Hybrid explicitly
+authorized Codex to author a limited portion of production code: the default
+embedded card-back provider, the public Tabletop Simulator installation
+coordinator, automatic cross-platform TTS data-directory detection, remembered
+custom-location behavior, and final Fyne button/dialog wiring. Codex also
+prepared the associated release documentation, website updates, and packaging
+metadata under Hybrid's direction and review.
+
+This is a contribution-specific exception, not a blanket change to the
+post-v0.1.3 production-code policy.
