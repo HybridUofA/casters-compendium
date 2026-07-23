@@ -1,8 +1,12 @@
 package deckexport
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"strconv"
+
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
 type SavedObject struct {
@@ -158,4 +162,162 @@ func buildCardObject(ttsCardID int, cardName string, deckKey int, state CustomDe
 		},
 	}
 	return card, nil
+}
+
+func buildCardObjects(
+	orderedCardIDs []string,
+	physicalDeckIDs []int,
+	deckKey int,
+	state CustomDeckState,
+	repository decks.CardCatalog,
+) ([]CardObject, error) {
+	if repository == nil {
+		return nil, fmt.Errorf("repository cannot be nil")
+	}
+	if len(orderedCardIDs) != len(physicalDeckIDs) {
+		return nil, fmt.Errorf("card IDs and deck IDs do not have the same number of values")
+	}
+	cardObjects := make([]CardObject, 0, len(orderedCardIDs))
+	for index := range orderedCardIDs {
+		internalID := orderedCardIDs[index]
+		ttsID := physicalDeckIDs[index]
+		card, found := repository.FindByID(internalID)
+		if !found {
+			return nil, fmt.Errorf("card %q at position %d was not found", internalID, index+1)
+		}
+		cardObject, err := buildCardObject(ttsID, card.Name, deckKey, state)
+		if err != nil {
+			return nil, fmt.Errorf("build card %q at position %d: %w", internalID, index+1, err)
+		}
+		cardObjects = append(cardObjects, cardObject)
+	}
+	return cardObjects, nil
+}
+
+func buildDeckObject(
+	nickname string,
+	orderedIDs []string,
+	deckKey int,
+	faceURL string,
+	backURL string,
+	transform Transform,
+	repository decks.CardCatalog,
+) (
+	DeckObject,
+	[]string,
+	error,
+) {
+	if nickname == "" {
+		return DeckObject{}, nil, fmt.Errorf("nickname field cannot be empty")
+	}
+	if len(orderedIDs) <= 0 {
+		return DeckObject{}, nil, fmt.Errorf("deck size must be greater than 0")
+	}
+	if transform.ScaleX == 0 || transform.ScaleY == 0 || transform.ScaleZ == 0 {
+		return DeckObject{}, nil, fmt.Errorf("transform scale factors cannot be zero")
+	}
+	deckIDs, sheetIDs, err := genDeckIDs(orderedIDs, deckKey)
+	if err != nil {
+		return DeckObject{}, nil, fmt.Errorf("generate deck IDs: %w", err)
+	}
+	deckState, err := buildCustomDeckState(faceURL, backURL, len(sheetIDs))
+	if err != nil {
+		return DeckObject{}, nil, fmt.Errorf("build custom deck state: %w", err)
+	}
+	cardObjects, err := buildCardObjects(orderedIDs, deckIDs, deckKey, deckState, repository)
+	if err != nil {
+		return DeckObject{}, nil, fmt.Errorf("build contained cards: %w", err)
+	}
+	key := strconv.Itoa(deckKey)
+	object := DeckObject{
+		Name:        "Deck",
+		Nickname:    nickname,
+		Description: "",
+		Transform:   transform,
+		DeckIDs:     deckIDs,
+		CustomDeck: map[string]CustomDeckState{
+			key: deckState,
+		},
+		ContainedObjects: cardObjects,
+	}
+	return object, sheetIDs, nil
+}
+
+func buildSavedObject(
+	deck *decks.Deck,
+	mainFace string,
+	sideFace string,
+	backFace string,
+	repository decks.CardCatalog,
+) (SavedObject, []string, []string, error) {
+	var mainTransform = Transform{
+		PosX:   -2.5,
+		PosY:   1,
+		RotZ:   180,
+		ScaleX: 1,
+		ScaleY: 1,
+		ScaleZ: 1,
+	}
+	var sideObject DeckObject
+	var sideSheetIDs []string
+	if deck == nil {
+		return SavedObject{}, nil, nil, fmt.Errorf("deck cannot be empty")
+	}
+	if repository == nil {
+		return SavedObject{}, nil, nil, fmt.Errorf("repository cannot be empty")
+	}
+	mainIDs := cardIDsForImageExport(deck.MainDeck, deck.MainOrder)
+	if len(mainIDs) == 0 {
+		return SavedObject{}, nil, nil, fmt.Errorf("main deck cannot be empty")
+	}
+	mainObject, mainSheetIDs, err := buildDeckObject(deck.Name+" - Main Deck", mainIDs, 1, mainFace, backFace, mainTransform, repository)
+	if err != nil {
+		return SavedObject{}, nil, nil, fmt.Errorf("build main deck object: %w", err)
+	}
+	objects := make([]DeckObject, 0, 2)
+	objects = append(objects, mainObject)
+
+	sideIDs := cardIDsForImageExport(deck.SideDeck, deck.SideOrder)
+	if len(sideIDs) > 0 {
+		var sideTransform = Transform{
+			PosX:   2.5,
+			PosY:   1,
+			RotZ:   180,
+			ScaleX: 1,
+			ScaleY: 1,
+			ScaleZ: 1,
+		}
+		sideObject, sideSheetIDs, err = buildDeckObject(deck.Name+" - Sideboard", sideIDs, 2, sideFace, backFace, sideTransform, repository)
+		if err != nil {
+			return SavedObject{}, nil, nil, fmt.Errorf("build side deck object: %w", err)
+		}
+		objects = append(objects, sideObject)
+	}
+	savedObject := SavedObject{
+		SaveName:     deck.Name,
+		ObjectStates: objects,
+	}
+	return savedObject, mainSheetIDs, sideSheetIDs, nil
+}
+
+func writeSavedObjectJSON(
+	writer io.Writer,
+	object SavedObject,
+) error {
+	if writer == nil {
+		return fmt.Errorf("writer cannot be nil")
+	}
+	if object.SaveName == "" {
+		return fmt.Errorf("save name cannot be empty")
+	}
+	if len(object.ObjectStates) == 0 {
+		return fmt.Errorf("object states cannot be zero")
+	}
+	encoder := json.NewEncoder(writer)
+	encoder.SetIndent("", "  ")
+	err := encoder.Encode(object)
+	if err != nil {
+		return fmt.Errorf("encode TTS saved object: %w", err)
+	}
+	return nil
 }
