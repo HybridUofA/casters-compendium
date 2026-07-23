@@ -40,6 +40,7 @@ func checkedValues(
 }
 
 const anyOption = "- Any -"
+const ttsRootPreferenceKey = "tts.root"
 
 // defaultTTSCardBack returns a fresh reader for the bundled MTD card back.
 // A new reader is required for each export because copying consumes it.
@@ -126,13 +127,22 @@ func showDeckImageExportDialog(
 	exportDialog.Show()
 }
 
-// showTTSInstallDialog installs the active deck into a selected Tabletop
-// Simulator data directory using the bundled MTD card back.
+// showTTSInstallDialog installs to the remembered or standard TTS directory,
+// falling back to a folder picker when automatic location is unavailable.
 func showTTSInstallDialog(
 	window fyne.Window,
 	deck *decks.Deck,
 	repository *cards.Repository,
 ) {
+	preferences := fyne.CurrentApp().Preferences()
+	root, locateErr := deckexport.LocateTTSRoot(
+		preferences.String(ttsRootPreferenceKey),
+	)
+	if locateErr == nil {
+		installDeckToTTSRoot(window, deck, repository, root)
+		return
+	}
+
 	folderDialog := dialog.NewFolderOpen(
 		func(root fyne.ListableURI, openErr error) {
 			if openErr != nil {
@@ -143,30 +153,40 @@ func showTTSInstallDialog(
 				return
 			}
 
-			paths, installErr := deckexport.InstallTTSDeck(
-				root.Path(),
-				deck,
-				repository,
-				cardimages.DefaultDirectory,
-				defaultTTSCardBack(),
-			)
-			if installErr != nil {
-				dialog.ShowError(installErr, window)
-				return
-			}
-			dialog.ShowInformation(
-				"Tabletop Simulator Export Complete",
-				fmt.Sprintf(
-					"%q is ready in Tabletop Simulator.\n\nSaved object:\n%s",
-					deck.Name,
-					paths.JSONPath,
-				),
-				window,
-			)
+			installDeckToTTSRoot(window, deck, repository, root.Path())
 		},
 		window,
 	)
 	folderDialog.Show()
+}
+
+func installDeckToTTSRoot(
+	window fyne.Window,
+	deck *decks.Deck,
+	repository *cards.Repository,
+	root string,
+) {
+	paths, installErr := deckexport.InstallTTSDeck(
+		root,
+		deck,
+		repository,
+		cardimages.DefaultDirectory,
+		defaultTTSCardBack(),
+	)
+	if installErr != nil {
+		dialog.ShowError(installErr, window)
+		return
+	}
+	fyne.CurrentApp().Preferences().SetString(ttsRootPreferenceKey, paths.Root)
+	dialog.ShowInformation(
+		"Tabletop Simulator Export Complete",
+		fmt.Sprintf(
+			"%q is ready in Tabletop Simulator.\n\nSaved object:\n%s",
+			deck.Name,
+			paths.JSONPath,
+		),
+		window,
+	)
 }
 
 // applyCardDrop applies a completed drag operation to the active deck.

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
@@ -23,6 +24,85 @@ type TTSInstallPaths struct {
 }
 
 var unsafeTTSFilenameChars = regexp.MustCompile(`[\\/:*?"<>|\x00-\x1f]`)
+
+// LocateTTSRoot returns a usable remembered or platform-default Tabletop
+// Simulator data directory without modifying it.
+func LocateTTSRoot(preferred string) (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("locate user home directory: %w", err)
+	}
+	return locateTTSRoot(
+		runtime.GOOS,
+		home,
+		preferred,
+		os.Getenv("OneDrive"),
+	)
+}
+
+func locateTTSRoot(
+	goos string,
+	home string,
+	preferred string,
+	oneDrive string,
+) (string, error) {
+	candidates := make([]string, 0, 3)
+	if strings.TrimSpace(preferred) != "" {
+		candidates = append(candidates, preferred)
+	}
+	switch goos {
+	case "windows":
+		if strings.TrimSpace(oneDrive) != "" {
+			candidates = append(
+				candidates,
+				filepath.Join(oneDrive, "Documents", "My Games", "Tabletop Simulator"),
+			)
+		}
+		candidates = append(
+			candidates,
+			filepath.Join(home, "Documents", "My Games", "Tabletop Simulator"),
+		)
+	case "darwin":
+		candidates = append(candidates, filepath.Join(home, "Library", "Tabletop Simulator"))
+	case "linux":
+		candidates = append(
+			candidates,
+			filepath.Join(home, ".local", "share", "Tabletop Simulator"),
+		)
+	default:
+		return "", fmt.Errorf("automatic TTS location is unsupported on %q", goos)
+	}
+
+	seen := make(map[string]struct{}, len(candidates))
+	for _, candidate := range candidates {
+		candidate = filepath.Clean(candidate)
+		if _, exists := seen[candidate]; exists {
+			continue
+		}
+		seen[candidate] = struct{}{}
+		if isTTSRoot(candidate) {
+			absolute, err := filepath.Abs(candidate)
+			if err != nil {
+				continue
+			}
+			return absolute, nil
+		}
+	}
+	return "", fmt.Errorf("Tabletop Simulator data directory was not found")
+}
+
+func isTTSRoot(root string) bool {
+	if strings.TrimSpace(root) == "" {
+		return false
+	}
+	for _, child := range []string{"Mods", "Saves"} {
+		info, err := os.Stat(filepath.Join(root, child))
+		if err != nil || !info.IsDir() {
+			return false
+		}
+	}
+	return true
+}
 
 func safeTTSFileName(name string) string {
 	name = strings.TrimSpace(name)

@@ -47,6 +47,112 @@ func TestSafeTTSFileName(t *testing.T) {
 	}
 }
 
+func TestLocateTTSRootUsesPreferredDirectory(t *testing.T) {
+	preferred := newTestTTSRoot(t)
+	home := t.TempDir()
+
+	got, err := locateTTSRoot("linux", home, preferred, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != preferred {
+		t.Fatalf("locateTTSRoot() = %q, want preferred %q", got, preferred)
+	}
+}
+
+func TestLocateTTSRootUsesPlatformDefaults(t *testing.T) {
+	tests := []struct {
+		name     string
+		goos     string
+		relative []string
+	}{
+		{
+			name:     "Windows",
+			goos:     "windows",
+			relative: []string{"Documents", "My Games", "Tabletop Simulator"},
+		},
+		{
+			name:     "macOS",
+			goos:     "darwin",
+			relative: []string{"Library", "Tabletop Simulator"},
+		},
+		{
+			name:     "Linux",
+			goos:     "linux",
+			relative: []string{".local", "share", "Tabletop Simulator"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			home := t.TempDir()
+			want := filepath.Join(append([]string{home}, test.relative...)...)
+			mkdirTestDirectory(t, filepath.Join(want, "Mods"))
+			mkdirTestDirectory(t, filepath.Join(want, "Saves"))
+
+			got, err := locateTTSRoot(test.goos, home, "", "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != want {
+				t.Fatalf("locateTTSRoot() = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+func TestLocateTTSRootUsesOneDriveDocuments(t *testing.T) {
+	home := t.TempDir()
+	oneDrive := t.TempDir()
+	want := filepath.Join(oneDrive, "Documents", "My Games", "Tabletop Simulator")
+	mkdirTestDirectory(t, filepath.Join(want, "Mods"))
+	mkdirTestDirectory(t, filepath.Join(want, "Saves"))
+
+	got, err := locateTTSRoot("windows", home, "", oneDrive)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != want {
+		t.Fatalf("locateTTSRoot() = %q, want OneDrive location %q", got, want)
+	}
+}
+
+func TestLocateTTSRootFallsBackAfterStalePreference(t *testing.T) {
+	home := t.TempDir()
+	want := filepath.Join(home, ".local", "share", "Tabletop Simulator")
+	mkdirTestDirectory(t, filepath.Join(want, "Mods"))
+	mkdirTestDirectory(t, filepath.Join(want, "Saves"))
+
+	got, err := locateTTSRoot(
+		"linux",
+		home,
+		filepath.Join(t.TempDir(), "removed-custom-location"),
+		"",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != want {
+		t.Fatalf("locateTTSRoot() = %q, want default %q", got, want)
+	}
+}
+
+func TestLocateTTSRootRejectsInvalidLocations(t *testing.T) {
+	t.Run("missing TTS directories", func(t *testing.T) {
+		_, err := locateTTSRoot("linux", t.TempDir(), t.TempDir(), "")
+		if err == nil || !strings.Contains(err.Error(), "was not found") {
+			t.Fatalf("locateTTSRoot() error = %v", err)
+		}
+	})
+
+	t.Run("unsupported platform", func(t *testing.T) {
+		_, err := locateTTSRoot("plan9", t.TempDir(), "", "")
+		if err == nil || !strings.Contains(err.Error(), "unsupported") {
+			t.Fatalf("locateTTSRoot() error = %v", err)
+		}
+	})
+}
+
 // TestPathPlannerWithSideboard verifies all planned paths share the absolute
 // TTS root and use safe filenames in their correct directory branches.
 func TestPathPlannerWithSideboard(t *testing.T) {
