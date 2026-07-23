@@ -1,6 +1,7 @@
 package deckbuilder
 
 import (
+	"bytes"
 	"fmt"
 	"image/color"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
+	dataassets "github.com/HybridUofA/casters-compendium/data"
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	deckexport "github.com/HybridUofA/casters-compendium/internal/deckbuilder/export"
@@ -38,6 +40,12 @@ func checkedValues(
 }
 
 const anyOption = "- Any -"
+
+// defaultTTSCardBack returns a fresh reader for the bundled MTD card back.
+// A new reader is required for each export because copying consumes it.
+func defaultTTSCardBack() *bytes.Reader {
+	return bytes.NewReader(dataassets.CardBackPNG)
+}
 
 // withAnyOption prepends the shared no-filter choice to a select-option list.
 func withAnyOption(options []string) []string {
@@ -116,6 +124,49 @@ func showDeckImageExportDialog(
 	)
 	exportDialog.SetFileName(safeDeckFileName(deck.Name) + fileSuffix + ".png")
 	exportDialog.Show()
+}
+
+// showTTSInstallDialog installs the active deck into a selected Tabletop
+// Simulator data directory using the bundled MTD card back.
+func showTTSInstallDialog(
+	window fyne.Window,
+	deck *decks.Deck,
+	repository *cards.Repository,
+) {
+	folderDialog := dialog.NewFolderOpen(
+		func(root fyne.ListableURI, openErr error) {
+			if openErr != nil {
+				dialog.ShowError(openErr, window)
+				return
+			}
+			if root == nil {
+				return
+			}
+
+			paths, installErr := deckexport.InstallTTSDeck(
+				root.Path(),
+				deck,
+				repository,
+				cardimages.DefaultDirectory,
+				defaultTTSCardBack(),
+			)
+			if installErr != nil {
+				dialog.ShowError(installErr, window)
+				return
+			}
+			dialog.ShowInformation(
+				"Tabletop Simulator Export Complete",
+				fmt.Sprintf(
+					"%q is ready in Tabletop Simulator.\n\nSaved object:\n%s",
+					deck.Name,
+					paths.JSONPath,
+				),
+				window,
+			)
+		},
+		window,
+	)
+	folderDialog.Show()
 }
 
 // applyCardDrop applies a completed drag operation to the active deck.
@@ -327,6 +378,9 @@ func showApplication(
 		}),
 		widget.NewButton("Export Sideboard", func() {
 			showDeckImageExportDialog(window, deck, true)
+		}),
+		widget.NewButton("Install to TTS", func() {
+			showTTSInstallDialog(window, deck, repository)
 		}),
 		widget.NewButton("Export Decklist", func() {
 			showDecklistSaveDialog(window, deck, repository)
