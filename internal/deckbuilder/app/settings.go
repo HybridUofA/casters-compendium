@@ -51,13 +51,6 @@ var (
 	)
 )
 
-// backgroundSurface keeps the foreground available when settings refresh the
-// artwork behind the current screen.
-type backgroundSurface struct {
-	*fyne.Container
-	foreground fyne.CanvasObject
-}
-
 // fixedVariantTheme delegates theme resources while forcing one color variant.
 type fixedVariantTheme struct {
 	base    fyne.Theme
@@ -184,10 +177,9 @@ func wrapWithBackground(content fyne.CanvasObject, value string) fyne.CanvasObje
 	image.ScaleMode = canvas.ImageScaleSmooth
 	scrim := canvas.NewRectangle(color.NRGBA{A: 112})
 
-	return &backgroundSurface{
-		Container:  container.NewStack(image, scrim, content),
-		foreground: content,
-	}
+	// Fyne's renderer traverses children only when the concrete object is a
+	// *fyne.Container or a widget. Do not wrap this container in a custom type.
+	return container.NewStack(image, scrim, content)
 }
 
 // setWindowContent applies the saved artwork to every application screen.
@@ -197,15 +189,6 @@ func setWindowContent(window fyne.Window, content fyne.CanvasObject) {
 		backgroundNone,
 	)
 	window.SetContent(wrapWithBackground(content, value))
-}
-
-// refreshWindowBackground immediately reapplies artwork to the visible screen.
-func refreshWindowBackground(window fyne.Window) {
-	content := window.Content()
-	if surface, ok := content.(*backgroundSurface); ok {
-		content = surface.foreground
-	}
-	setWindowContent(window, content)
 }
 
 // applyAppearanceTheme installs the selected adaptive or fixed-variant theme.
@@ -231,7 +214,7 @@ func loadAppearanceTheme(guiApp fyne.App) {
 }
 
 // showSettingsDialog lets the user save and immediately apply appearance settings.
-func showSettingsDialog(window fyne.Window, guiApp fyne.App) {
+func showSettingsDialog(window fyne.Window, guiApp fyne.App, onSaved func()) {
 	selection := widget.NewRadioGroup(
 		[]string{
 			appearanceThemeSystemLabel,
@@ -296,7 +279,9 @@ func showSettingsDialog(window fyne.Window, guiApp fyne.App) {
 			applyAppearanceTheme(guiApp, value)
 			background := backgroundValue(backgroundSelection.Selected)
 			guiApp.Preferences().SetString(backgroundPreferenceKey, background)
-			refreshWindowBackground(window)
+			if onSaved != nil {
+				onSaved()
+			}
 		},
 		window,
 	).Show()

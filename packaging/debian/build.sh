@@ -5,8 +5,8 @@ set -euo pipefail
 version="${1:?usage: build.sh VERSION [OUTPUT_DIRECTORY]}"
 output_directory="${2:-dist}"
 
-if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-	echo "version must use x.y.z format" >&2
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+	echo "version must use semantic x.y.z or x.y.z-prerelease format" >&2
 	exit 2
 fi
 

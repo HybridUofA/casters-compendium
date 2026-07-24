@@ -23,6 +23,7 @@ env:
   APP_NAME: "Caster's Compendium"
   APP_ID: io.github.hybriduofa.casterdeckbuilder
   APP_VERSION: 0.1.6
+  RELEASE_VERSION: 0.1.6-hotfix.1
   APP_BUILD: 1
 
 jobs:
@@ -65,11 +66,11 @@ jobs:
           - label: Debian and Ubuntu x64
             runner: ubuntu-22.04
             target: debian
-            artifact: casters-compendium_0.1.6_amd64
+            artifact: casters-compendium_0.1.6-hotfix.1_amd64
           - label: Arch Linux x64
             runner: ubuntu-24.04
             target: arch
-            artifact: casters-compendium-0.1.6-1-x86_64
+            artifact: casters-compendium-0.1.6_hotfix.1-1-x86_64
           - label: Windows x64
             runner: windows-2025
             target: windows
@@ -126,7 +127,7 @@ jobs:
         shell: bash
         run: |
           env GOCACHE="$RUNNER_TEMP/casters-compendium-go-build" \
-            bash packaging/debian/build.sh "$APP_VERSION" "$PWD/dist"
+            bash packaging/debian/build.sh "$RELEASE_VERSION" "$PWD/dist"
           lintian --display-info "dist/${{ matrix.artifact }}.deb"
 
       - name: Package Arch Linux application
@@ -241,13 +242,19 @@ jobs:
         shell: bash
         run: |
           notes_file="docs/releases/${GITHUB_REF_NAME}.md"
+          prerelease=()
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            prerelease=(--prerelease)
+          fi
           if [[ -f "$notes_file" ]]; then
             gh release create "$GITHUB_REF_NAME" release-assets/* \
               --verify-tag \
               --title "Caster's Compendium $GITHUB_REF_NAME" \
-              --notes-file "$notes_file"
+              --notes-file "$notes_file" \
+              "${prerelease[@]}"
           else
             gh release create "$GITHUB_REF_NAME" release-assets/* \
               --verify-tag \
-              --generate-notes
+              --generate-notes \
+              "${prerelease[@]}"
           fi

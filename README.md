@@ -23,8 +23,8 @@ AI assistance and project authorship are documented in
 the v0.1.3 repository and website migration included Codex assistance under
 maintainer direction and review. The statement also documents the automated
 tests and explicitly authorized production assistance used for v0.1.4's
-Tabletop Simulator integration, the complete v0.1.5 hosted-catalog patch, and
-v0.1.6's selectable bundled backgrounds.
+Tabletop Simulator integration, the complete v0.1.5 hosted-catalog patch,
+v0.1.6's selectable bundled backgrounds, and its first rendering hotfix.
 
 ## Features
 
@@ -77,6 +77,13 @@ v0.1.6's selectable bundled backgrounds.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's fixed in v0.1.6-hotfix.1
+
+- Correct the background layer so Fyne traverses and renders its image,
+  readability layer, and foreground controls on every desktop platform.
+- Retain the persistent None, Academy Rift, and Caster Duel settings introduced
+  in v0.1.6.
 
 ### What's new in v0.1.6
 
@@ -239,7 +246,8 @@ artifacts for:
 - Arch Linux x64 (`.pkg.tar.zst`)
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
-such as `v0.1.6` builds the same packages and publishes them as GitHub Release
+such as `v0.1.6-hotfix.1` builds the same packages and publishes them as a
+GitHub Release
 assets. Tagged releases also publish `SHA256SUMS.txt`, an SPDX software bill of
 materials, and GitHub artifact attestations linking downloads to their source
 commit and build workflow.
@@ -268,13 +276,13 @@ embeds `MTD-back-ver01.png` separately for Tabletop Simulator exports.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.6_amd64.deb
+sudo apt install ./casters-compendium_0.1.6-hotfix.1_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.6-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.6_hotfix.1-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations
