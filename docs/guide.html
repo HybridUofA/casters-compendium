@@ -76,6 +76,10 @@
           <div class="guide-note">
             <strong>First launch:</strong> The application downloads the card database, artwork, and thumbnails. Later launches reuse the local cache.
           </div>
+          <figure class="screenshot-frame guide-screenshot">
+            <img src="screenshots/casters-compendium-main-menu.png" alt="Caster's Compendium main menu with deck creation, deck loading, conversion, database update, guide, settings, and quit actions.">
+            <figcaption>The main menu keeps creation, conversion, updates, and settings together.</figcaption>
+          </figure>
         </section>
 
         <section id="search">
@@ -125,6 +129,10 @@
           <div class="guide-note warning">
             <strong>Custom order is intentional:</strong> Saving preserves the current visible order. Sorting is only performed when you choose the Sort Deck button.
           </div>
+          <figure class="screenshot-frame guide-screenshot">
+            <img src="screenshots/casters-compendium-multi-selection.png" alt="Caster's Compendium deck editor with multiple individual card copies selected in the main deck.">
+            <figcaption>Control-click or Command-click selects individual copies before moving the batch.</figcaption>
+          </figure>
         </section>
 
         <section id="save">
@@ -164,12 +172,17 @@
             <strong>One-click installation:</strong> Standard Windows, macOS, and Linux TTS locations are detected automatically. If TTS uses a custom data directory, select it once and Caster's Compendium remembers it for later exports. If the shared catalog cannot be reached or does not contain a card, the application clearly reports that it used the original local-image fallback instead.
           </div>
           <p>For file conversion without entering the editor, return to the main menu and use the deck-image or decklist generators.</p>
+          <figure class="screenshot-frame guide-screenshot">
+            <img src="screenshots/casters-compendium-deck-export-text.png" alt="A Speedrobo-compatible exported text decklist shown beside the corresponding deck in Caster's Compendium.">
+            <figcaption>The readable text export preserves quantities, set information, totals, and sideboard contents.</figcaption>
+          </figure>
         </section>
 
         <section id="database">
           <p class="step-label">07 · Data and appearance</p>
           <h2>Keep the card library current.</h2>
           <p>At startup, the application compares its installed release marker with the publisher-authorized hosted catalog and can prompt when either data or artwork changes. Every downloaded database is checked against its published size and SHA-256 before installation. Choose <strong>Update Card Database</strong> from the main menu whenever you want to force a complete refresh.</p>
+          <p>Choose <strong>Diagnostic Information</strong> when reporting a problem. The application displays a reviewable support summary containing the release, source revision, operating system, architecture, setup state, card count, and hosted catalog endpoint. It excludes deck contents, credentials, usernames, and exact filesystem paths, and nothing is transmitted automatically.</p>
           <p><strong>Settings</strong> lets the application follow the operating-system theme or use a persistent Light or Dark appearance.</p>
           <div class="guide-note">
             The stable application ID remains <code>io.github.hybriduofa.casterdeckbuilder</code>, so upgrading or moving to the new repository does not discard existing cached data.

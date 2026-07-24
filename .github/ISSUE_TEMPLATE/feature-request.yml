@@ -17,6 +17,7 @@ body:
         - Deck editor
         - Card search or data
         - Import or export
+        - Tabletop Simulator
         - Simulator
         - Packaging or installation
         - Website or documentation
@@ -57,5 +58,5 @@ body:
     attributes:
       label: Existing issues
       options:
-        - label: I searched the existing issues and did not find the same request.
+        - label: I searched the roadmap and existing issues and did not find the same request.
           required: true

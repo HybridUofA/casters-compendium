@@ -47,6 +47,9 @@ You can also drag a search result directly into either deck area.
 
 - **Update Card Database** checks the publisher-authorized hosted catalog and
   installs a cryptographically verified card database and artwork.
+- **Diagnostic Information** displays a reviewable support summary that can be
+  copied into a bug report. It excludes deck contents, credentials, usernames,
+  and exact filesystem paths, and nothing is transmitted automatically.
 - **Settings** lets you follow the system theme or force Light or Dark mode.
 `
 

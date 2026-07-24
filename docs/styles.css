@@ -310,6 +310,36 @@ h3 {
   margin-bottom: 3.5rem;
 }
 
+.product-preview {
+  padding-top: 2rem;
+}
+
+.screenshot-frame {
+  overflow: hidden;
+  margin: 0;
+  background: rgba(5, 2, 15, 0.52);
+  border: 1px solid rgba(201, 180, 255, 0.25);
+  border-radius: 1.2rem;
+  box-shadow: var(--shadow);
+}
+
+.screenshot-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.screenshot-frame figcaption {
+  padding: 0.85rem 1rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.guide-screenshot {
+  margin-top: 2rem;
+}
+
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

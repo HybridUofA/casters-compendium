@@ -1,11 +1,21 @@
 # Caster's Compendium
 
+[![Continuous integration](https://github.com/HybridUofA/casters-compendium/actions/workflows/ci.yml/badge.svg)](https://github.com/HybridUofA/casters-compendium/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/HybridUofA/casters-compendium)](https://github.com/HybridUofA/casters-compendium/releases/latest)
+[![Go version](https://img.shields.io/github/go-mod/go-version/HybridUofA/casters-compendium)](go.mod)
+
 Caster's Compendium is a desktop card browser and deck builder for Caster
 Chronicles. It supports editable JSON decks, Speedrobo-compatible text
 decklists, Tabletop Simulator image sheets, and portable multiplayer-ready
 Tabletop Simulator objects backed by publisher-authorized hosted assets.
 
-Project website: <https://hybriduofa.github.io/casters-compendium/>
+Project website: <https://casterscompendium.com/>
+
+> **Project status:** Active public alpha. Deck and catalog formats are
+> versioned, but user-interface behavior and planned simulator components may
+> continue to evolve before a stable 1.0 release.
+
+![Caster's Compendium deck editor showing a complete main deck, sideboard, card details, and search filters](docs/screenshots/casters-compendium-deck-editor.png)
 
 AI assistance and project authorship are documented in
 [AI_STATEMENT.md](AI_STATEMENT.md). The original foundation through the
@@ -161,6 +171,11 @@ go test ./...
 go test -tags migrated_fynedo ./...
 ```
 
+Pull requests also run formatting, vetting, both test configurations, a Linux
+build, and Go vulnerability analysis through the dedicated continuous
+integration workflow. See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete
+development and submission process.
+
 ## Local application data
 
 The applications share downloaded data under Fyne's per-user configuration
@@ -216,10 +231,27 @@ artifacts for:
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
 such as `v0.1.5` builds the same packages and publishes them as GitHub Release
-assets. The macOS and Windows packages are currently unsigned; operating-system
+assets. Tagged releases also publish `SHA256SUMS.txt`, an SPDX software bill of
+materials, and GitHub artifact attestations linking downloads to their source
+commit and build workflow.
+
+After downloading a release, verify its checksum from the download directory:
+
+```sh
+sha256sum --check SHA256SUMS.txt
+```
+
+GitHub CLI users can additionally verify build provenance:
+
+```sh
+gh attestation verify PATH/TO/DOWNLOAD \
+  --repo HybridUofA/casters-compendium
+```
+
+The macOS and Windows packages are currently unsigned; operating-system
 security prompts may therefore require the user to explicitly allow the first
-launch. Code signing can be added later when the appropriate Apple Developer and
-Windows signing certificates are available.
+launch. Code signing can be added later when the appropriate Apple Developer
+and Windows signing certificates are available.
 
 Fyne's packaging tool uses `data/images/shadow.png` as the application icon and
 embeds `MTD-back-ver01.png` separately for Tabletop Simulator exports.
@@ -235,3 +267,25 @@ Arch Linux users can install the native package with:
 ```sh
 sudo pacman -U casters-compendium-0.1.5-1-x86_64.pkg.tar.zst
 ```
+
+## Known limitations
+
+- Windows and macOS packages are not yet code-signed or notarized.
+- The application updater is planned but not yet implemented; releases are
+  downloaded from GitHub manually.
+- Hosted TTS export requires network access. A local fallback remains available,
+  but remote multiplayer participants may not see locally generated assets.
+- The simulator is experimental roadmap work and is not included as a usable
+  application in current releases.
+
+## Contributing and security
+
+Focused bug fixes, tests, documentation, and discussed features are welcome.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request and use
+[SECURITY.md](SECURITY.md) for private vulnerability reporting. Community
+participation is governed by [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+The project does not yet declare a general code license. Card artwork, game
+data, names, and other third-party intellectual property are not implicitly
+licensed for reuse; see the website's
+[IP and credits page](https://casterscompendium.com/rights.html).
