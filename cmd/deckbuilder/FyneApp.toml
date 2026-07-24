@@ -1,7 +1,7 @@
 [Details]
 Name = "Caster's Compendium"
 ID = "io.github.hybriduofa.casterdeckbuilder"
-Version = "0.1.4"
+Version = "0.1.5"
 Build = 1
 Icon = "../../data/images/shadow.png"
 

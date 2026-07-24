@@ -44,7 +44,7 @@ func TestLoadOrDownloadCardDatabaseUsesLocalDatabase(t *testing.T) {
 	}
 
 	progressCalled := false
-	repository, useGitHubImages, err := loadOrDownloadCardDatabase(
+	repository, snapshot, err := loadOrDownloadCardDatabase(
 		context.Background(),
 		path,
 		func(string, int, int) { progressCalled = true },
@@ -55,8 +55,8 @@ func TestLoadOrDownloadCardDatabaseUsesLocalDatabase(t *testing.T) {
 	if progressCalled {
 		t.Fatal("download progress was reported for an existing local database")
 	}
-	if useGitHubImages {
-		t.Fatal("existing local database unexpectedly selected GitHub images")
+	if snapshot != nil {
+		t.Fatal("existing local database unexpectedly selected remote images")
 	}
 	if len(repository.All()) != 1 {
 		t.Fatalf("loaded %d cards", len(repository.All()))

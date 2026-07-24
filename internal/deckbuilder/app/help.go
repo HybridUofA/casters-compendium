@@ -37,14 +37,16 @@ You can also drag a search result directly into either deck area.
 - **Save** and **Save As** store an editable JSON deck.
 - **Export Decklist** creates a Speedrobo-compatible text decklist.
 - **Export Main** and **Export Sideboard** create Tabletop Simulator PNG sheets.
-- **Install to TTS** installs a complete saved object using the bundled MTD card
-  back. Standard TTS data locations are detected automatically; a custom
-  location only needs to be selected once.
+- **Install to TTS** installs a portable saved object using shared online card
+  sheets and the MTD card back, so multiplayer participants can load its art.
+  Standard TTS data locations are detected automatically; a custom location
+  only needs to be selected once. Local sheets are used as an offline fallback.
 - The main menu can also create an image directly from a text decklist or convert a JSON deck into a text decklist.
 
 ## Card data and appearance
 
-- **Update Card Database** checks for and installs current card data and artwork.
+- **Update Card Database** checks the publisher-authorized hosted catalog and
+  installs a cryptographically verified card database and artwork.
 - **Settings** lets you follow the system theme or force Light or Dark mode.
 `
 

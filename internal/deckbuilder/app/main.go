@@ -2,6 +2,7 @@ package deckbuilder
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"image/color"
 	"strings"
@@ -166,27 +167,54 @@ func installDeckToTTSRoot(
 	repository *cards.Repository,
 	root string,
 ) {
-	paths, installErr := deckexport.InstallTTSDeck(
-		root,
-		deck,
-		repository,
-		cardimages.DefaultDirectory,
-		defaultTTSCardBack(),
-	)
-	if installErr != nil {
-		dialog.ShowError(installErr, window)
-		return
-	}
-	fyne.CurrentApp().Preferences().SetString(ttsRootPreferenceKey, paths.Root)
-	dialog.ShowInformation(
-		"Tabletop Simulator Export Complete",
-		fmt.Sprintf(
-			"%q is ready in Tabletop Simulator.\n\nSaved object:\n%s",
-			deck.Name,
-			paths.JSONPath,
+	progress := dialog.NewCustomWithoutButtons(
+		"Installing Tabletop Simulator Deck",
+		container.NewVBox(
+			widget.NewLabel("Preparing shared card assets and saved object…"),
+			widget.NewProgressBarInfinite(),
 		),
 		window,
 	)
+	progress.Show()
+
+	go func() {
+		paths, hosted, fallbackReason, installErr := installPreferredTTSDeck(
+			context.Background(),
+			root,
+			deck,
+			repository,
+		)
+		fyne.Do(func() {
+			progress.Hide()
+			if installErr != nil {
+				dialog.ShowError(installErr, window)
+				return
+			}
+			fyne.CurrentApp().Preferences().SetString(ttsRootPreferenceKey, paths.Root)
+			if hosted {
+				dialog.ShowInformation(
+					"Tabletop Simulator Export Complete",
+					fmt.Sprintf(
+						"%q is ready in Tabletop Simulator with shared online card assets for multiplayer.\n\nSaved object:\n%s",
+						deck.Name,
+						paths.JSONPath,
+					),
+					window,
+				)
+				return
+			}
+			dialog.ShowInformation(
+				"Local Tabletop Simulator Export Complete",
+				fmt.Sprintf(
+					"%q was installed using local image files because the shared catalog was unavailable.\n\nOther players may need those image files manually.\n\nHosted catalog error: %v\n\nSaved object:\n%s",
+					deck.Name,
+					fallbackReason,
+					paths.JSONPath,
+				),
+				window,
+			)
+		})
+	}()
 }
 
 // applyCardDrop applies a completed drag operation to the active deck.

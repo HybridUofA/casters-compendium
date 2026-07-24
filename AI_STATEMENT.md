@@ -78,3 +78,21 @@ metadata under Hybrid's direction and review.
 
 This is a contribution-specific exception, not a blanket change to the
 post-v0.1.3 production-code policy.
+
+## Disclosed v0.1.5 exception
+
+Hybrid selected the hosted-catalog direction, obtained publisher permission,
+configured and validated the Cloudflare R2 service and custom domain, specified
+the multiplayer goal, and explicitly authorized OpenAI Codex to implement the
+complete v0.1.5 hosted-catalog patch so Hybrid could move to other project work.
+
+Codex authored the versioned distribution schemas and validation, deterministic
+catalog and TTS-sheet generator, R2 publication workflow, integrity-checked
+database client, hosted TTS saved-object integration, automatic local fallback,
+automated tests, maintainer documentation, release notes, website changes, and
+packaging metadata. Hybrid remains responsible for accepting the implementation,
+operating the service, release approval, and subsequent maintenance.
+
+This disclosure records a complete, contribution-specific production
+implementation exception. It does not silently replace the general
+post-v0.1.3 policy for unrelated future features.

@@ -19,6 +19,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	"github.com/HybridUofA/casters-compendium/internal/carddata/distribution"
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	localdata "github.com/HybridUofA/casters-compendium/internal/carddata/local"
 	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
@@ -35,7 +36,7 @@ const (
 	githubCardDataRootURL = "https://raw.githubusercontent.com/HybridUofA/casters-compendium/main/data"
 	githubCardDatabaseURL = githubCardDataRootURL + "/cards.json"
 	maxCardDatabaseBytes  = 10 << 20
-	cardDatabaseUserAgent = "CastersCompendium/0.1.4"
+	cardDatabaseUserAgent = "CastersCompendium/0.1.5"
 )
 
 type applicationPaths = localdata.Paths
@@ -44,6 +45,11 @@ type applicationPaths = localdata.Paths
 var newApplicationPaths = localdata.NewPaths
 
 type setupProgress func(message string, current int, total int)
+type cardImageURL func(cards.Card) string
+type cardSnapshot struct {
+	imageURL      cardImageURL
+	installedHash string
+}
 
 // Run creates the desktop application, prepares local data, and enters the Fyne event loop.
 func Run() {
@@ -172,7 +178,7 @@ func initializeApplicationData(
 		return nil, err
 	}
 
-	repository, useGitHubImages, err := loadOrDownloadCardDatabase(
+	repository, snapshot, err := loadOrDownloadCardDatabase(
 		ctx,
 		paths.CardDatabase,
 		progress,
@@ -182,18 +188,31 @@ func initializeApplicationData(
 	}
 
 	cacheImages := cacheCardImages
-	if useGitHubImages {
-		cacheImages = cacheGitHubCardImages
+	if snapshot != nil && snapshot.imageURL != nil {
+		cacheImages = func(
+			ctx context.Context,
+			paths applicationPaths,
+			repository *cards.Repository,
+			progress setupProgress,
+		) error {
+			return cacheCardImagesUsing(ctx, paths, repository, snapshot.imageURL, progress)
+		}
 	}
 	if err := cacheImages(ctx, paths, repository, progress); err != nil {
 		return nil, err
 	}
 
-	cardListHash, err := hashRepositoryCardList(repository)
-	if err != nil {
-		return nil, err
+	installedHash := ""
+	if snapshot != nil {
+		installedHash = snapshot.installedHash
 	}
-	if err := writeCardListHash(paths.CardListHash, cardListHash); err != nil {
+	if installedHash == "" {
+		installedHash, err = hashRepositoryDatabase(repository)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if err := writeCardListHash(paths.CardListHash, installedHash); err != nil {
 		return nil, err
 	}
 
@@ -353,14 +372,42 @@ func loadOrDownloadCardDatabase(
 	ctx context.Context,
 	path string,
 	progress setupProgress,
-) (*cards.Repository, bool, error) {
+) (*cards.Repository, *cardSnapshot, error) {
 	if repository, err := cards.LoadFile(path); err == nil {
-		return repository, false, nil
+		return repository, nil, nil
+	}
+
+	// The project-hosted snapshot is authoritative for released clients. It is
+	// validated before installation and avoids one upstream request per user.
+	if client, err := hostedCatalogClientFactory(); err == nil {
+		if _, release, err := client.FetchCurrent(ctx); err == nil {
+			if repository, encoded, err := client.FetchDatabase(ctx, release); err == nil {
+				if err := writeCardDatabaseBytes(path, encoded); err != nil {
+					return nil, nil, err
+				}
+				releaseHash, err := distribution.ReleaseDigest(release)
+				if err != nil {
+					return nil, nil, err
+				}
+				imageURL := func(card cards.Card) string {
+					result, _ := distribution.CardImageURL(release, card.ID)
+					return result
+				}
+				return repository, &cardSnapshot{
+					imageURL:      imageURL,
+					installedHash: releaseHash,
+				}, nil
+			} else {
+				log.Printf("hosted card database skipped: %v", err)
+			}
+		} else {
+			log.Printf("hosted catalog skipped: %v", err)
+		}
 	}
 
 	remote, err := fetchRemoteCardList(ctx, progress)
 	if err != nil {
-		return nil, false, err
+		return nil, nil, err
 	}
 
 	githubRepository, githubErr := downloadGitHubCardDatabase(
@@ -373,9 +420,12 @@ func loadOrDownloadCardDatabase(
 		githubHash, hashErr := hashRepositoryCardList(githubRepository)
 		if hashErr == nil && githubHash == remote.hash {
 			if err := writeCardDatabase(path, githubRepository); err != nil {
-				return nil, false, err
+				return nil, nil, err
 			}
-			return githubRepository, true, nil
+			return githubRepository, &cardSnapshot{
+				imageURL:      githubCardImageURL,
+				installedHash: remote.hash,
+			}, nil
 		}
 		if hashErr != nil {
 			githubErr = hashErr
@@ -391,12 +441,12 @@ func loadOrDownloadCardDatabase(
 	}
 	repository, err := downloadRemoteCardDatabase(ctx, remote, progress)
 	if err != nil {
-		return nil, false, err
+		return nil, nil, err
 	}
 	if err := writeCardDatabase(path, repository); err != nil {
-		return nil, false, err
+		return nil, nil, err
 	}
-	return repository, false, nil
+	return repository, nil, nil
 }
 
 // runSetupWorkers executes indexed work with bounded concurrency and cancels after the first error.

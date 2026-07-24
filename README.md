@@ -2,8 +2,8 @@
 
 Caster's Compendium is a desktop card browser and deck builder for Caster
 Chronicles. It supports editable JSON decks, Speedrobo-compatible text
-decklists, Tabletop Simulator image sheets, and direct local installation of
-complete decks into Tabletop Simulator.
+decklists, Tabletop Simulator image sheets, and portable multiplayer-ready
+Tabletop Simulator objects backed by publisher-authorized hosted assets.
 
 Project website: <https://hybriduofa.github.io/casters-compendium/>
 
@@ -12,8 +12,8 @@ AI assistance and project authorship are documented in
 `Checkpoint before Codex` commit was maintainer-written; implementation through
 the v0.1.3 repository and website migration included Codex assistance under
 maintainer direction and review. The statement also documents the automated
-tests and limited, explicitly authorized production assistance used for
-v0.1.4's Tabletop Simulator integration.
+tests and explicitly authorized production assistance used for v0.1.4's
+Tabletop Simulator integration and the complete v0.1.5 hosted-catalog patch.
 
 ## Features
 
@@ -40,10 +40,10 @@ v0.1.4's Tabletop Simulator integration.
   of relying on a fixed keyword list.
 - Download and cache the card database, artwork, and thumbnails locally for
   convenient reuse and faster subsequent launches.
-- Download initial card assets concurrently and reuse a hash-verified GitHub
-  snapshot when available.
-- Compare a deterministic `cardlist.sha256` digest at startup, prompt when the
-  published card list changes, or force a full database refresh from the main
+- Download initial card assets concurrently from the project-hosted,
+  publisher-authorized catalog.
+- Verify the complete normalized database against its published SHA-256 digest,
+  prompt when the approved catalog changes, or force a refresh from the main
   menu.
 
 ### Import, sharing, and export
@@ -53,9 +53,9 @@ v0.1.4's Tabletop Simulator integration.
   Games, including deck metadata, set names, totals, and sideboards.
 - Export both main-deck and sideboard image sheets for Tabletop Simulator using
   the bundled card-back asset.
-- Install a complete deck directly into Tabletop Simulator with one click. The
-  application detects standard Windows, macOS, and Linux data locations,
-  remembers custom locations, and uses the bundled MTD card back by default.
+- Install a complete deck directly into Tabletop Simulator with one click.
+  Shared HTTPS sheets load automatically for multiplayer participants. The
+  original local-sheet installer remains an automatic offline fallback.
 
 ### Desktop applications
 
@@ -65,6 +65,16 @@ v0.1.4's Tabletop Simulator integration.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v0.1.5
+
+- Export multiplayer-ready TTS objects backed by reusable hosted sheets.
+- Retrieve normalized card data and artwork from the publisher-authorized
+  Caster's Compendium catalog instead of requiring each installation to query
+  Speedrobo.
+- Verify complete database snapshots and publish immutable catalog releases
+  through an atomic current-version pointer.
+- Fall back to the v0.1.4 local TTS exporter when hosted assets are unavailable.
 
 ### What's new in v0.1.4
 
@@ -123,8 +133,10 @@ The deck controls provide the following file and export operations:
 - **Export Decklist** writes the human-readable text format used by
   Speedrobo Games decklists.
 - **Export Main** and **Export Sideboard** create Tabletop Simulator PNG sheets.
-- **Install to TTS** writes a complete saved object and its local image assets
-  into the detected Tabletop Simulator data directory.
+- **Install to TTS** writes a complete saved object referencing shared online
+  assets into the detected Tabletop Simulator data directory. If the hosted
+  catalog is unavailable, it installs local assets and explains the multiplayer
+  limitation.
 - **Rename** changes the deck's display and default export name.
 - **Main Menu** returns to deck creation, file conversion, database update,
   appearance settings, and the built-in **How to Use** guide.
@@ -174,10 +186,10 @@ around shared card and game packages:
 cmd/
   deckbuilder/          Deckbuilder executable and Fyne metadata
   simulator/            Reserved simulator command
-  tools/                Card-data and legacy CLI utilities
+  tools/                Card-data, catalog publishing, and legacy CLI utilities
 internal/
-  carddata/             Catalog, local paths, image cache, and normalization
-  deckbuilder/          Deckbuilder application, UI, and TTS export
+  carddata/             Catalog distribution, local cache, and normalization
+  deckbuilder/          Deckbuilder application, UI, and local/hosted TTS export
   deckio/               Shared JSON and text deck formats
   game/                 Simulator-safe card and deck domain logic
   simulator/            Reserved simulator packages
@@ -203,7 +215,7 @@ artifacts for:
 - Arch Linux x64 (`.pkg.tar.zst`)
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
-such as `v0.1.4` builds the same packages and publishes them as GitHub Release
+such as `v0.1.5` builds the same packages and publishes them as GitHub Release
 assets. The macOS and Windows packages are currently unsigned; operating-system
 security prompts may therefore require the user to explicitly allow the first
 launch. Code signing can be added later when the appropriate Apple Developer and
@@ -215,11 +227,11 @@ embeds `MTD-back-ver01.png` separately for Tabletop Simulator exports.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.4_amd64.deb
+sudo apt install ./casters-compendium_0.1.5_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.4-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.5-1-x86_64.pkg.tar.zst
 ```
