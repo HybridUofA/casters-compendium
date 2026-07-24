@@ -26,8 +26,33 @@ env:
   APP_BUILD: 1
 
 jobs:
+  verify:
+    name: Verify release source
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Install Fyne build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gcc libgl1-mesa-dev libwayland-dev xorg-dev libxkbcommon-dev
+
+      - name: Run migrated Fyne threading tests
+        run: go test -tags migrated_fynedo ./...
+
+      - name: Vet release source
+        run: go vet -tags migrated_fynedo ./...
+
   package:
     name: ${{ matrix.label }}
+    needs: verify
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -78,10 +103,6 @@ jobs:
       - name: Install Debian package tools
         if: matrix.target == 'debian'
         run: sudo apt-get install --yes dpkg-dev lintian
-
-      - name: Run tests
-        if: matrix.target != 'arch'
-        run: go test -tags migrated_fynedo ./...
 
       - name: Package Linux application
         if: matrix.target == 'linux'
@@ -179,6 +200,8 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     steps:
       - name: Check out release notes
         uses: actions/checkout@v6
@@ -188,6 +211,28 @@ jobs:
         with:
           path: release-assets
           merge-multiple: true
+
+      - name: Generate SPDX software bill of materials
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: release-assets/CastersCompendium-${{ github.ref_name }}.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Generate release checksums
+        shell: bash
+        run: |
+          cd release-assets
+          find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\0' \
+            | sort -z \
+            | xargs -0 sha256sum > SHA256SUMS.txt
+
+      - name: Attest release provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: release-assets/*
 
       - name: Publish release assets
         env:

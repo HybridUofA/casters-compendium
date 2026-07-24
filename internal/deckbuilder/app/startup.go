@@ -26,8 +26,9 @@ import (
 )
 
 const (
-	applicationID   = localdata.SharedApplicationID
-	applicationName = "Caster's Compendium"
+	applicationID      = localdata.SharedApplicationID
+	applicationName    = "Caster's Compendium"
+	applicationVersion = "0.1.5"
 )
 
 const setupDownloadWorkers = 6
@@ -36,7 +37,7 @@ const (
 	githubCardDataRootURL = "https://raw.githubusercontent.com/HybridUofA/casters-compendium/main/data"
 	githubCardDatabaseURL = githubCardDataRootURL + "/cards.json"
 	maxCardDatabaseBytes  = 10 << 20
-	cardDatabaseUserAgent = "CastersCompendium/0.1.5"
+	cardDatabaseUserAgent = "CastersCompendium/" + applicationVersion
 )
 
 type applicationPaths = localdata.Paths

@@ -9,17 +9,12 @@ body:
       value: |
         Thanks for helping improve Caster's Compendium. Please include enough detail for someone else to reproduce the problem.
 
-  - type: dropdown
+  - type: input
     id: version
     attributes:
       label: Application version
-      description: Select the version where you observed the problem.
-      options:
-        - v0.1.3
-        - v0.1.2
-        - v0.1.1
-        - Built from source
-        - Unknown
+      description: Use Diagnostic Information from the main menu when available.
+      placeholder: v0.1.5
     validations:
       required: true
 
@@ -76,11 +71,11 @@ body:
       required: true
 
   - type: textarea
-    id: logs
+    id: diagnostics
     attributes:
-      label: Logs or diagnostic output
-      description: Paste relevant terminal output or logs. Remove usernames, personal paths, and other private information first.
-      render: shell
+      label: Diagnostic information
+      description: Paste the reviewable Diagnostic Information block from the application. Nothing is uploaded automatically.
+      render: text
 
   - type: textarea
     id: additional-context
@@ -94,4 +89,6 @@ body:
       label: Existing issues
       options:
         - label: I searched the existing issues and did not find the same report.
+          required: true
+        - label: I removed credentials, webhook URLs, and other private information.
           required: true

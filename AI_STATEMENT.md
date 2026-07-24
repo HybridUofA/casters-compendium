@@ -96,3 +96,22 @@ operating the service, release approval, and subsequent maintenance.
 This disclosure records a complete, contribution-specific production
 implementation exception. It does not silently replace the general
 post-v0.1.3 policy for unrelated future features.
+
+## Disclosed project-professionalization exception
+
+After reviewing an external assessment of the repository, Hybrid explicitly
+authorized OpenAI Codex to implement the applicable professionalization work.
+Codex authored the pull-request quality workflow, release checksums, SPDX SBOM
+generation, artifact attestations, dependency automation, contribution and
+security policies, issue and pull-request templates, documentation updates, and
+the local Diagnostic Information dialog and tests.
+
+The diagnostic feature was intentionally limited to reviewed, non-sensitive
+support context and does not transmit telemetry. Hybrid retains responsibility
+for selecting a future code license, supplying authentic screenshots, enabling
+repository protection settings, accepting the contribution, and deciding when
+it ships.
+
+This is a contribution-specific production implementation exception. It does
+not silently replace the general post-v0.1.3 policy for unrelated future
+features.

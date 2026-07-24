@@ -1,8 +1,14 @@
 blank_issues_enabled: false
 contact_links:
   - name: Application guide
-    url: https://hybriduofa.github.io/casters-compendium/guide.html
+    url: https://casterscompendium.com/guide.html
     about: Check the controls and supported workflows before opening an issue.
   - name: Downloads and installation
-    url: https://hybriduofa.github.io/casters-compendium/downloads.html
+    url: https://casterscompendium.com/downloads.html
     about: Find current packages and platform-specific installation instructions.
+  - name: Security vulnerability
+    url: https://github.com/HybridUofA/casters-compendium/security/advisories/new
+    about: Report vulnerabilities privately instead of opening a public issue.
+  - name: Community Discord
+    url: https://discord.gg/ZkkpDw28jS
+    about: Ask usage questions and talk with the community.
