@@ -1095,7 +1095,9 @@ func showApplication(
 			UpdateDatabase:   func() { confirmManualCardDatabaseUpdate(window, paths, repository) },
 			HowToUse:         func() { showHowToUseDialog(window) },
 			Diagnostics:      func() { showDiagnosticInformationDialog(window, paths, repository) },
-			Settings:         func() { showSettingsDialog(window, fyne.CurrentApp()) },
+			Settings: func() {
+				showSettingsDialog(window, fyne.CurrentApp(), showMainMenu)
+			},
 		}))
 	}
 

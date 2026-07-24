@@ -125,8 +125,10 @@ background options as v0.1.6.
 Codex authored the embedded-artwork package, persistent settings controls,
 full-window background composition and readability layer, application-screen
 integration, automated tests, documentation, website changes, release notes,
-and packaging metadata. Hybrid remains responsible for the artwork's
-authorization, visual acceptance, and release approval.
+and packaging metadata. After Hybrid found the initial renderer incompatibility,
+Codex also authored the disclosed v0.1.6-hotfix.1 correction and regression
+test. Hybrid remains responsible for the artwork's authorization, visual
+acceptance, and release approval.
 
 This is a contribution-specific production implementation exception. It does
 not silently replace the general post-v0.1.3 policy for unrelated future

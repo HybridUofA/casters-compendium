@@ -3,6 +3,7 @@ package deckbuilder
 import (
 	"testing"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
@@ -62,11 +63,11 @@ func TestWrapWithBackgroundKeepsDefaultPlainAndLayersArtwork(t *testing.T) {
 	}
 
 	got := wrapWithBackground(foreground, backgroundAcademyRift)
-	surface, ok := got.(*backgroundSurface)
+	surface, ok := got.(*fyne.Container)
 	if !ok {
-		t.Fatalf("artwork content type = %T, want *backgroundSurface", got)
+		t.Fatalf("artwork content type = %T, want renderer-traversable *fyne.Container", got)
 	}
-	if surface.foreground != foreground || len(surface.Objects) != 3 {
+	if len(surface.Objects) != 3 {
 		t.Fatalf("background surface does not retain three ordered layers")
 	}
 	image, ok := surface.Objects[0].(*canvas.Image)
