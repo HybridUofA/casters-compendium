@@ -58,6 +58,11 @@ jobs:
     name: Vulnerability scan
     runs-on: ubuntu-24.04
     steps:
+      - name: Install Fyne analysis dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gcc libgl1-mesa-dev libwayland-dev xorg-dev libxkbcommon-dev
+
       - name: Scan Go dependencies and reachable code
         uses: golang/govulncheck-action@v1
         with:
