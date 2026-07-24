@@ -45,6 +45,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes gcc libgl1-mesa-dev libwayland-dev xorg-dev libxkbcommon-dev
 
+      - name: Check release-version consistency
+        run: bash scripts/check-version-consistency.sh
+
       - name: Run migrated Fyne threading tests
         run: go test -tags migrated_fynedo ./...
 

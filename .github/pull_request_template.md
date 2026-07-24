@@ -22,4 +22,12 @@ Explain the visible behavior, compatibility impact, or maintainer impact.
 - [ ] Third-party artwork, data, or code has documented permission and attribution.
 - [ ] AI assistance, if material, follows `AI_STATEMENT.md`.
 
+## Release impact
+
+- [ ] This does not change a packaged release.
+- [ ] This changes a packaged release and its version metadata passes
+      `bash scripts/check-version-consistency.sh`.
+- [ ] Visual or platform-specific changes have explicit manual acceptance steps
+      in the release candidate checklist.
+
 Closes #

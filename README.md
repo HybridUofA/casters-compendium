@@ -273,6 +273,14 @@ and Windows signing certificates are available.
 Fyne's packaging tool uses `data/images/shadow.png` as the application icon and
 embeds `MTD-back-ver01.png` separately for Tabletop Simulator exports.
 
+Public versions follow the documented
+[candidate-to-stable release process](docs/release-process.md). The root
+[`VERSION`](VERSION) file is the authoritative public version, and CI verifies
+that application, packaging, documentation, and website metadata remain
+consistent. Release candidates must complete the
+[manual smoke-test checklist](docs/release-checklist.md) before a stable tag is
+created.
+
 Debian and Ubuntu users can install the native package with:
 
 ```sh
@@ -289,7 +297,9 @@ sudo pacman -U casters-compendium-0.1.6_hotfix.1-1-x86_64.pkg.tar.zst
 
 - Windows and macOS packages are not yet code-signed or notarized.
 - The application updater is planned but not yet implemented; releases are
-  downloaded from GitHub manually.
+  downloaded from GitHub manually. Its
+  [platform-aware implementation plan](docs/updater-plan.md) separates version
+  visibility, update discovery, verified downloads, and installation.
 - Hosted TTS export requires network access. A local fallback remains available,
   but remote multiplayer participants may not see locally generated assets.
 - The simulator is experimental roadmap work and is not included as a usable

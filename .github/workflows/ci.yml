@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Format, vet, test, and build
+    name: Format, vet, test, build, and report coverage
     runs-on: ubuntu-24.04
     steps:
       - name: Check out source
@@ -42,14 +42,56 @@ jobs:
             exit 1
           fi
 
+      - name: Check release-version consistency
+        run: bash scripts/check-version-consistency.sh
+
       - name: Vet
         run: go vet -tags migrated_fynedo ./...
 
       - name: Test default build
-        run: go test ./...
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -covermode=atomic -coverprofile=coverage-default.out ./... \
+            | tee coverage-default.txt
 
       - name: Test migrated Fyne threading build
-        run: go test -tags migrated_fynedo ./...
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -tags migrated_fynedo -covermode=atomic -coverprofile=coverage-migrated.out ./... \
+            | tee coverage-migrated.txt
+
+      - name: Summarize package coverage
+        shell: bash
+        run: |
+          {
+            echo "## Go test coverage"
+            echo
+            echo "Coverage is reported for visibility and trend review; no arbitrary threshold is enforced."
+            echo
+            echo "### Default build"
+            echo '```text'
+            grep -E 'coverage:|\\[no test files\\]' coverage-default.txt
+            echo '```'
+            echo
+            echo "### Migrated Fyne threading build"
+            echo '```text'
+            grep -E 'coverage:|\\[no test files\\]' coverage-migrated.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage profiles
+        uses: actions/upload-artifact@v7
+        with:
+          name: go-coverage-${{ github.run_id }}
+          path: |
+            coverage-default.out
+            coverage-default.txt
+            coverage-migrated.out
+            coverage-migrated.txt
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Build deckbuilder
         run: go build -tags migrated_fynedo -trimpath ./cmd/deckbuilder

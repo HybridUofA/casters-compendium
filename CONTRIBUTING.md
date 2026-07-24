@@ -31,10 +31,12 @@ go vet -tags migrated_fynedo ./...
 go test ./...
 go test -tags migrated_fynedo ./...
 go build -tags migrated_fynedo ./cmd/deckbuilder
+bash scripts/check-version-consistency.sh
 ```
 
 Continuous integration repeats these checks. CI checks formatting without
-modifying a contributor's branch.
+modifying a contributor's branch and stores coverage profiles for trend review.
+Coverage is informative rather than governed by a repository-wide percentage.
 
 ## Pull requests
 
@@ -49,6 +51,11 @@ Keep each pull request centered on one coherent change. Include:
 
 Preserve existing deck-file compatibility unless a deliberately versioned
 migration has been designed and documented.
+
+Changes intended for a public release must follow the
+[release process](docs/release-process.md). Visual and platform behavior is
+accepted using the [release candidate checklist](docs/release-checklist.md);
+passing CI alone is not release approval.
 
 ## Architecture
 
