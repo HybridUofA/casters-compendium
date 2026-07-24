@@ -1,0 +1,142 @@
+name: Publish hosted card catalog
+
+on:
+  workflow_dispatch:
+    inputs:
+      catalog_version:
+        description: Immutable catalog version, for example v1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hosted-card-catalog
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build, validate, and publish catalog
+    runs-on: ubuntu-24.04
+    environment: catalog-production
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ vars.R2_TTS_BUCKET }}
+      PUBLIC_ORIGIN: https://tts.casterscompendium.com
+      CATALOG_VERSION: ${{ inputs.catalog_version }}
+
+    steps:
+      - name: Check out catalog source
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Validate publishing configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$CATALOG_VERSION" =~ ^v[1-9][0-9]*$ ]]; then
+            echo "catalog_version must look like v1, v2, and so on" >&2
+            exit 1
+          fi
+          if [[ -z "$R2_ACCOUNT_ID" || -z "$R2_BUCKET" ]]; then
+            echo "R2_ACCOUNT_ID and R2_TTS_BUCKET repository variables are required" >&2
+            exit 1
+          fi
+          if [[ -z "$AWS_ACCESS_KEY_ID" || -z "$AWS_SECRET_ACCESS_KEY" ]]; then
+            echo "R2 publishing credentials are required" >&2
+            exit 1
+          fi
+
+      - name: Run catalog tests
+        run: go test ./cmd/tools/catalogbuild ./internal/carddata/distribution ./internal/deckbuilder/export
+
+      - name: Build immutable catalog
+        shell: bash
+        run: |
+          go run ./cmd/tools/catalogbuild \
+            -version "$CATALOG_VERSION" \
+            -base-url "$PUBLIC_ORIGIN" \
+            -published-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Refuse to replace an existing catalog version
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          if aws s3api head-object \
+            --endpoint-url "$endpoint" \
+            --bucket "$R2_BUCKET" \
+            --key "catalog/${CATALOG_VERSION}/release.json" \
+            >/dev/null 2>&1; then
+            echo "catalog/${CATALOG_VERSION} already exists and is immutable" >&2
+            exit 1
+          fi
+
+      - name: Upload immutable assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          aws s3 cp \
+            "dist/hosted-catalog/backs/mtd-back-v1.png" \
+            "s3://${R2_BUCKET}/backs/mtd-back-v1.png" \
+            --endpoint-url "$endpoint" \
+            --cache-control "public, max-age=31536000, immutable" \
+            --content-type "image/png" \
+            --no-progress
+          aws s3 sync \
+            "dist/hosted-catalog/catalog/${CATALOG_VERSION}/" \
+            "s3://${R2_BUCKET}/catalog/${CATALOG_VERSION}/" \
+            --endpoint-url "$endpoint" \
+            --cache-control "public, max-age=31536000, immutable" \
+            --no-progress
+
+      - name: Verify immutable release through public origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error \
+            "${PUBLIC_ORIGIN}/catalog/${CATALOG_VERSION}/release.json" \
+            | jq -e --arg version "$CATALOG_VERSION" \
+              '.schemaVersion == 1 and .catalogVersion == $version' \
+              >/dev/null
+          curl --fail --silent --show-error \
+            "${PUBLIC_ORIGIN}/catalog/${CATALOG_VERSION}/tts/manifest.json" \
+            | jq -e --arg version "$CATALOG_VERSION" \
+              '.schemaVersion == 1 and .catalogVersion == $version' \
+              >/dev/null
+
+      # This is the publication commit: clients cannot discover the release
+      # until every immutable object above has uploaded and passed public checks.
+      - name: Publish current catalog pointer last
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          aws s3 cp \
+            "dist/hosted-catalog/catalog/current.json" \
+            "s3://${R2_BUCKET}/catalog/current.json" \
+            --endpoint-url "$endpoint" \
+            --cache-control "public, max-age=300" \
+            --content-type "application/json" \
+            --no-progress
+
+      - name: Verify active catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 5
+          curl --fail --silent --show-error \
+            "${PUBLIC_ORIGIN}/catalog/current.json?published=${CATALOG_VERSION}" \
+            | jq -e --arg version "$CATALOG_VERSION" \
+              '.schemaVersion == 1 and .catalogVersion == $version' \
+              >/dev/null

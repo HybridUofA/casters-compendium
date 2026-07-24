@@ -19,6 +19,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	"github.com/HybridUofA/casters-compendium/internal/carddata/distribution"
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	cardupdate "github.com/HybridUofA/casters-compendium/internal/carddata/update"
 	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
@@ -57,6 +58,19 @@ func hashRepositoryCardList(repository *cards.Repository) (string, error) {
 		}
 	}
 	return hashCardListEntries(entries)
+}
+
+// hashRepositoryDatabase covers the complete normalized record rather than the
+// lightweight upstream summary used by legacy update checks.
+func hashRepositoryDatabase(repository *cards.Repository) (string, error) {
+	if repository == nil {
+		return "", fmt.Errorf("card repository cannot be nil")
+	}
+	encoded, err := distribution.EncodeCards(repository.All())
+	if err != nil {
+		return "", err
+	}
+	return distribution.SHA256(encoded), nil
 }
 
 // hashRemoteCardList hashes remote summary records using the same canonical representation.
@@ -246,11 +260,17 @@ func writeCardDatabase(path string, repository *cards.Repository) error {
 	if repository == nil {
 		return fmt.Errorf("write card database: repository cannot be nil")
 	}
-	encoded, err := json.MarshalIndent(repository.All(), "", " ")
+	encoded, err := distribution.EncodeCards(repository.All())
 	if err != nil {
-		return fmt.Errorf("encode card database: %w", err)
+		return err
 	}
-	encoded = append(encoded, '\n')
+	return writeCardDatabaseBytes(path, encoded)
+}
+
+func writeCardDatabaseBytes(path string, encoded []byte) error {
+	if len(encoded) == 0 {
+		return fmt.Errorf("write card database: encoded database cannot be empty")
+	}
 	if err := writeFileAtomically(path, encoded); err != nil {
 		return fmt.Errorf("write card database: %w", err)
 	}
@@ -331,7 +351,91 @@ func invalidateChangedCardImages(
 	return nil
 }
 
-// checkForCardDatabaseUpdate performs the lightweight startup comparison and prompts on change.
+// invalidateHostedCardImages ensures an artwork-only catalog correction is not
+// hidden by the local cache. It removes only known card files and leaves the
+// bundled card back and unrelated application data untouched.
+func invalidateHostedCardImages(
+	paths applicationPaths,
+	repositories ...*cards.Repository,
+) error {
+	seen := make(map[string]struct{})
+	for _, repository := range repositories {
+		if repository == nil {
+			continue
+		}
+		for _, card := range repository.All() {
+			if _, duplicate := seen[card.ID]; duplicate {
+				continue
+			}
+			seen[card.ID] = struct{}{}
+			if imagePath, found := cardimages.FindIn(paths.Images, card.ID); found {
+				if err := os.Remove(imagePath); err != nil && !os.IsNotExist(err) {
+					return fmt.Errorf("remove old hosted image for %q: %w", card.Name, err)
+				}
+			}
+			if thumbnailPath, found := cardimages.FindThumbnail(card.ID); found {
+				if err := os.Remove(thumbnailPath); err != nil && !os.IsNotExist(err) {
+					return fmt.Errorf("remove old hosted thumbnail for %q: %w", card.Name, err)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func updateApplicationDataFromHosted(
+	ctx context.Context,
+	paths applicationPaths,
+	currentRepository *cards.Repository,
+	release *distribution.ReleaseManifest,
+	progress setupProgress,
+) (*cards.Repository, error) {
+	client, err := hostedCatalogClientFactory()
+	if err != nil {
+		return nil, err
+	}
+	if release == nil {
+		_, currentRelease, err := client.FetchCurrent(ctx)
+		if err != nil {
+			return nil, err
+		}
+		release = &currentRelease
+	}
+	if progress != nil {
+		progress("Downloading the published card database…", 0, 1)
+	}
+	updatedRepository, encoded, err := client.FetchDatabase(ctx, *release)
+	if err != nil {
+		return nil, err
+	}
+	if err := invalidateHostedCardImages(paths, currentRepository, updatedRepository); err != nil {
+		return nil, err
+	}
+	imageURL := func(card cards.Card) string {
+		result, _ := distribution.CardImageURL(*release, card.ID)
+		return result
+	}
+	if err := cacheCardImagesUsing(ctx, paths, updatedRepository, imageURL, progress); err != nil {
+		return nil, err
+	}
+	if err := writeCardDatabaseBytes(paths.CardDatabase, encoded); err != nil {
+		return nil, err
+	}
+	releaseHash, err := distribution.ReleaseDigest(*release)
+	if err != nil {
+		return nil, err
+	}
+	if err := writeCardListHash(paths.CardListHash, releaseHash); err != nil {
+		return nil, err
+	}
+	if err := os.WriteFile(paths.SetupComplete, []byte("complete\n"), 0o644); err != nil {
+		return nil, fmt.Errorf("write setup marker: %w", err)
+	}
+	return updatedRepository, nil
+}
+
+// checkForCardDatabaseUpdate compares the complete installed database digest to
+// the maintainer-approved hosted release and prompts only after validation.
 func checkForCardDatabaseUpdate(
 	window fyne.Window,
 	paths applicationPaths,
@@ -345,25 +449,27 @@ func checkForCardDatabaseUpdate(
 	))
 
 	go func() {
-		localHash, err := hashRepositoryCardList(repository)
-		if err != nil {
-			log.Printf("card database update check skipped: %v", err)
-			fyne.Do(func() { showApplication(window, paths, repository) })
-			return
-		}
-		if storedHash, readErr := readCardListHash(paths.CardListHash); readErr != nil || storedHash != localHash {
-			if writeErr := writeCardListHash(paths.CardListHash, localHash); writeErr != nil {
-				log.Printf("could not record installed card-list hash: %v", writeErr)
-			}
-		}
+		storedHash, _ := readCardListHash(paths.CardListHash)
 
-		remote, err := fetchRemoteCardList(context.Background(), nil)
+		client, err := hostedCatalogClientFactory()
 		if err != nil {
 			log.Printf("card database update check skipped: %v", err)
 			fyne.Do(func() { showApplication(window, paths, repository) })
 			return
 		}
-		if remote.hash == localHash {
+		_, release, err := client.FetchCurrent(context.Background())
+		if err != nil {
+			log.Printf("card database update check skipped: %v", err)
+			fyne.Do(func() { showApplication(window, paths, repository) })
+			return
+		}
+		releaseHash, err := distribution.ReleaseDigest(release)
+		if err != nil {
+			log.Printf("card database update check skipped: %v", err)
+			fyne.Do(func() { showApplication(window, paths, repository) })
+			return
+		}
+		if strings.EqualFold(storedHash, releaseHash) {
 			fyne.Do(func() { showApplication(window, paths, repository) })
 			return
 		}
@@ -377,7 +483,7 @@ func checkForCardDatabaseUpdate(
 						showApplication(window, paths, repository)
 						return
 					}
-					runCardDatabaseUpdate(window, paths, repository, remote)
+					runCardDatabaseUpdate(window, paths, repository, &release)
 				},
 				window,
 			)
@@ -385,7 +491,7 @@ func checkForCardDatabaseUpdate(
 	}()
 }
 
-// confirmManualCardDatabaseUpdate asks before starting a user-requested full refresh.
+// confirmManualCardDatabaseUpdate asks before installing the latest published snapshot.
 func confirmManualCardDatabaseUpdate(
 	window fyne.Window,
 	paths applicationPaths,
@@ -393,7 +499,7 @@ func confirmManualCardDatabaseUpdate(
 ) {
 	dialog.ShowConfirm(
 		"Update Card Database",
-		"Download and rebuild the latest card database? Existing deck files will not be changed.",
+		"Download and install the latest published card database? Existing deck files will not be changed.",
 		func(update bool) {
 			if update {
 				runCardDatabaseUpdate(window, paths, repository, nil)
@@ -408,7 +514,7 @@ func runCardDatabaseUpdate(
 	window fyne.Window,
 	paths applicationPaths,
 	currentRepository *cards.Repository,
-	remote *remoteCardList,
+	release *distribution.ReleaseManifest,
 ) {
 	status := widget.NewLabel("Preparing database update…")
 	status.Wrapping = fyne.TextWrapWord
@@ -421,11 +527,11 @@ func runCardDatabaseUpdate(
 	))
 
 	go func() {
-		updatedRepository, err := updateApplicationData(
+		updatedRepository, err := updateApplicationDataFromHosted(
 			context.Background(),
 			paths,
 			currentRepository,
-			remote,
+			release,
 			func(message string, current int, total int) {
 				fyne.Do(func() {
 					status.SetText(message)

@@ -33,7 +33,7 @@
         <p class="eyebrow">Application guide</p>
         <h1>From card search to finished deck.</h1>
         <p class="intro">This walkthrough covers the complete deckbuilder workflow: creating or loading a deck, finding cards, organizing both deck zones, saving, and exporting.</p>
-        <a class="button primary" href="downloads.html">Download v0.1.4</a>
+        <a class="button primary" href="downloads.html">Download v0.1.5</a>
       </div>
     </header>
 
@@ -157,11 +157,11 @@
             </article>
             <article>
               <h3>Install to TTS</h3>
-              <p>Creates the face sheets, installs the bundled MTD card back, and writes a complete saved object into the detected Tabletop Simulator data directory.</p>
+              <p>Writes a portable saved object that references shared online face sheets and the MTD card back. Multiplayer participants can load the same assets without receiving files manually.</p>
             </article>
           </div>
           <div class="guide-note">
-            <strong>One-click installation:</strong> Standard Windows, macOS, and Linux TTS locations are detected automatically. If TTS uses a custom data directory, select it once and Caster's Compendium remembers it for later exports. Local assets are intended for single-player or hotseat use; remote players need assets hosted through Steam Cloud or another shared service.
+            <strong>One-click installation:</strong> Standard Windows, macOS, and Linux TTS locations are detected automatically. If TTS uses a custom data directory, select it once and Caster's Compendium remembers it for later exports. If the shared catalog cannot be reached or does not contain a card, the application clearly reports that it used the original local-image fallback instead.
           </div>
           <p>For file conversion without entering the editor, return to the main menu and use the deck-image or decklist generators.</p>
         </section>
@@ -169,7 +169,7 @@
         <section id="database">
           <p class="step-label">07 · Data and appearance</p>
           <h2>Keep the card library current.</h2>
-          <p>At startup, the application compares the installed card-list hash with the published hash and can prompt when an update is available. Choose <strong>Update Card Database</strong> from the main menu whenever you want to force a complete refresh.</p>
+          <p>At startup, the application compares its installed release marker with the publisher-authorized hosted catalog and can prompt when either data or artwork changes. Every downloaded database is checked against its published size and SHA-256 before installation. Choose <strong>Update Card Database</strong> from the main menu whenever you want to force a complete refresh.</p>
           <p><strong>Settings</strong> lets the application follow the operating-system theme or use a persistent Light or Dark appearance.</p>
           <div class="guide-note">
             The stable application ID remains <code>io.github.hybriduofa.casterdeckbuilder</code>, so upgrading or moving to the new repository does not discard existing cached data.
