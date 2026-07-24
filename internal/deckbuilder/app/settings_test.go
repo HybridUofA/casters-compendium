@@ -3,8 +3,10 @@ package deckbuilder
 import (
 	"testing"
 
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 )
 
 // TestNormalizeAppearanceTheme verifies only supported persisted values survive.
@@ -20,6 +22,59 @@ func TestNormalizeAppearanceTheme(t *testing.T) {
 		if got := normalizeAppearanceTheme(input); got != want {
 			t.Errorf("normalizeAppearanceTheme(%q) = %q, want %q", input, got, want)
 		}
+	}
+}
+
+// TestNormalizeBackground verifies only bundled artwork choices survive.
+func TestNormalizeBackground(t *testing.T) {
+	tests := map[string]string{
+		"none":           backgroundNone,
+		" ACADEMY-RIFT ": backgroundAcademyRift,
+		"Caster-Duel":    backgroundCasterDuel,
+		"unknown":        backgroundNone,
+		"":               backgroundNone,
+	}
+	for input, want := range tests {
+		if got := normalizeBackground(input); got != want {
+			t.Errorf("normalizeBackground(%q) = %q, want %q", input, got, want)
+		}
+	}
+}
+
+// TestBackgroundLabelsRoundTrip verifies settings labels preserve every choice.
+func TestBackgroundLabelsRoundTrip(t *testing.T) {
+	for _, value := range []string{
+		backgroundNone,
+		backgroundAcademyRift,
+		backgroundCasterDuel,
+	} {
+		if got := backgroundValue(backgroundLabel(value)); got != value {
+			t.Errorf("background preference %q round-tripped as %q", value, got)
+		}
+	}
+}
+
+// TestWrapWithBackgroundKeepsDefaultPlainAndLayersArtwork checks both layouts.
+func TestWrapWithBackgroundKeepsDefaultPlainAndLayersArtwork(t *testing.T) {
+	foreground := widget.NewLabel("foreground")
+	if got := wrapWithBackground(foreground, backgroundNone); got != foreground {
+		t.Fatal("no-background preference unexpectedly wrapped content")
+	}
+
+	got := wrapWithBackground(foreground, backgroundAcademyRift)
+	surface, ok := got.(*backgroundSurface)
+	if !ok {
+		t.Fatalf("artwork content type = %T, want *backgroundSurface", got)
+	}
+	if surface.foreground != foreground || len(surface.Objects) != 3 {
+		t.Fatalf("background surface does not retain three ordered layers")
+	}
+	image, ok := surface.Objects[0].(*canvas.Image)
+	if !ok || image.FillMode != canvas.ImageFillCover {
+		t.Fatalf("first layer = %T with fill %v, want cover image", surface.Objects[0], image.FillMode)
+	}
+	if surface.Objects[2] != foreground {
+		t.Fatal("foreground is not the top background-surface layer")
 	}
 }
 

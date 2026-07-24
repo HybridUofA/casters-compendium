@@ -23,7 +23,8 @@ AI assistance and project authorship are documented in
 the v0.1.3 repository and website migration included Codex assistance under
 maintainer direction and review. The statement also documents the automated
 tests and explicitly authorized production assistance used for v0.1.4's
-Tabletop Simulator integration and the complete v0.1.5 hosted-catalog patch.
+Tabletop Simulator integration, the complete v0.1.5 hosted-catalog patch, and
+v0.1.6's selectable bundled backgrounds.
 
 ## Features
 
@@ -40,7 +41,8 @@ Tabletop Simulator integration and the complete v0.1.5 hosted-catalog patch.
 - Drag a deck card onto the Card Search panel to remove one copy.
 - Preview card artwork on hover or click and read the card's full details in the
   information panel.
-- Follow the operating-system theme or select a persistent light or dark theme.
+- Follow the operating-system theme or select a persistent light or dark theme,
+  then optionally display one of two bundled Caster Chronicles backgrounds.
 
 ### Search and card data
 
@@ -76,6 +78,14 @@ Tabletop Simulator integration and the complete v0.1.5 hosted-catalog patch.
 
 ## Roadmap
 
+### What's new in v0.1.6
+
+- Choose between the unobstructed default interface and two bundled,
+  full-window Caster Chronicles backgrounds.
+- Preserve the selected background between launches and apply changes
+  immediately across setup, menus, progress screens, and the deck editor.
+- Keep controls legible over artwork with a consistent readability layer.
+
 ### What's new in v0.1.5
 
 - Export multiplayer-ready TTS objects backed by reusable hosted sheets.
@@ -106,9 +116,8 @@ support were requested directly by Speedrobo Games.
 - Check automatically and manually for new application releases, linking users
   directly to release notes and downloads.
 - Continue working directly with Speedrobo on art assets and prototype cards.
-- Adding optional backgrounds, primarily eight element-themed designs and
-  potentially five designs for the OC-tier Casters, subject to their creators'
-  permission.
+- Expand the initial background selection with element-themed and OC-tier
+  Caster designs, subject to their creators' permission.
 
 ### Planned for v0.2.0
 
@@ -230,7 +239,7 @@ artifacts for:
 - Arch Linux x64 (`.pkg.tar.zst`)
 
 A manual workflow run stores packages as build artifacts. Pushing a version tag
-such as `v0.1.5` builds the same packages and publishes them as GitHub Release
+such as `v0.1.6` builds the same packages and publishes them as GitHub Release
 assets. Tagged releases also publish `SHA256SUMS.txt`, an SPDX software bill of
 materials, and GitHub artifact attestations linking downloads to their source
 commit and build workflow.
@@ -259,13 +268,13 @@ embeds `MTD-back-ver01.png` separately for Tabletop Simulator exports.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.5_amd64.deb
+sudo apt install ./casters-compendium_0.1.6_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.5-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.6-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

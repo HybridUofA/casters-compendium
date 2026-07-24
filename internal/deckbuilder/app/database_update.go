@@ -442,7 +442,7 @@ func checkForCardDatabaseUpdate(
 	repository *cards.Repository,
 ) {
 	window.SetTitle(applicationName)
-	window.SetContent(databaseProgressContent(
+	setWindowContent(window, databaseProgressContent(
 		"Checking for Card Updates",
 		"Comparing the installed card list with the latest version…",
 		widget.NewProgressBarInfinite(),
@@ -520,7 +520,7 @@ func runCardDatabaseUpdate(
 	status.Wrapping = fyne.TextWrapWord
 	progressBar := widget.NewProgressBar()
 	window.SetTitle(applicationName + " — Updating Card Database")
-	window.SetContent(databaseProgressContent(
+	setWindowContent(window, databaseProgressContent(
 		"Updating Card Database",
 		"",
 		container.NewVBox(status, progressBar),
