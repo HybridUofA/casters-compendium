@@ -28,7 +28,7 @@ import (
 const (
 	applicationID      = localdata.SharedApplicationID
 	applicationName    = "Caster's Compendium"
-	applicationVersion = "0.1.5"
+	applicationVersion = "0.1.6"
 )
 
 const setupDownloadWorkers = 6
@@ -90,7 +90,7 @@ func Run() {
 		status := widget.NewLabel("Preparing first-time setup…")
 		status.Wrapping = fyne.TextWrapWord
 		progressBar := widget.NewProgressBar()
-		window.SetContent(container.NewCenter(container.NewVBox(
+		setWindowContent(window, container.NewCenter(container.NewVBox(
 			widget.NewLabelWithStyle(
 				applicationName+" Setup",
 				fyne.TextAlignCenter,
@@ -160,7 +160,7 @@ func showStartupFailure(window fyne.Window, err error, retry func()) {
 			widget.NewButton("Quit", func() { window.Close() }),
 		)
 	}
-	window.SetContent(container.NewCenter(container.NewVBox(message, buttons)))
+	setWindowContent(window, container.NewCenter(container.NewVBox(message, buttons)))
 }
 
 // initializeApplicationData installs bundled assets and prepares the database and image caches.

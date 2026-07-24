@@ -5,10 +5,13 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
+	sourcebackgrounds "github.com/HybridUofA/casters-compendium/internal/sources/backgrounds"
 )
 
 const (
@@ -23,6 +26,37 @@ const (
 	appearanceThemeLightLabel  = "Light"
 	appearanceThemeDarkLabel   = "Dark"
 )
+
+const (
+	backgroundPreferenceKey = "appearance.background"
+	backgroundNone          = "none"
+	backgroundAcademyRift   = "academy-rift"
+	backgroundCasterDuel    = "caster-duel"
+)
+
+const (
+	backgroundNoneLabel        = "None"
+	backgroundAcademyRiftLabel = "Academy Rift"
+	backgroundCasterDuelLabel  = "Caster Duel"
+)
+
+var (
+	academyRiftResource = fyne.NewStaticResource(
+		"academy-rift.png",
+		sourcebackgrounds.AcademyRiftPNG,
+	)
+	casterDuelResource = fyne.NewStaticResource(
+		"caster-duel.png",
+		sourcebackgrounds.CasterDuelPNG,
+	)
+)
+
+// backgroundSurface keeps the foreground available when settings refresh the
+// artwork behind the current screen.
+type backgroundSurface struct {
+	*fyne.Container
+	foreground fyne.CanvasObject
+}
 
 // fixedVariantTheme delegates theme resources while forcing one color variant.
 type fixedVariantTheme struct {
@@ -89,6 +123,91 @@ func appearanceThemeValue(label string) string {
 	}
 }
 
+// normalizeBackground converts unknown stored values to the unobstructed default.
+func normalizeBackground(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case backgroundAcademyRift:
+		return backgroundAcademyRift
+	case backgroundCasterDuel:
+		return backgroundCasterDuel
+	default:
+		return backgroundNone
+	}
+}
+
+// backgroundLabel converts a stored preference into its user-facing label.
+func backgroundLabel(value string) string {
+	switch normalizeBackground(value) {
+	case backgroundAcademyRift:
+		return backgroundAcademyRiftLabel
+	case backgroundCasterDuel:
+		return backgroundCasterDuelLabel
+	default:
+		return backgroundNoneLabel
+	}
+}
+
+// backgroundValue converts a user-facing label into its stored preference.
+func backgroundValue(label string) string {
+	switch strings.TrimSpace(label) {
+	case backgroundAcademyRiftLabel:
+		return backgroundAcademyRift
+	case backgroundCasterDuelLabel:
+		return backgroundCasterDuel
+	default:
+		return backgroundNone
+	}
+}
+
+// backgroundResource returns the bundled artwork selected by the preference.
+func backgroundResource(value string) fyne.Resource {
+	switch normalizeBackground(value) {
+	case backgroundAcademyRift:
+		return academyRiftResource
+	case backgroundCasterDuel:
+		return casterDuelResource
+	default:
+		return nil
+	}
+}
+
+// wrapWithBackground layers optional cover-scaled artwork and a dark readability
+// scrim behind one application screen.
+func wrapWithBackground(content fyne.CanvasObject, value string) fyne.CanvasObject {
+	resource := backgroundResource(value)
+	if resource == nil {
+		return content
+	}
+
+	image := canvas.NewImageFromResource(resource)
+	image.FillMode = canvas.ImageFillCover
+	image.ScaleMode = canvas.ImageScaleSmooth
+	scrim := canvas.NewRectangle(color.NRGBA{A: 112})
+
+	return &backgroundSurface{
+		Container:  container.NewStack(image, scrim, content),
+		foreground: content,
+	}
+}
+
+// setWindowContent applies the saved artwork to every application screen.
+func setWindowContent(window fyne.Window, content fyne.CanvasObject) {
+	value := fyne.CurrentApp().Preferences().StringWithFallback(
+		backgroundPreferenceKey,
+		backgroundNone,
+	)
+	window.SetContent(wrapWithBackground(content, value))
+}
+
+// refreshWindowBackground immediately reapplies artwork to the visible screen.
+func refreshWindowBackground(window fyne.Window) {
+	content := window.Content()
+	if surface, ok := content.(*backgroundSurface); ok {
+		content = surface.foreground
+	}
+	setWindowContent(window, content)
+}
+
 // applyAppearanceTheme installs the selected adaptive or fixed-variant theme.
 func applyAppearanceTheme(guiApp fyne.App, value string) {
 	base := theme.DefaultTheme()
@@ -130,6 +249,23 @@ func showSettingsDialog(window fyne.Window, guiApp fyne.App) {
 		),
 	))
 
+	backgroundSelection := widget.NewRadioGroup(
+		[]string{
+			backgroundNoneLabel,
+			backgroundAcademyRiftLabel,
+			backgroundCasterDuelLabel,
+		},
+		nil,
+	)
+	backgroundSelection.Horizontal = true
+	backgroundSelection.Required = true
+	backgroundSelection.SetSelected(backgroundLabel(
+		guiApp.Preferences().StringWithFallback(
+			backgroundPreferenceKey,
+			backgroundNone,
+		),
+	))
+
 	dialog.NewCustomConfirm(
 		"Settings",
 		"Save",
@@ -142,6 +278,14 @@ func showSettingsDialog(window fyne.Window, guiApp fyne.App) {
 			),
 			widget.NewLabel("Theme"),
 			selection,
+			widget.NewSeparator(),
+			widget.NewLabelWithStyle(
+				"Background",
+				fyne.TextAlignLeading,
+				fyne.TextStyle{Bold: true},
+			),
+			widget.NewLabel("Artwork"),
+			backgroundSelection,
 		),
 		func(saved bool) {
 			if !saved {
@@ -150,6 +294,9 @@ func showSettingsDialog(window fyne.Window, guiApp fyne.App) {
 			value := appearanceThemeValue(selection.Selected)
 			guiApp.Preferences().SetString(appearanceThemePreferenceKey, value)
 			applyAppearanceTheme(guiApp, value)
+			background := backgroundValue(backgroundSelection.Selected)
+			guiApp.Preferences().SetString(backgroundPreferenceKey, background)
+			refreshWindowBackground(window)
 		},
 		window,
 	).Show()

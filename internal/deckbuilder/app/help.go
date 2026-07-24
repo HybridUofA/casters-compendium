@@ -50,7 +50,8 @@ You can also drag a search result directly into either deck area.
 - **Diagnostic Information** displays a reviewable support summary that can be
   copied into a bug report. It excludes deck contents, credentials, usernames,
   and exact filesystem paths, and nothing is transmitted automatically.
-- **Settings** lets you follow the system theme or force Light or Dark mode.
+- **Settings** lets you follow the system theme or force Light or Dark mode,
+  and choose None, Academy Rift, or Caster Duel as the window background.
 `
 
 // showHowToUseDialog displays the built-in feature and interaction guide.

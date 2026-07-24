@@ -1052,7 +1052,7 @@ func showApplication(
 	showEditor := func() {
 		refreshDeckDisplay()
 		window.SetTitle(deck.Name + " — " + applicationName)
-		window.SetContent(editorContent)
+		setWindowContent(window, editorContent)
 	}
 
 	makeNewDeck = func() {
@@ -1087,7 +1087,7 @@ func showApplication(
 	}
 	showMainMenu = func() {
 		window.SetTitle(applicationName)
-		window.SetContent(buildMainMenu(window, mainMenuActions{
+		setWindowContent(window, buildMainMenu(window, mainMenuActions{
 			NewDeck:          makeNewDeck,
 			LoadDeck:         loadDeck,
 			GenerateImage:    func() { showGenerateImageFromDecklistDialog(window, repository) },
