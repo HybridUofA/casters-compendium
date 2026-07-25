@@ -703,7 +703,7 @@ func TestBuildDeckObject(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if object.Name != "Deck" ||
+	if object.Name != "DeckCustom" ||
 		object.Nickname != "Main Deck" ||
 		object.Description != "" {
 		t.Fatalf(
@@ -1251,7 +1251,7 @@ func TestWriteSavedObjectJSON(t *testing.T) {
 		SaveName: "Luna/Aqua Control",
 		ObjectStates: []DeckObject{
 			{
-				Name:        "Deck",
+				Name:        "DeckCustom",
 				Nickname:    "Luna/Aqua Control - Main Deck",
 				Description: "",
 				Transform:   unitTransform(),
@@ -1340,7 +1340,7 @@ func TestWriteSavedObjectJSONReportsWriterFailure(t *testing.T) {
 		failingJSONWriter{},
 		SavedObject{
 			SaveName:     "Deck",
-			ObjectStates: []DeckObject{{Name: "Deck"}},
+			ObjectStates: []DeckObject{{Name: "DeckCustom"}},
 		},
 	)
 	if err == nil ||

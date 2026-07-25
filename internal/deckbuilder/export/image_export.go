@@ -219,11 +219,23 @@ func drawScaledDeckImage(
 	y int,
 	cardImage image.Image,
 ) {
+	drawScaledDeckImageTo(canvas, x, y, deckImageCardWidth, deckImageCardHeight, cardImage)
+}
+
+// drawScaledDeckImageTo scales an image smoothly into a destination rectangle.
+func drawScaledDeckImageTo(
+	canvas *image.RGBA,
+	x int,
+	y int,
+	width int,
+	height int,
+	cardImage image.Image,
+) {
 	destination := image.Rect(
 		x,
 		y,
-		x+deckImageCardWidth,
-		y+deckImageCardHeight,
+		x+width,
+		y+height,
 	)
 	xdraw.CatmullRom.Scale(
 		canvas,

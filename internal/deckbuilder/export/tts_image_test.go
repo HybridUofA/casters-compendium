@@ -37,8 +37,8 @@ func TestWriteTTSFaceSheetRendersCompactRow(t *testing.T) {
 	wantBounds := image.Rect(
 		0,
 		0,
-		3*deckImageCardWidth,
-		deckImageCardHeight,
+		12,
+		4,
 	)
 	if exported.Bounds() != wantBounds {
 		t.Fatalf("bounds = %v, want %v", exported.Bounds(), wantBounds)
@@ -46,22 +46,22 @@ func TestWriteTTSFaceSheetRendersCompactRow(t *testing.T) {
 	assertPixel(
 		t,
 		exported,
-		deckImageCardWidth/2,
-		deckImageCardHeight/2,
+		2,
+		2,
 		color.RGBA{R: 255, A: 255},
 	)
 	assertPixel(
 		t,
 		exported,
-		deckImageCardWidth+deckImageCardWidth/2,
-		deckImageCardHeight/2,
+		6,
+		2,
 		color.RGBA{G: 255, A: 255},
 	)
 	assertPixel(
 		t,
 		exported,
-		2*deckImageCardWidth+deckImageCardWidth/2,
-		deckImageCardHeight/2,
+		10,
+		2,
 		color.RGBA{B: 255, A: 255},
 	)
 }
@@ -95,8 +95,8 @@ func TestWriteTTSFaceSheetWrapsRows(t *testing.T) {
 	wantBounds := image.Rect(
 		0,
 		0,
-		ttsSheetColumns*deckImageCardWidth,
-		2*deckImageCardHeight,
+		ttsSheetColumns*4,
+		2*4,
 	)
 	if exported.Bounds() != wantBounds {
 		t.Fatalf("bounds = %v, want %v", exported.Bounds(), wantBounds)
@@ -104,15 +104,15 @@ func TestWriteTTSFaceSheetWrapsRows(t *testing.T) {
 	assertPixel(
 		t,
 		exported,
-		deckImageCardWidth/2,
-		deckImageCardHeight+deckImageCardHeight/2,
+		2,
+		6,
 		color.RGBA{B: 255, A: 255},
 	)
 	assertPixel(
 		t,
 		exported,
-		deckImageCardWidth+deckImageCardWidth/2,
-		deckImageCardHeight+deckImageCardHeight/2,
+		6,
+		6,
 		deckImageBackground,
 	)
 }
