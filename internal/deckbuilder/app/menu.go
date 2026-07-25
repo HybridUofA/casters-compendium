@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
@@ -50,7 +51,17 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 		widget.NewSeparator(),
 		widget.NewButton("Quit", func() { window.Close() }),
 	)
-	return container.NewCenter(menu)
+	version := widget.NewLabel("v" + applicationVersion)
+	version.Alignment = fyne.TextAlignTrailing
+	version.TextStyle = fyne.TextStyle{Monospace: true}
+
+	return container.NewBorder(
+		nil,
+		container.NewHBox(layout.NewSpacer(), version),
+		nil,
+		nil,
+		container.NewCenter(menu),
+	)
 }
 
 // showNewDeckDialog collects a deck name and returns a newly validated deck.
