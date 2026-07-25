@@ -3,6 +3,9 @@ package deckexport
 import (
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/draw"
+	"image/png"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,6 +16,8 @@ import (
 	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
+
+const hostedTTSCardsPerSheet = 3
 
 type hostedCatalog interface {
 	decks.CardCatalog
@@ -36,9 +41,6 @@ func GenerateHostedTTSAssets(
 	if strings.TrimSpace(outputDirectory) == "" {
 		return distribution.TTSManifest{}, fmt.Errorf("output directory cannot be empty")
 	}
-	if strings.TrimSpace(cardImageDirectory) == "" {
-		return distribution.TTSManifest{}, fmt.Errorf("card image directory cannot be empty")
-	}
 	if err := os.MkdirAll(outputDirectory, 0o755); err != nil {
 		return distribution.TTSManifest{}, fmt.Errorf("create hosted TTS directory: %w", err)
 	}
@@ -56,17 +58,13 @@ func GenerateHostedTTSAssets(
 	}
 	publicDirectoryURL = strings.TrimRight(strings.TrimSpace(publicDirectoryURL), "/")
 
-	for start, deckKey := 0, 1; start < len(cardIDs); start, deckKey = start+ttsSheetMaxCards, deckKey+1 {
-		end := min(start+ttsSheetMaxCards, len(cardIDs))
+	for start, deckKey := 0, 1; start < len(cardIDs); start, deckKey = start+hostedTTSCardsPerSheet, deckKey+1 {
+		end := min(start+hostedTTSCardsPerSheet, len(cardIDs))
 		sheetIDs := cardIDs[start:end]
-		width, height, err := sheetDimensions(len(sheetIDs))
-		if err != nil {
-			return distribution.TTSManifest{}, fmt.Errorf("calculate hosted sheet %d dimensions: %w", deckKey, err)
-		}
 		filename := fmt.Sprintf("sheet-%03d.png", deckKey)
 		destination := filepath.Join(outputDirectory, filename)
 		if err := writeTTSFileAtomically(destination, func(writer io.Writer) error {
-			return writeTTSFaceSheet(writer, sheetIDs, cardImageDirectory)
+			return writeHostedTTSFaceSheet(writer, sheetIDs, cardImageDirectory)
 		}); err != nil {
 			return distribution.TTSManifest{}, fmt.Errorf("write hosted sheet %d: %w", deckKey, err)
 		}
@@ -74,8 +72,8 @@ func GenerateHostedTTSAssets(
 		manifest.Sheets = append(manifest.Sheets, distribution.TTSSheet{
 			DeckKey:   deckKey,
 			FaceURL:   publicDirectoryURL + "/" + filename,
-			NumWidth:  width,
-			NumHeight: height,
+			NumWidth:  len(sheetIDs),
+			NumHeight: 1,
 			CardCount: len(sheetIDs),
 		})
 		for slot, cardID := range sheetIDs {
@@ -89,6 +87,57 @@ func GenerateHostedTTSAssets(
 		return distribution.TTSManifest{}, fmt.Errorf("validate hosted TTS manifest: %w", err)
 	}
 	return manifest, nil
+}
+
+func writeHostedTTSFaceSheet(
+	writer io.Writer,
+	sheetIDs []string,
+	imageDirectory string,
+) error {
+	if writer == nil {
+		return fmt.Errorf("TTS face-sheet writer cannot be nil")
+	}
+	if len(sheetIDs) == 0 {
+		return fmt.Errorf("TTS sheet IDs cannot be empty")
+	}
+	if len(sheetIDs) > hostedTTSCardsPerSheet {
+		return fmt.Errorf("hosted TTS sheets cannot contain more than %d cards", hostedTTSCardsPerSheet)
+	}
+
+	images := make([]image.Image, 0, len(sheetIDs))
+	cellWidth := 0
+	cellHeight := 0
+	for index, cardID := range sheetIDs {
+		cardImage, err := openDeckImage(imageDirectory, cardID)
+		if err != nil {
+			return fmt.Errorf("load hosted TTS face %d for card %q: %w", index+1, cardID, err)
+		}
+		images = append(images, cardImage)
+		bounds := cardImage.Bounds()
+		if bounds.Dx() > cellWidth {
+			cellWidth = bounds.Dx()
+		}
+		if bounds.Dy() > cellHeight {
+			cellHeight = bounds.Dy()
+		}
+	}
+
+	canvas := image.NewRGBA(image.Rect(0, 0, cellWidth*len(sheetIDs), cellHeight))
+	draw.Draw(
+		canvas,
+		canvas.Bounds(),
+		image.NewUniform(deckImageBackground),
+		image.Point{},
+		draw.Src,
+	)
+	for index, cardImage := range images {
+		x := index * cellWidth
+		drawScaledDeckImageTo(canvas, x, 0, cellWidth, cellHeight, cardImage)
+	}
+	if err := png.Encode(writer, canvas); err != nil {
+		return fmt.Errorf("encode hosted TTS face sheet: %w", err)
+	}
+	return nil
 }
 
 // WriteTTSManifest writes a stable, readable public manifest.
@@ -207,7 +256,7 @@ func buildHostedDeckObject(
 	}
 
 	return DeckObject{
-		Name:             "Deck",
+		Name:             "DeckCustom",
 		Nickname:         nickname,
 		Transform:        transform,
 		DeckIDs:          deckIDs,

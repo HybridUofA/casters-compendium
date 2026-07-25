@@ -230,7 +230,7 @@ func buildDeckObject(
 	}
 	key := strconv.Itoa(deckKey)
 	object := DeckObject{
-		Name:        "Deck",
+		Name:        "DeckCustom",
 		Nickname:    nickname,
 		Description: "",
 		Transform:   transform,

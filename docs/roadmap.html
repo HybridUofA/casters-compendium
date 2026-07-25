@@ -231,24 +231,26 @@
             </article>
           </li>
 
-          <li class="release-planned">
+          <li class="release-current">
             <article class="release-card">
               <div class="release-card-heading">
                 <div>
-                  <p class="version">v0.1.x</p>
-                  <h2>Deck presets and update awareness</h2>
+                  <p class="version">v0.1.7-rc.1</p>
+                  <h2>Sharper TTS exports and safer releases</h2>
                 </div>
                 <div class="release-meta">
-                  <span class="release-status">Future</span>
-                  <span>Date not set</span>
+                  <span class="release-status">Release candidate</span>
+                  <time datetime="2026-07-25">July 25, 2026</time>
                 </div>
               </div>
-              <p>Future deckbuilder work will reduce setup for official decklists and make new application releases easier to discover without introducing silent self-updates.</p>
+              <p>This candidate improves card clarity in Tabletop Simulator and adds a visible candidate-to-stable quality boundary.</p>
               <ul class="release-highlights">
-                <li>Preload Duel Deck lists and provide a bundled-deck selector.</li>
-                <li>Check automatically and manually for application releases.</li>
-                <li>Link directly to release notes and platform downloads.</li>
+                <li>Build hosted and offline TTS sheets from full-resolution artwork.</li>
+                <li>Use native TTS deck objects and immutable hosted catalog v2.</li>
+                <li>Validate release-version metadata and report test coverage in CI.</li>
+                <li>Require human smoke testing of packaged candidates before stable publication.</li>
               </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.1.7-rc.1">View the release candidate <span aria-hidden="true">→</span></a>
             </article>
           </li>
 

@@ -8,6 +8,8 @@ import (
 	"io"
 )
 
+const ttsMaxTextureDimension = 8192
+
 func writeTTSFaceSheet(
 	writer io.Writer,
 	sheetIDs []string,
@@ -23,8 +25,28 @@ func writeTTSFaceSheet(
 	if err != nil {
 		return fmt.Errorf("calculate sheet dimensions error: %w", err)
 	}
-	pixelWidth := cols * deckImageCardWidth
-	pixelHeight := rows * deckImageCardHeight
+
+	images := make([]image.Image, 0, len(sheetIDs))
+	cellWidth := 0
+	cellHeight := 0
+	for index, cardID := range sheetIDs {
+		cardImage, err := openDeckImage(imageDirectory, cardID)
+		if err != nil {
+			return fmt.Errorf("load TTS face %d for card %q: %w", index+1, cardID, err)
+		}
+		images = append(images, cardImage)
+		bounds := cardImage.Bounds()
+		cellWidth = max(cellWidth, bounds.Dx())
+		cellHeight = max(cellHeight, bounds.Dy())
+	}
+
+	// Preserve the cached full-image resolution whenever the grid permits it.
+	// TTS and common GPUs handle textures up to 8192 pixels reliably, so cap
+	// each cell only when the complete sheet would exceed that boundary.
+	cellWidth = min(cellWidth, ttsMaxTextureDimension/cols)
+	cellHeight = min(cellHeight, ttsMaxTextureDimension/rows)
+	pixelWidth := cols * cellWidth
+	pixelHeight := rows * cellHeight
 	canvas := image.NewRGBA(image.Rect(
 		0,
 		0,
@@ -38,16 +60,12 @@ func writeTTSFaceSheet(
 		image.Point{},
 		draw.Src,
 	)
-	for index, cardID := range sheetIDs {
+	for index, cardImage := range images {
 		column := index % cols
 		row := index / cols
-		x := column * deckImageCardWidth
-		y := row * deckImageCardHeight
-		cardImage, err := openDeckImage(imageDirectory, cardID)
-		if err != nil {
-			return fmt.Errorf("load TTS face %d for card %q: %w", index+1, cardID, err)
-		}
-		drawScaledDeckImage(canvas, x, y, cardImage)
+		x := column * cellWidth
+		y := row * cellHeight
+		drawScaledDeckImageTo(canvas, x, y, cellWidth, cellHeight, cardImage)
 	}
 	if err := png.Encode(writer, canvas); err != nil {
 		return fmt.Errorf("encode TTS face sheet: %w", err)

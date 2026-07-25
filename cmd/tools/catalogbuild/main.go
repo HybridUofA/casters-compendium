@@ -97,6 +97,7 @@ func buildCatalog(settings options) error {
 			return fmt.Errorf("create output directory %q: %w", directory, err)
 		}
 	}
+	versionURL := settings.BaseURL + "/catalog/" + settings.Version
 
 	// Hosted artwork is normalized to stable <card-id>.png paths. Current source
 	// snapshots are PNG; rejecting a different extension prevents mislabeled
@@ -161,7 +162,6 @@ func buildCatalog(settings options) error {
 		return err
 	}
 
-	versionURL := settings.BaseURL + "/catalog/" + settings.Version
 	release := distribution.ReleaseManifest{
 		SchemaVersion:  distribution.SchemaVersion,
 		CatalogVersion: settings.Version,

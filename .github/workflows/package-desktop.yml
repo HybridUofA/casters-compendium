@@ -22,8 +22,8 @@ permissions:
 env:
   APP_NAME: "Caster's Compendium"
   APP_ID: io.github.hybriduofa.casterdeckbuilder
-  APP_VERSION: 0.1.6
-  RELEASE_VERSION: 0.1.6-hotfix.1
+  APP_VERSION: 0.1.7
+  RELEASE_VERSION: 0.1.7-rc.1
   APP_BUILD: 1
 
 jobs:
@@ -44,6 +44,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes gcc libgl1-mesa-dev libwayland-dev xorg-dev libxkbcommon-dev
+
+      - name: Check release-version consistency
+        run: bash scripts/check-version-consistency.sh
 
       - name: Run migrated Fyne threading tests
         run: go test -tags migrated_fynedo ./...
@@ -66,11 +69,11 @@ jobs:
           - label: Debian and Ubuntu x64
             runner: ubuntu-22.04
             target: debian
-            artifact: casters-compendium_0.1.6-hotfix.1_amd64
+            artifact: casters-compendium_0.1.7-rc.1_amd64
           - label: Arch Linux x64
             runner: ubuntu-24.04
             target: arch
-            artifact: casters-compendium-0.1.6_hotfix.1-1-x86_64
+            artifact: casters-compendium-0.1.7_rc.1-1-x86_64
           - label: Windows x64
             runner: windows-2025
             target: windows
