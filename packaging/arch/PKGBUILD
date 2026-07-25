@@ -1,7 +1,7 @@
 # Maintainer: Hybrid <hybriduofa@users.noreply.github.com>
 
 pkgname=casters-compendium
-pkgver=0.1.6_hotfix.1
+pkgver=0.1.7_rc.1
 pkgrel=1
 pkgdesc="Desktop deck builder for Caster Chronicles"
 arch=('x86_64')
@@ -24,7 +24,7 @@ makedepends=(
   'libxrandr'
   'mesa'
 )
-_source_fragment=${CASTERS_COMPENDIUM_SOURCE_FRAGMENT:-tag=v0.1.6-hotfix.1}
+_source_fragment=${CASTERS_COMPENDIUM_SOURCE_FRAGMENT:-tag=v0.1.7-rc.1}
 source=(
   "$pkgname::git+$url.git#$_source_fragment"
   'casters-compendium.desktop'

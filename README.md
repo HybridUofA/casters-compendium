@@ -78,6 +78,16 @@ v0.1.6's selectable bundled backgrounds, and its first rendering hotfix.
 
 ## Roadmap
 
+### What's new in v0.1.7-rc.1
+
+- Produce sharper hosted and offline Tabletop Simulator sheets from the
+  full-resolution card-art cache.
+- Use smaller three-card hosted sheets to preserve card clarity in multiplayer.
+- Correct exported Tabletop Simulator objects to use the native `DeckCustom`
+  object type.
+- Add measurable coverage reports, centralized version validation, and a
+  candidate-to-stable release process with a human smoke-test checklist.
+
 ### What's fixed in v0.1.6-hotfix.1
 
 - Correct the background layer so Fyne traverses and renders its image,
@@ -284,13 +294,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.6-hotfix.1_amd64.deb
+sudo apt install ./casters-compendium_0.1.7-rc.1_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.6_hotfix.1-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.7_rc.1-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

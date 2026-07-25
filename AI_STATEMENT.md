@@ -133,3 +133,21 @@ acceptance, and release approval.
 This is a contribution-specific production implementation exception. It does
 not silently replace the general post-v0.1.3 policy for unrelated future
 features.
+
+## Disclosed v0.1.7 exception
+
+Hybrid selected the release-process safeguards and full-resolution Tabletop
+Simulator export work for v0.1.7 and explicitly authorized OpenAI Codex to
+implement and publish it.
+
+Codex authored the centralized version validation, coverage reporting,
+candidate-to-stable documentation, release checklist, TTS object correction,
+full-resolution hosted and offline sheet generation, associated automated
+tests, catalog v2 publication, website changes, release notes, and packaging
+metadata. Hybrid remains responsible for reviewing the changes, testing the
+actual release-candidate packages, accepting visual behavior, and approving the
+stable release.
+
+This is a contribution-specific production implementation exception. It does
+not silently replace the general post-v0.1.3 policy for unrelated future
+features.
