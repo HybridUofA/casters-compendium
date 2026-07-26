@@ -62,7 +62,7 @@ v0.1.6's selectable bundled backgrounds, and its first rendering hotfix.
 
 - Import and save editable JSON deck files for sharing between players.
 - Import and export the human-readable decklist format published by Speedrobo
-  Games, including deck metadata, set names, totals, and sideboards.
+  Games, including deck metadata, set names, totals, and optional sideboards.
 - Export both main-deck and sideboard image sheets for Tabletop Simulator using
   the bundled card-back asset.
 - Install a complete deck directly into Tabletop Simulator with one click.
@@ -77,6 +77,19 @@ v0.1.6's selectable bundled backgrounds, and its first rendering hotfix.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v0.1.8
+
+- Create and discover personal decks under
+  `Documents/Caster's Compendium/Decks`.
+- Switch between saved JSON decks, compatible text decklists, and all eight
+  official DD01–DD04 starting templates directly in the editor.
+- Remember the active deck, default first-time users to DD01 Ignus, and protect
+  unsaved changes when switching.
+- Accept main-only text decklists while retaining validation for optional
+  sideboards.
+- Use a cleaner fixed editor layout with compact search filters and grouped
+  deck and export controls.
 
 ### What's new in v0.1.7
 
@@ -130,7 +143,6 @@ support were requested directly by Speedrobo Games.
 
 ### Future deckbuilder work
 
-- Preload the Duel Deck decklists and provide a deck-selection dropdown.
 - Check automatically and manually for new application releases, linking users
   directly to release notes and downloads.
 - Continue working directly with Speedrobo on art assets and prototype cards.
@@ -167,6 +179,10 @@ promised delivery date.
 The deck controls provide the following file and export operations:
 
 - **Save** and **Save As** write the editable JSON deck format.
+- Save dialogs begin in `Documents/Caster's Compendium/Decks`. The saved-deck
+  selector below the editor controls discovers JSON decks and compatible text
+  decklists in that folder, remembers the last selected deck, and protects
+  unsaved changes when switching.
 - **Export Decklist** writes the human-readable text format used by
   Speedrobo Games decklists.
 - **Export Main** and **Export Sideboard** create Tabletop Simulator PNG sheets.
@@ -295,13 +311,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.7_amd64.deb
+sudo apt install ./casters-compendium_0.1.8_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.7-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.8-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

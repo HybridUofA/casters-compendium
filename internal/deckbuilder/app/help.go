@@ -15,6 +15,8 @@ const howToUseMarkdown = `# How to Use Caster's Compendium
 2. Use the filters in **Card Search** to find cards. The **Keyword** filter is
    built automatically from the current card ability data, so it includes rules
    labels such as Break, Enter, Last Words, Quickcast, Unity, and others.
+   Element choices use a compact four-column row, and the remaining filters are
+   paired to leave more room for card thumbnails.
 3. **Hover over** a card to view its full image and details. Clicking or tapping
    also works on devices without pointer hover.
 4. **Right-click** a search result to add one copy to the Main Deck.
@@ -34,9 +36,20 @@ You can also drag a search result directly into either deck area.
 
 ## Save and export
 
-- **Save** and **Save As** store an editable JSON deck.
-- **Export Decklist** creates a Speedrobo-compatible text decklist.
-- **Export Main** and **Export Sideboard** create Tabletop Simulator PNG sheets.
+- **Save** and **Save As** store an editable JSON deck. Save dialogs begin in
+  **Documents/Caster's Compendium/Decks**, which is created automatically.
+- Use **Deck** below the primary editor controls to switch between JSON decks and
+  compatible text decklists in that folder. **Refresh** rescans the folder, and
+  **Open Folder** reveals it in the system file manager.
+- Entries beginning with **Official** are bundled DD01–DD04 templates published
+  by Speedrobo Games. They work offline and use **Save As** when you want to
+  keep an edited personal copy.
+- The last selected deck opens automatically on the next launch. Switching
+  decks asks before discarding unsaved changes.
+- The **Export** menu creates a Speedrobo-compatible text decklist or a
+  Tabletop Simulator PNG sheet for the main deck or sideboard.
+- Imported text decklists require a main deck. The side-deck heading and total
+  are optional; omitting them creates an empty side deck.
 - **Install to TTS** installs a portable saved object using shared online card
   sheets and the MTD card back, so multiplayer participants can load its art.
   Standard TTS data locations are detected automatically; a custom location
@@ -45,6 +58,9 @@ You can also drag a search result directly into either deck area.
 
 ## Card data and appearance
 
+- The editor uses stable utility-panel sizes: card information stays on the
+  left, search stays on the right, and the deck area receives remaining space.
+  Constrained details and filter content scroll within their panels.
 - **Update Card Database** checks the publisher-authorized hosted catalog and
   installs a cryptographically verified card database and artwork.
 - **Diagnostic Information** displays a reviewable support summary that can be

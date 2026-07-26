@@ -141,8 +141,8 @@ func ReadDeckList(reader io.Reader, repository *cards.Repository) (*decks.Deck, 
 	if deckName == "" {
 		return nil, fmt.Errorf("decklist has no deck name")
 	}
-	if !seenZones[decks.MainZone] || !seenZones[decks.SideZone] {
-		return nil, fmt.Errorf("decklist must contain main and side deck sections")
+	if !seenZones[decks.MainZone] {
+		return nil, fmt.Errorf("decklist must contain a main deck section")
 	}
 	deck.Name = deckName
 	if deck.MainTotal() != declaredTotals[decks.MainZone] {

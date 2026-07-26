@@ -33,7 +33,7 @@
         <p class="eyebrow">Application guide</p>
         <h1>From card search to finished deck.</h1>
         <p class="intro">This walkthrough covers the complete deckbuilder workflow: creating or loading a deck, finding cards, organizing both deck zones, saving, and exporting.</p>
-        <a class="button primary" href="downloads.html">Download v0.1.7</a>
+        <a class="button primary" href="downloads.html">Download v0.1.8</a>
       </div>
     </header>
 
@@ -85,7 +85,7 @@
         <section id="search">
           <p class="step-label">02 · Search</p>
           <h2>Find the exact cards you need.</h2>
-          <p>Use any combination of the Card Search controls. The result list updates as filters change, and the card preview updates when you hover, click, or tap a result.</p>
+          <p>Search by name or combine element, cost, type, trait, keyword, expansion, and playtesting options. Elements are packed into four columns and the remaining fields are paired to preserve card-thumbnail space while keeping every filter visible. Fixed utility-panel dimensions keep the layout stable while the main deck and thumbnail regions receive remaining window space. Results update as filters change, and the card preview updates when you hover, click, or tap a result.</p>
           <ul class="check-list">
             <li><strong>Name</strong> searches card names as you type.</li>
             <li><strong>Elements</strong> allows one or more element selections.</li>
@@ -144,7 +144,8 @@
             <div><dt>Open</dt><dd>Loads either an editable JSON deck or a text decklist into the editor.</dd></div>
             <div><dt>Rename</dt><dd>Changes the display name and the default filename offered for future exports.</dd></div>
           </dl>
-          <p>Deck files stay wherever you choose in the system file dialog. They are separate from the application's downloaded card-data cache.</p>
+          <p>Save dialogs begin in <code>Documents/Caster's Compendium/Decks</code>. The Deck selector discovers JSON decks and compatible text decklists in that folder while Open can still load files from elsewhere.</p>
+          <p>Official entries are bundled DD01–DD04 templates published by Speedrobo Games. They work offline and open without an overwrite destination, so saving an edited template creates a personal JSON copy.</p>
         </section>
 
         <section id="export">
@@ -152,15 +153,15 @@
           <h2>Prepare decks for tournaments or Tabletop Simulator.</h2>
           <div class="option-grid">
             <article>
-              <h3>Export Decklist</h3>
-              <p>Writes the readable Speedrobo Games format with deck metadata, quantities, sets, totals, and sideboard contents.</p>
+              <h3>Export → Decklist</h3>
+              <p>Writes the readable Speedrobo Games format with deck metadata, quantities, sets, totals, and optional sideboard contents. Main-only decklists import with an empty side deck.</p>
             </article>
             <article>
-              <h3>Export Main</h3>
+              <h3>Export → Main Image</h3>
               <p>Creates a Tabletop Simulator PNG sheet for the main deck, including the bundled card back.</p>
             </article>
             <article>
-              <h3>Export Sideboard</h3>
+              <h3>Export → Sideboard Image</h3>
               <p>Creates a matching Tabletop Simulator PNG sheet containing the sideboard.</p>
             </article>
             <article>
