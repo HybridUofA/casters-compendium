@@ -134,6 +134,57 @@ Side Total: 2 cards
 	}
 }
 
+// TestReadDeckListSpeedroboMainOnly verifies official preconstructed decks do
+// not need to include an empty side-deck heading or side total.
+func TestReadDeckListSpeedroboMainOnly(t *testing.T) {
+	repository, err := cards.NewRepository([]cards.Card{
+		{ID: "carella", Name: "Carella", Expansion: "DD01: Magical Girl Duel"},
+		{ID: "fire-arrow", Name: "Fire Arrow", Expansion: "DD01: Magical Girl Duel"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	input := `Deck: DD01 Ignus
+Game: The Caster Chronicles
+
+2x Carella (DD01: Magical Girl Duel)
+4x Fire Arrow (DD01: Magical Girl Duel)
+
+Total: 6 cards
+`
+	deck, err := ReadDeckList(strings.NewReader(input), repository)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if deck.Name != "DD01 Ignus" || deck.MainTotal() != 6 || deck.SideTotal() != 0 {
+		t.Fatalf("unexpected main-only deck: %#v", deck)
+	}
+	if len(deck.SideDeck) != 0 || len(deck.SideOrder) != 0 {
+		t.Fatalf("main-only import created side-deck contents: %#v", deck)
+	}
+}
+
+// TestReadDeckListStillRequiresMainDeck verifies making side decks optional
+// does not allow a side-only decklist.
+func TestReadDeckListStillRequiresMainDeck(t *testing.T) {
+	repository, err := cards.NewRepository([]cards.Card{
+		{ID: "carella", Name: "Carella", Expansion: "DD01: Magical Girl Duel"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	input := `Deck Name: Side Only
+Side Deck (1)
+1x Carella [DD01: Magical Girl Duel]
+`
+	_, err = ReadDeckList(strings.NewReader(input), repository)
+	if err == nil || !strings.Contains(err.Error(), "must contain a main deck section") {
+		t.Fatalf("ReadDeckList() error = %v", err)
+	}
+}
+
 // TestReadDeckListSpeedroboRejectsUnsupportedGame verifies game metadata is
 // validated before any card lines are processed.
 func TestReadDeckListSpeedroboRejectsUnsupportedGame(t *testing.T) {

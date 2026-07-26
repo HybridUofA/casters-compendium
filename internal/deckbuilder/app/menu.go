@@ -136,6 +136,7 @@ func showOpenDeckDialog(
 func showSaveDeckDialog(
 	window fyne.Window,
 	deck *decks.Deck,
+	initialDirectory string,
 	onSaved func(fyne.URI),
 ) {
 	fileDialog := dialog.NewFileSave(
@@ -164,25 +165,40 @@ func showSaveDeckDialog(
 	)
 	fileDialog.SetFilter(storage.NewExtensionFileFilter([]string{".json"}))
 	fileDialog.SetFileName(safeDeckFileName(deck.Name) + ".json")
+	setFileDialogLocation(fileDialog, initialDirectory)
 	fileDialog.Show()
 }
 
+// setFileDialogLocation starts a file dialog in the deck library when the
+// platform's storage provider can expose that directory.
+func setFileDialogLocation(fileDialog *dialog.FileDialog, directory string) {
+	if strings.TrimSpace(directory) == "" {
+		return
+	}
+	location, err := storage.ListerForURI(storage.NewFileURI(directory))
+	if err == nil {
+		fileDialog.SetLocation(location)
+	}
+}
+
 // saveDeckToURI overwrites a previously selected deck destination.
-func saveDeckToURI(window fyne.Window, uri fyne.URI, deck *decks.Deck) {
+func saveDeckToURI(window fyne.Window, uri fyne.URI, deck *decks.Deck) bool {
 	writer, err := storage.Writer(uri)
 	if err != nil {
 		dialog.ShowError(err, window)
-		return
+		return false
 	}
 	writeErr := deckio.WriteDeck(writer, deck)
 	closeErr := writer.Close()
 	if writeErr != nil {
 		dialog.ShowError(writeErr, window)
-		return
+		return false
 	}
 	if closeErr != nil {
 		dialog.ShowError(closeErr, window)
+		return false
 	}
+	return true
 }
 
 // showGenerateImageFromDecklistDialog loads a text decklist and starts a zone-image export.

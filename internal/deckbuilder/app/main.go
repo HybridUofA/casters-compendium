@@ -5,6 +5,9 @@ import (
 	"context"
 	"fmt"
 	"image/color"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,6 +23,8 @@ import (
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	deckexport "github.com/HybridUofA/casters-compendium/internal/deckbuilder/export"
 	deckgui "github.com/HybridUofA/casters-compendium/internal/deckbuilder/ui"
+	"github.com/HybridUofA/casters-compendium/internal/deckio"
+	"github.com/HybridUofA/casters-compendium/internal/decklibrary"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
@@ -42,6 +47,8 @@ func checkedValues(
 
 const anyOption = "- Any -"
 const ttsRootPreferenceKey = "tts.root"
+const activeDeckPreferenceKey = "decklibrary.active-path"
+const officialTemplatePreferencePrefix = "official:"
 
 // defaultTTSCardBack returns a fresh reader for the bundled MTD card back.
 // A new reader is required for each export because copying consumes it.
@@ -271,6 +278,11 @@ func showApplication(
 
 	const previewWidth float32 = 160
 	const previewHeight float32 = 224
+	const informationPanelWidth float32 = 260
+	const cardPreviewHeight float32 = 300
+	const sideDeckPanelHeight float32 = 155
+	const searchPanelWidth float32 = 370
+	const searchControlsHeight float32 = 370
 	mainDeckTileMinSize := fyne.NewSize(48, 67)
 	sideDeckTileMinSize := fyne.NewSize(32, 45)
 
@@ -285,12 +297,23 @@ func showApplication(
 	var selection SelectedState
 
 	var currentDeckURI fyne.URI
+	var currentDeckPath string
+	var currentTemplateID string
+	deckDirty := false
 	var showMainMenu func()
 	var makeNewDeck func()
 	var loadDeck func()
 	var saveDeck func()
 	var saveDeckAs func()
 	var refreshDeckDisplay func()
+	var refreshDeckLibrary func()
+	var loadLibraryDeck func(string)
+	var loadOfficialTemplate func(string)
+
+	deckLibraryDirectory, libraryPathErr := decklibrary.DefaultDirectory()
+	if libraryPathErr == nil {
+		libraryPathErr = decklibrary.Ensure(deckLibraryDirectory)
+	}
 
 	/*
 		Left panel: selected card preview and information
@@ -323,6 +346,9 @@ func showApplication(
 		previewBackground,
 		previewMessage,
 	)
+	cardPreviewSizer := canvas.NewRectangle(color.Transparent)
+	cardPreviewSizer.SetMinSize(fyne.NewSize(0, cardPreviewHeight))
+	cardPreviewRegion := container.NewStack(cardPreviewSizer, cardPreview)
 
 	showPreviewMessage := func(message string) {
 		label := widget.NewLabel(message)
@@ -389,12 +415,13 @@ func showApplication(
 		detailsScroll,
 	)
 
-	leftBody := container.NewVSplit(
-		cardPreview,
+	leftBody := container.NewBorder(
+		cardPreviewRegion,
+		nil,
+		nil,
+		nil,
 		detailsPanel,
 	)
-
-	leftBody.SetOffset(0.58)
 
 	leftPanel := container.NewBorder(
 		widget.NewLabel("Card Information"),
@@ -403,63 +430,97 @@ func showApplication(
 		nil,
 		leftBody,
 	)
+	leftPanelSizer := canvas.NewRectangle(color.Transparent)
+	leftPanelSizer.SetMinSize(fyne.NewSize(informationPanelWidth, 0))
+	leftPanelRegion := container.NewStack(leftPanelSizer, leftPanel)
 	/*
 		Center panel: deck controls and deck zones
 	*/
 
-	deckControls := container.NewGridWithColumns(
-		5,
-		widget.NewButton("New", func() {
-			makeNewDeck()
-		}),
-		widget.NewButton("Open", func() {
-			loadDeck()
-		}),
-		widget.NewButton("Save", func() {
-			saveDeck()
-		}),
-		widget.NewButton("Save As", func() {
-			saveDeckAs()
-		}),
-		widget.NewButton("Export Main", func() {
-			showDeckImageExportDialog(window, deck, false)
-		}),
-		widget.NewButton("Export Sideboard", func() {
-			showDeckImageExportDialog(window, deck, true)
-		}),
-		widget.NewButton("Install to TTS", func() {
-			showTTSInstallDialog(window, deck, repository)
-		}),
-		widget.NewButton("Export Decklist", func() {
-			showDecklistSaveDialog(window, deck, repository)
-		}),
-		widget.NewButton("Rename", func() {
-			nameEntry := widget.NewEntry()
-			nameEntry.SetText(deck.Name)
-			dialog.ShowForm(
-				"Rename Deck",
-				"Rename",
-				"Cancel",
-				[]*widget.FormItem{widget.NewFormItem("Deck Name", nameEntry)},
-				func(confirmed bool) {
-					if !confirmed || strings.TrimSpace(nameEntry.Text) == "" {
-						return
-					}
-					deck.Name = strings.TrimSpace(nameEntry.Text)
-				},
-				window,
-			)
-		}),
-		widget.NewButton("Sort Deck", func() {
-			if err := deck.Sort(repository); err != nil {
-				dialog.ShowError(err, window)
+	newButton := widget.NewButton("New", func() {
+		makeNewDeck()
+	})
+	openButton := widget.NewButton("Open", func() {
+		loadDeck()
+	})
+	saveButton := widget.NewButton("Save", func() {
+		saveDeck()
+	})
+	saveAsButton := widget.NewButton("Save As", func() {
+		saveDeckAs()
+	})
+	renameButton := widget.NewButton("Rename", func() {
+		nameEntry := widget.NewEntry()
+		nameEntry.SetText(deck.Name)
+		dialog.ShowForm(
+			"Rename Deck",
+			"Rename",
+			"Cancel",
+			[]*widget.FormItem{widget.NewFormItem("Deck Name", nameEntry)},
+			func(confirmed bool) {
+				if !confirmed || strings.TrimSpace(nameEntry.Text) == "" {
+					return
+				}
+				deck.Name = strings.TrimSpace(nameEntry.Text)
+				deckDirty = true
+			},
+			window,
+		)
+	})
+	mainMenuButton := widget.NewButton("Main Menu", func() {
+		showMainMenu()
+	})
+
+	primaryDeckControls := container.NewBorder(
+		nil,
+		nil,
+		nil,
+		mainMenuButton,
+		container.NewHBox(
+			newButton,
+			openButton,
+			saveButton,
+			saveAsButton,
+			renameButton,
+		),
+	)
+
+	sortButton := widget.NewButton("Sort", func() {
+		if err := deck.Sort(repository); err != nil {
+			dialog.ShowError(err, window)
+			return
+		}
+		deckDirty = true
+		refreshDeckDisplay()
+	})
+	installTTSButton := widget.NewButton("Install to TTS", func() {
+		showTTSInstallDialog(window, deck, repository)
+	})
+
+	var exportSelect *widget.Select
+	exportSelect = widget.NewSelect(
+		[]string{"Decklist", "Main Image", "Sideboard Image"},
+		func(selected string) {
+			switch selected {
+			case "Decklist":
+				showDecklistSaveDialog(window, deck, repository)
+			case "Main Image":
+				showDeckImageExportDialog(window, deck, false)
+			case "Sideboard Image":
+				showDeckImageExportDialog(window, deck, true)
+			default:
 				return
 			}
-			refreshDeckDisplay()
-		}),
-		widget.NewButton("Main Menu", func() {
-			showMainMenu()
-		}),
+			exportSelect.ClearSelected()
+		},
+	)
+	exportSelect.PlaceHolder = "Export…"
+
+	exportControls := container.NewHBox(
+		widget.NewLabel("Actions"),
+		sortButton,
+		exportSelect,
+		installTTSButton,
 	)
 
 	const cardHeightToWidth float32 = 182.0 / 130.0
@@ -517,6 +578,7 @@ func showApplication(
 			dialog.ShowError(err, window)
 			return
 		}
+		deckDirty = true
 		selection.Clear()
 	},
 	)
@@ -564,6 +626,7 @@ func showApplication(
 						return
 					}
 					selection.Clear()
+					deckDirty = true
 
 					refreshDeckDisplay()
 				},
@@ -629,6 +692,7 @@ func showApplication(
 						return
 					}
 					selection.Clear()
+					deckDirty = true
 
 					refreshDeckDisplay()
 				},
@@ -679,14 +743,140 @@ func showApplication(
 		))
 	}
 
-	deckSplit := container.NewVSplit(
+	sideDeckSizer := canvas.NewRectangle(color.Transparent)
+	sideDeckSizer.SetMinSize(fyne.NewSize(0, sideDeckPanelHeight))
+	sideDeckRegion := container.NewStack(sideDeckSizer, sideDeckPanel)
+	deckSplit := container.NewBorder(
+		nil,
+		sideDeckRegion,
+		nil,
+		nil,
 		mainDeckPanel,
-		sideDeckPanel,
 	)
-	deckSplit.SetOffset(0.72)
+
+	deckSelector := widget.NewSelect(nil, nil)
+	deckSelector.PlaceHolder = "No saved decks"
+	refreshLibraryButton := widget.NewButton("Refresh", func() {
+		refreshDeckLibrary()
+	})
+	openLibraryButton := widget.NewButton("Open Folder", func() {
+		if libraryPathErr != nil {
+			dialog.ShowError(libraryPathErr, window)
+			return
+		}
+		folderURL, err := url.Parse(storage.NewFileURI(deckLibraryDirectory).String())
+		if err != nil {
+			dialog.ShowError(err, window)
+			return
+		}
+		if err := fyne.CurrentApp().OpenURL(folderURL); err != nil {
+			dialog.ShowError(err, window)
+		}
+	})
+
+	libraryPaths := make(map[string]string)
+	officialTemplateIDs := make(map[string]string)
+	updatingDeckSelector := false
+	refreshDeckLibrary = func() {
+		templates := decklibrary.OfficialTemplates()
+		options := make([]string, 0, len(templates))
+		officialTemplateIDs = make(map[string]string, len(templates))
+		for _, template := range templates {
+			label := "Official — " + template.Name
+			options = append(options, label)
+			officialTemplateIDs[label] = template.ID
+		}
+
+		var entries []decklibrary.Entry
+		if libraryPathErr == nil {
+			var discoverErr error
+			entries, discoverErr = decklibrary.Discover(deckLibraryDirectory)
+			if discoverErr != nil {
+				dialog.ShowError(discoverErr, window)
+				return
+			}
+		} else {
+			deckSelector.PlaceHolder = "Personal deck library unavailable"
+		}
+		libraryPaths = make(map[string]string, len(entries))
+		for _, entry := range entries {
+			label := entry.Name + " (" + strings.TrimPrefix(
+				strings.ToLower(filepath.Ext(entry.Path)),
+				".",
+			) + ")"
+			options = append(options, label)
+			libraryPaths[label] = entry.Path
+		}
+
+		updatingDeckSelector = true
+		deckSelector.Options = options
+		deckSelector.ClearSelected()
+		if currentTemplateID != "" {
+			for label, templateID := range officialTemplateIDs {
+				if templateID == currentTemplateID {
+					deckSelector.SetSelected(label)
+					break
+				}
+			}
+		} else if currentDeckPath != "" {
+			currentPath := filepath.Clean(currentDeckPath)
+			for label, path := range libraryPaths {
+				if filepath.Clean(path) == currentPath {
+					deckSelector.SetSelected(label)
+					break
+				}
+			}
+		}
+		updatingDeckSelector = false
+		deckSelector.Refresh()
+	}
+	deckSelector.OnChanged = func(selected string) {
+		if updatingDeckSelector {
+			return
+		}
+		path := libraryPaths[selected]
+		templateID := officialTemplateIDs[selected]
+		if path != "" || templateID != "" {
+			switchDeck := func() {
+				if templateID != "" {
+					loadOfficialTemplate(templateID)
+					return
+				}
+				loadLibraryDeck(path)
+			}
+			if deckDirty {
+				dialog.ShowConfirm(
+					"Discard Unsaved Changes?",
+					"Switching decks will discard changes that have not been saved.",
+					func(discard bool) {
+						if discard {
+							switchDeck()
+							return
+						}
+						refreshDeckLibrary()
+					},
+					window,
+				)
+				return
+			}
+			switchDeck()
+		}
+	}
+
+	deckLibraryControls := container.NewBorder(
+		widget.NewLabel("Deck"),
+		nil,
+		nil,
+		container.NewHBox(refreshLibraryButton, openLibraryButton),
+		deckSelector,
+	)
 
 	centerPanel := container.NewBorder(
-		deckControls,
+		container.NewVBox(
+			primaryDeckControls,
+			deckLibraryControls,
+			exportControls,
+		),
 		nil,
 		nil,
 		nil,
@@ -760,7 +950,7 @@ func showApplication(
 	}
 
 	elementGrid := container.NewGridWithColumns(
-		2,
+		4,
 		elementObjects...,
 	)
 
@@ -861,6 +1051,7 @@ func showApplication(
 						return
 					}
 
+					deckDirty = true
 					refreshDeckDisplay()
 				},
 			)
@@ -984,73 +1175,68 @@ func showApplication(
 		},
 	)
 
+	filterGrid := container.NewGridWithColumns(
+		2,
+		container.NewVBox(widget.NewLabel("Cost / Level"), costEntry),
+		container.NewVBox(widget.NewLabel("Type"), typeSelect),
+		container.NewVBox(widget.NewLabel("Trait"), traitSelect),
+		container.NewVBox(widget.NewLabel("Keyword"), keywordSelect),
+		container.NewVBox(widget.NewLabel("Expansion"), expansionSelect),
+		container.NewVBox(widget.NewLabel("Card Pool"), includeTestingCheck),
+	)
+
 	searchControls := container.NewVBox(
 		widget.NewLabel("Card Search"),
-		widget.NewLabel("Drag a deck card into this panel to remove it."),
-
-		searchEntry,
-
+		container.NewBorder(
+			nil,
+			nil,
+			nil,
+			container.NewHBox(
+				searchButton,
+				clearButton,
+			),
+			searchEntry,
+		),
 		widget.NewLabel("Elements"),
 		elementGrid,
-
-		widget.NewLabel("Cost / Level"),
-		costEntry,
-
-		widget.NewLabel("Type"),
-		typeSelect,
-
-		widget.NewLabel("Trait"),
-		traitSelect,
-
-		widget.NewLabel("Keyword"),
-		keywordSelect,
-
-		widget.NewLabel("Expansion"),
-		expansionSelect,
-
-		includeTestingCheck,
-
-		container.NewGridWithColumns(
-			2,
-			searchButton,
-			clearButton,
-		),
-
+		filterGrid,
 		resultCountLabel,
+		widget.NewLabel("Drag deck cards here to remove them."),
 	)
 
-	rightPanel := container.NewVSplit(
-		container.NewVScroll(
-			searchControls,
-		),
-		container.NewVScroll(
-			searchResultsGrid,
-		),
+	searchControlsScroll := container.NewVScroll(searchControls)
+	searchControlsScroll.SetMinSize(fyne.NewSize(0, searchControlsHeight))
+	searchResultsScroll := container.NewVScroll(searchResultsGrid)
+	rightPanel := container.NewBorder(
+		searchControlsScroll,
+		nil,
+		nil,
+		nil,
+		searchResultsScroll,
 	)
-	rightPanel.SetOffset(0.58)
+	rightPanelSizer := canvas.NewRectangle(color.Transparent)
+	rightPanelSizer.SetMinSize(fyne.NewSize(searchPanelWidth, 0))
+	rightPanelRegion := container.NewStack(rightPanelSizer, rightPanel)
 	dragController.SetRemovalTarget(rightPanel)
 
 	/*
 		Complete application layout
 	*/
 
-	leftCenter := container.NewHSplit(
-		leftPanel,
+	root := container.NewBorder(
+		nil,
+		nil,
+		leftPanelRegion,
+		rightPanelRegion,
 		centerPanel,
 	)
-	leftCenter.SetOffset(0.28)
-
-	root := container.NewHSplit(
-		leftCenter,
-		rightPanel,
-	)
-	root.SetOffset(0.77)
 
 	refreshDeckDisplay()
 
 	editorContent := container.NewStack(root, dragLayer)
 	showEditor := func() {
 		refreshDeckDisplay()
+		refreshDeckLibrary()
 		window.SetTitle(deck.Name + " — " + applicationName)
 		setWindowContent(window, editorContent)
 	}
@@ -1059,8 +1245,64 @@ func showApplication(
 		showNewDeckDialog(window, func(created *decks.Deck) {
 			*deck = *created
 			currentDeckURI = nil
+			currentDeckPath = ""
+			currentTemplateID = ""
+			deckDirty = false
+			fyne.CurrentApp().Preferences().SetString(activeDeckPreferenceKey, "")
 			showEditor()
 		})
+	}
+	loadLibraryDeck = func(path string) {
+		var opened *decks.Deck
+		var openErr error
+		if strings.EqualFold(filepath.Ext(path), ".txt") {
+			reader, err := os.Open(path)
+			if err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
+			opened, openErr = deckio.ReadDeckList(reader, repository)
+			closeErr := reader.Close()
+			if openErr == nil && closeErr != nil {
+				openErr = closeErr
+			}
+		} else {
+			opened, openErr = deckio.LoadFile(path)
+		}
+		if openErr != nil {
+			dialog.ShowError(openErr, window)
+			return
+		}
+		opened.EnsureOrder()
+		*deck = *opened
+		currentDeckPath = path
+		currentTemplateID = ""
+		currentDeckURI = storage.NewFileURI(path)
+		if strings.EqualFold(filepath.Ext(path), ".txt") {
+			currentDeckURI = nil
+		}
+		fyne.CurrentApp().Preferences().SetString(activeDeckPreferenceKey, path)
+		selection.Clear()
+		deckDirty = false
+		showEditor()
+	}
+	loadOfficialTemplate = func(templateID string) {
+		opened, buildErr := decklibrary.BuildOfficialTemplate(templateID, repository)
+		if buildErr != nil {
+			dialog.ShowError(buildErr, window)
+			return
+		}
+		*deck = *opened
+		currentDeckURI = nil
+		currentDeckPath = ""
+		currentTemplateID = templateID
+		fyne.CurrentApp().Preferences().SetString(
+			activeDeckPreferenceKey,
+			officialTemplatePreferencePrefix+templateID,
+		)
+		selection.Clear()
+		deckDirty = false
+		showEditor()
 	}
 	loadDeck = func() {
 		showOpenDeckDialog(window, repository, func(opened *decks.Deck, uri fyne.URI) {
@@ -1070,12 +1312,21 @@ func showApplication(
 			} else {
 				currentDeckURI = nil
 			}
+			currentDeckPath = uri.Path()
+			currentTemplateID = ""
+			fyne.CurrentApp().Preferences().SetString(activeDeckPreferenceKey, uri.Path())
+			deckDirty = false
 			showEditor()
 		})
 	}
 	saveDeckAs = func() {
-		showSaveDeckDialog(window, deck, func(uri fyne.URI) {
+		showSaveDeckDialog(window, deck, deckLibraryDirectory, func(uri fyne.URI) {
 			currentDeckURI = uri
+			currentDeckPath = uri.Path()
+			currentTemplateID = ""
+			fyne.CurrentApp().Preferences().SetString(activeDeckPreferenceKey, uri.Path())
+			deckDirty = false
+			refreshDeckLibrary()
 		})
 	}
 	saveDeck = func() {
@@ -1083,7 +1334,9 @@ func showApplication(
 			saveDeckAs()
 			return
 		}
-		saveDeckToURI(window, currentDeckURI, deck)
+		if saveDeckToURI(window, currentDeckURI, deck) {
+			deckDirty = false
+		}
 	}
 	showMainMenu = func() {
 		window.SetTitle(applicationName)
@@ -1102,5 +1355,17 @@ func showApplication(
 	}
 
 	runSearch()
-	showMainMenu()
+	lastSelection := fyne.CurrentApp().Preferences().String(activeDeckPreferenceKey)
+	if strings.HasPrefix(lastSelection, officialTemplatePreferencePrefix) {
+		loadOfficialTemplate(strings.TrimPrefix(lastSelection, officialTemplatePreferencePrefix))
+		return
+	}
+	if lastSelection != "" {
+		lastDeckPath := lastSelection
+		if _, statErr := os.Stat(lastDeckPath); statErr == nil {
+			loadLibraryDeck(lastDeckPath)
+			return
+		}
+	}
+	loadOfficialTemplate("dd01-ignus")
 }
