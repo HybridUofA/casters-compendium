@@ -151,3 +151,53 @@ stable release.
 This is a contribution-specific production implementation exception. It does
 not silently replace the general post-v0.1.3 policy for unrelated future
 features.
+
+## Disclosed v0.1.8 exception
+
+Hybrid selected and tested the personal deck-library workflow, official Duel
+Deck templates, main-only decklist compatibility, and fixed editor-layout
+direction for v0.1.8 and explicitly authorized OpenAI Codex to implement and
+publish the release.
+
+Codex authored the deck-library service and selector integration, the eight
+publisher-authored DD01-DD04 template definitions and validation, the optional
+sideboard parser correction, the editor control and panel-layout refinements,
+associated automated tests, documentation, website changes, release notes, and
+packaging metadata. Hybrid reviewed the implementation, performed hands-on
+functional and visual testing, requested revisions, and approved the stable
+release.
+
+This is a contribution-specific production implementation exception. It does
+not silently replace the general post-v0.1.3 policy for unrelated future
+features.
+
+## Simulator and multiplayer authorship policy
+
+Beginning with simulator development, Hybrid intends to personally author the
+functional game and networking implementation. This includes game state,
+turns and phases, player commands, legality and rule enforcement, card-effect
+resolution, combat, victory conditions, authoritative synchronization,
+network-protocol behavior, persistence, and replay semantics.
+
+OpenAI Codex may provide explanations, architecture discussion, code review,
+debugging guidance, test ideas, and other learning support for that functional
+work. Codex may author automated tests or test-support code when Hybrid
+explicitly requests it, consistent with the existing testing exception.
+Codex will not directly author functional simulator or multiplayer production
+code unless Hybrid makes and discloses a specific exception.
+
+Hybrid may explicitly authorize Codex to implement rendering, visual design,
+Fyne widgets and layouts, application-shell integration, accessibility polish,
+and other presentation-layer work under Hybrid's direction and acceptance.
+Codex may also continue assisting with documentation, CI, packaging, release
+administration, issue management, and infrastructure when requested.
+
+For the simulator Aether-pool presentation, Hybrid supplied the eight elemental
+symbols and authorized Codex to implement the widget and create the matching
+neutral non-elemental symbol. That non-elemental symbol is AI-generated artwork;
+the eight supplied elemental symbols are not.
+
+This boundary distinguishes presentation and project operations from the
+simulator's functional rules and networking behavior. Any material change to
+the boundary should be disclosed in the relevant pull request, commit, release
+notes, or a revision to this statement.

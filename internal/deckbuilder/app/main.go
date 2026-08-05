@@ -26,6 +26,8 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/deckio"
 	"github.com/HybridUofA/casters-compendium/internal/decklibrary"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
+	simulatorui "github.com/HybridUofA/casters-compendium/internal/simulator/ui"
 )
 
 // checkedValues returns option names whose corresponding checkboxes are selected.
@@ -301,6 +303,7 @@ func showApplication(
 	var currentTemplateID string
 	deckDirty := false
 	var showMainMenu func()
+	var openDeckEditor func()
 	var makeNewDeck func()
 	var loadDeck func()
 	var saveDeck func()
@@ -1338,9 +1341,130 @@ func showApplication(
 			deckDirty = false
 		}
 	}
+	openDeckEditor = func() {
+		lastSelection := fyne.CurrentApp().Preferences().String(activeDeckPreferenceKey)
+		if strings.HasPrefix(lastSelection, officialTemplatePreferencePrefix) {
+			loadOfficialTemplate(strings.TrimPrefix(lastSelection, officialTemplatePreferencePrefix))
+			return
+		}
+		if lastSelection != "" {
+			if _, statErr := os.Stat(lastSelection); statErr == nil {
+				loadLibraryDeck(lastSelection)
+				return
+			}
+		}
+		loadOfficialTemplate("dd01-ignus")
+	}
 	showMainMenu = func() {
 		window.SetTitle(applicationName)
 		setWindowContent(window, buildMainMenu(window, mainMenuActions{
+			PlayGame: func() {
+				playerSessions, err := buildSimulatorPrototypeSessions(repository)
+				if err != nil {
+					dialog.ShowError(err, window)
+					return
+				}
+				playerWindows := [2]fyne.Window{
+					window,
+					fyne.CurrentApp().NewWindow(applicationName + " — Player Two"),
+				}
+				playerWindows[0].SetTitle(applicationName + " — Player One")
+				playerWindows[1].Resize(fyne.NewSize(1400, 850))
+				cardDefinitions := repository.All()
+				var playerScreens [2]*simulatorui.BoardScreen
+
+				var renderPlayers func()
+				renderPlayers = func() {
+					for index, playerSession := range playerSessions {
+						matchView, viewErr := playerSession.View()
+						if viewErr != nil {
+							dialog.ShowError(viewErr, playerWindows[index])
+							continue
+						}
+						if playerScreens[index] == nil {
+							playerIndex := index
+							back := func() {
+								if playerIndex == 0 {
+									playerWindows[1].Close()
+									showMainMenu()
+									return
+								}
+								playerWindows[1].Close()
+							}
+							backLabel := "Back to Main Menu"
+							if index == 1 {
+								backLabel = "Close Player Two Window"
+							}
+							playerScreens[index] = simulatorui.NewBoardController(
+								matchView,
+								cardDefinitions,
+								simulatorui.BoardActions{
+									BackLabel: backLabel,
+									UseCasterToken: func(
+										tokenID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, tokenErr := playerSessions[playerIndex].
+											UseCasterToken(tokenID, expectedRevision); tokenErr != nil {
+											dialog.ShowError(tokenErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									GenerateNonElementalAether: func(
+										cardID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, aetherErr := playerSessions[playerIndex].
+											GenerateNonElementalAether(cardID, expectedRevision); aetherErr != nil {
+											dialog.ShowError(aetherErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									CallFaceDownLevelOne: func(
+										cardID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, callErr := playerSessions[playerIndex].
+											CallFaceDownLevelOne(cardID, expectedRevision); callErr != nil {
+											dialog.ShowError(callErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									CompleteCurrentPhase: func(expectedRevision model.Revision) {
+										if _, phaseErr := playerSessions[playerIndex].
+											CompleteCurrentPhase(expectedRevision); phaseErr != nil {
+											dialog.ShowError(phaseErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									SubmitOpeningHand: func(
+										replace []model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, submitErr := playerSessions[playerIndex].
+											SubmitOpeningHandDecision(replace, expectedRevision); submitErr != nil {
+											dialog.ShowError(submitErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+								},
+								back,
+							)
+							setWindowContent(playerWindows[index], playerScreens[index].Content())
+							continue
+						}
+						playerScreens[index].Update(matchView)
+					}
+				}
+				renderPlayers()
+				playerWindows[1].Show()
+			},
+			OpenDeckEditor:   openDeckEditor,
 			NewDeck:          makeNewDeck,
 			LoadDeck:         loadDeck,
 			GenerateImage:    func() { showGenerateImageFromDecklistDialog(window, repository) },
@@ -1355,17 +1479,5 @@ func showApplication(
 	}
 
 	runSearch()
-	lastSelection := fyne.CurrentApp().Preferences().String(activeDeckPreferenceKey)
-	if strings.HasPrefix(lastSelection, officialTemplatePreferencePrefix) {
-		loadOfficialTemplate(strings.TrimPrefix(lastSelection, officialTemplatePreferencePrefix))
-		return
-	}
-	if lastSelection != "" {
-		lastDeckPath := lastSelection
-		if _, statErr := os.Stat(lastDeckPath); statErr == nil {
-			loadLibraryDeck(lastDeckPath)
-			return
-		}
-	}
-	loadOfficialTemplate("dd01-ignus")
+	showMainMenu()
 }
