@@ -2,6 +2,7 @@ package session
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -315,6 +316,173 @@ func TestPlayerSessionCallFaceDownLevelOneRejectsStaleRevision(t *testing.T) {
 	}
 }
 
+func TestPlayerSessionCallFaceUpLevelOneUpdatesSharedPublicViews(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Turn.Number = 1
+	state.Turn.Phase = model.PhaseCall
+	state.Revision = 10
+	selectedID := state.Players[0].Hand[0]
+	instance := state.CardInstances[selectedID]
+	instance.CardCategory = model.CategoryPrintedCard
+	state.CardInstances[selectedID] = instance
+	catalog := sessionCardCatalog{
+		string(instance.CardID): {
+			ID:        string(instance.CardID),
+			Name:      "Aria",
+			Subname:   "Dawn",
+			Type:      "Caster",
+			Traits:    "[Mage/Aqua]",
+			CostLevel: "1",
+		},
+	}
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), catalog)
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player one) error = %v", err)
+	}
+	playerTwo, err := NewPlayerSession(localMatch, "player-two")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player two) error = %v", err)
+	}
+
+	activeView, err := playerOne.CallFaceUpLevelOne(selectedID, state.Revision)
+	if err != nil {
+		t.Fatalf("CallFaceUpLevelOne() error = %v", err)
+	}
+	if activeView.Revision != state.Revision+1 || !activeView.Turn.CallActionTaken {
+		t.Fatalf("active view revision/turn = %d/%#v; want revision %d with Call recorded", activeView.Revision, activeView.Turn, state.Revision+1)
+	}
+	if len(activeView.Players[0].Hand) != len(state.Players[0].Hand)-1 || len(activeView.Players[0].CasterZone) != 1 {
+		t.Fatalf("active player's projected zones = %#v", activeView.Players[0])
+	}
+	calledCard := activeView.Players[0].CasterZone[0]
+	if calledCard.MatchID != selectedID || calledCard.CardID != instance.CardID ||
+		!calledCard.ShowFace || calledCard.Face != model.CardFaceUp {
+		t.Fatalf("active player's called card projection = %#v", calledCard)
+	}
+
+	opponentView, err := playerTwo.View()
+	if err != nil {
+		t.Fatalf("player two View() error = %v", err)
+	}
+	if opponentView.Revision != activeView.Revision || !opponentView.Turn.CallActionTaken {
+		t.Fatalf("opponent did not receive current shared turn state: %#v", opponentView)
+	}
+	if len(opponentView.Players[0].CasterZone) != 1 {
+		t.Fatalf("opponent view Caster Zone = %#v; want one face-up card", opponentView.Players[0].CasterZone)
+	}
+	opponentCard := opponentView.Players[0].CasterZone[0]
+	if !opponentCard.ShowFace || opponentCard.CardID != instance.CardID {
+		t.Fatalf("opponent projection concealed face-up Call: %#v", opponentCard)
+	}
+}
+
+func TestPlayerSessionCallFaceUpLevelOneRejectsStaleRevision(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Turn.Number = 1
+	state.Turn.Phase = model.PhaseCall
+	state.Revision = 11
+	selectedID := state.Players[0].Hand[0]
+	instance := state.CardInstances[selectedID]
+	instance.CardCategory = model.CategoryPrintedCard
+	state.CardInstances[selectedID] = instance
+	catalog := sessionCardCatalog{
+		string(instance.CardID): {ID: string(instance.CardID), Type: "Caster", CostLevel: "1"},
+	}
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), catalog)
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player one) error = %v", err)
+	}
+
+	_, err = playerOne.CallFaceUpLevelOne(selectedID, state.Revision-1)
+	if err == nil || !strings.Contains(err.Error(), "does not match expected revision") {
+		t.Fatalf("CallFaceUpLevelOne() error = %v; want stale-revision error", err)
+	}
+	result, viewErr := playerOne.View()
+	if viewErr != nil {
+		t.Fatalf("View() after stale Call error = %v", viewErr)
+	}
+	if result.Revision != state.Revision || result.Turn.CallActionTaken || len(result.Players[0].CasterZone) != 0 {
+		t.Fatalf("stale face-up Call mutated shared state: %#v", result)
+	}
+}
+
+func TestPlayerSessionLevelUpCasterUpdatesSharedPublicViewsAndStock(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Turn.Number = 3
+	state.Turn.Phase = model.PhaseCall
+	state.Revision = 15
+	upperID := state.Players[0].Hand[0]
+	targetID := model.MatchCardID("target-caster")
+	stockID := model.MatchCardID("level-one-stock")
+	upper := state.CardInstances[upperID]
+	upper.CardCategory = model.CategoryPrintedCard
+	state.CardInstances[upperID] = upper
+	state.CardInstances[targetID] = model.CardInstance{
+		CardID: "target-definition", MatchID: targetID, Owner: "player-one", Controller: "player-one",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceUp, Orientation: model.OrientationRested,
+		Stock: []model.MatchCardID{stockID},
+	}
+	state.CardInstances[stockID] = model.CardInstance{
+		CardID: "stock-definition", MatchID: stockID, Owner: "player-one", Controller: "player-one",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceUp,
+	}
+	state.Players[0].CasterZone = []model.MatchCardID{targetID}
+	catalog := sessionCardCatalog{
+		string(upper.CardID): {ID: string(upper.CardID), Name: "Aria", Type: "Caster", CostLevel: "3"},
+		"target-definition":  {ID: "target-definition", Name: " aria ", Type: "Caster", CostLevel: "2"},
+	}
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), catalog)
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player one) error = %v", err)
+	}
+	playerTwo, err := NewPlayerSession(localMatch, "player-two")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player two) error = %v", err)
+	}
+
+	activeView, err := playerOne.LevelUpCaster(upperID, targetID, state.Revision)
+	if err != nil {
+		t.Fatalf("LevelUpCaster() error = %v", err)
+	}
+	if activeView.Revision != state.Revision+1 || !activeView.Turn.CallActionTaken {
+		t.Fatalf("active view revision/turn = %d/%#v; want next revision with Call recorded", activeView.Revision, activeView.Turn)
+	}
+	if len(activeView.Players[0].CasterZone) != 1 || activeView.Players[0].CasterZone[0].MatchID != upperID ||
+		activeView.Players[0].CasterZone[0].Orientation != model.OrientationRested {
+		t.Fatalf("active player's leveled Caster projection = %#v", activeView.Players[0].CasterZone)
+	}
+	opponentView, err := playerTwo.View()
+	if err != nil {
+		t.Fatalf("player two View() error = %v", err)
+	}
+	if len(opponentView.Players[0].CasterZone) != 1 || opponentView.Players[0].CasterZone[0].CardID != upper.CardID {
+		t.Fatalf("opponent did not receive public upper Caster: %#v", opponentView.Players[0].CasterZone)
+	}
+
+	localMatch.mu.RLock()
+	gotStock := append([]model.MatchCardID(nil), localMatch.state.CardInstances[upperID].Stock...)
+	targetStockLength := len(localMatch.state.CardInstances[targetID].Stock)
+	localMatch.mu.RUnlock()
+	if !reflect.DeepEqual(gotStock, []model.MatchCardID{stockID, targetID}) || targetStockLength != 0 {
+		t.Fatalf("authoritative Stock = %v with target Stock length %d; want [%s %s]/0", gotStock, targetStockLength, stockID, targetID)
+	}
+}
+
 func TestPlayerSessionGenerateNonElementalAetherAllowsNonActivePlayer(t *testing.T) {
 	state, selectedID := aetherSessionStateForTest()
 	localMatch, err := NewLocalMatch(state, matchSeedForTest(), sessionCardCatalog{})
@@ -380,6 +548,68 @@ func TestPlayerSessionGenerateNonElementalAetherRejectsStaleRevision(t *testing.
 		result.Players[1].Aether.NonElemental != 0 ||
 		result.Players[1].CasterZone[0].Orientation != model.OrientationRecovered {
 		t.Fatalf("stale Aether action mutated state: %#v", result)
+	}
+}
+
+func TestPlayerSessionGenerateCasterAetherUpdatesSharedPublicViews(t *testing.T) {
+	state, cardID, catalog := casterAetherSessionStateForTest()
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), catalog)
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player one) error = %v", err)
+	}
+	playerTwo, err := NewPlayerSession(localMatch, "player-two")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player two) error = %v", err)
+	}
+
+	playerTwoView, err := playerTwo.GenerateCasterAether(cardID, state.Revision)
+	if err != nil {
+		t.Fatalf("GenerateCasterAether() error = %v", err)
+	}
+	if playerTwoView.Players[1].Aether.Aqua != 2 ||
+		playerTwoView.Players[1].CasterZone[0].Orientation != model.OrientationRested ||
+		playerTwoView.Revision != state.Revision+1 {
+		t.Fatalf("producing player's view = %#v; want two Aqua Aether, Rested Caster, and next revision", playerTwoView)
+	}
+
+	playerOneView, err := playerOne.View()
+	if err != nil {
+		t.Fatalf("player one View() error = %v", err)
+	}
+	if playerOneView.Players[1].Aether.Aqua != 2 ||
+		playerOneView.Players[1].CasterZone[0].Orientation != model.OrientationRested ||
+		playerOneView.Players[1].CasterZone[0].MatchID != cardID {
+		t.Fatalf("opponent did not observe public Caster/Aether update: %#v", playerOneView)
+	}
+}
+
+func TestPlayerSessionGenerateCasterAetherRejectsStaleRevision(t *testing.T) {
+	state, cardID, catalog := casterAetherSessionStateForTest()
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), catalog)
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerTwo, err := NewPlayerSession(localMatch, "player-two")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player two) error = %v", err)
+	}
+
+	_, err = playerTwo.GenerateCasterAether(cardID, state.Revision-1)
+	if err == nil || !strings.Contains(err.Error(), "does not match expected revision") {
+		t.Fatalf("GenerateCasterAether() error = %v; want stale-revision error", err)
+	}
+	result, viewErr := playerTwo.View()
+	if viewErr != nil {
+		t.Fatalf("View() after stale Caster action error = %v", viewErr)
+	}
+	if result.Revision != state.Revision ||
+		result.Players[1].Aether != (model.AetherPool{}) ||
+		result.Players[1].CasterZone[0].Orientation != model.OrientationRecovered {
+		t.Fatalf("stale Caster action mutated shared state: %#v", result)
 	}
 }
 
@@ -717,9 +947,21 @@ func TestNilPlayerSessionMethodsReturnErrors(t *testing.T) {
 		!strings.Contains(err.Error(), "cannot be nil") {
 		t.Fatalf("nil PlayerSession.CallFaceDownLevelOne() error = %v; want nil-session error", err)
 	}
+	if _, err := playerSession.CallFaceUpLevelOne("card", 0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.CallFaceUpLevelOne() error = %v; want nil-session error", err)
+	}
+	if _, err := playerSession.LevelUpCaster("upper", "target", 0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.LevelUpCaster() error = %v; want nil-session error", err)
+	}
 	if _, err := playerSession.GenerateNonElementalAether("card", 0); err == nil ||
 		!strings.Contains(err.Error(), "cannot be nil") {
 		t.Fatalf("nil PlayerSession.GenerateNonElementalAether() error = %v; want nil-session error", err)
+	}
+	if _, err := playerSession.GenerateCasterAether("card", 0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.GenerateCasterAether() error = %v; want nil-session error", err)
 	}
 	if _, err := playerSession.UseCasterToken("token", 0); err == nil ||
 		!strings.Contains(err.Error(), "cannot be nil") {
@@ -738,9 +980,21 @@ func TestNilPlayerSessionMethodsReturnErrors(t *testing.T) {
 		!strings.Contains(err.Error(), "match cannot be nil") {
 		t.Fatalf("empty PlayerSession.CallFaceDownLevelOne() error = %v; want nil-match error", err)
 	}
+	if _, err := empty.CallFaceUpLevelOne("card", 0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.CallFaceUpLevelOne() error = %v; want nil-match error", err)
+	}
+	if _, err := empty.LevelUpCaster("upper", "target", 0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.LevelUpCaster() error = %v; want nil-match error", err)
+	}
 	if _, err := empty.GenerateNonElementalAether("card", 0); err == nil ||
 		!strings.Contains(err.Error(), "match cannot be nil") {
 		t.Fatalf("empty PlayerSession.GenerateNonElementalAether() error = %v; want nil-match error", err)
+	}
+	if _, err := empty.GenerateCasterAether("card", 0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.GenerateCasterAether() error = %v; want nil-match error", err)
 	}
 	if _, err := empty.UseCasterToken("token", 0); err == nil ||
 		!strings.Contains(err.Error(), "match cannot be nil") {
@@ -782,6 +1036,31 @@ func casterTokenSessionStateForTest() (model.MatchState, model.MatchCardID) {
 		Orientation:  model.OrientationRecovered,
 	}
 	return state, tokenID
+}
+
+func casterAetherSessionStateForTest() (model.MatchState, model.MatchCardID, sessionCardCatalog) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Turn.Number = 3
+	state.Turn.Phase = model.PhaseBattle
+	state.Revision = 12
+	cardID := state.Players[1].Hand[0]
+	state.Players[1].Hand = state.Players[1].Hand[1:]
+	state.Players[1].CasterZone = []model.MatchCardID{cardID}
+	instance := state.CardInstances[cardID]
+	instance.CardCategory = model.CategoryPrintedCard
+	instance.Face = model.CardFaceUp
+	instance.Orientation = model.OrientationRecovered
+	state.CardInstances[cardID] = instance
+	catalog := sessionCardCatalog{
+		string(instance.CardID): {
+			ID:        string(instance.CardID),
+			Type:      "Caster",
+			Element:   "Aqua",
+			CostLevel: "2",
+		},
+	}
+	return state, cardID, catalog
 }
 
 func TestNewLocalSessionProjectsViewerSafeState(t *testing.T) {

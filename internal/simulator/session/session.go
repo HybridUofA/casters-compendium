@@ -190,6 +190,68 @@ func (session *PlayerSession) CallFaceDownLevelOne(
 	return updatedView, nil
 }
 
+// CallFaceUpLevelOne calls one eligible Level 1 Caster from the session
+// player's hand and returns that player's fresh private projection.
+func (session *PlayerSession) CallFaceUpLevelOne(
+	cardID model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.CallFaceUpLevelOne(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("call face-up Level 1 Caster: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
+// LevelUpCaster places an eligible Caster from the session player's hand on
+// top of a chosen face-up Caster and returns a fresh private projection.
+func (session *PlayerSession) LevelUpCaster(
+	upperCardID model.MatchCardID,
+	targetCasterID model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.LevelUpCaster(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		upperCardID,
+		targetCasterID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("level up Caster: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
 func (session *PlayerSession) GenerateNonElementalAether(
 	cardID model.MatchCardID,
 	expectedRevision model.Revision,
@@ -205,6 +267,36 @@ func (session *PlayerSession) GenerateNonElementalAether(
 	err := engine.GenerateNonElementalAether(&session.match.state, session.playerID, cardID, expectedRevision)
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("generate non-elemental aether: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
+// GenerateCasterAether rests one eligible face-up Caster and returns the
+// session player's fresh private projection after the authoritative mutation.
+func (session *PlayerSession) GenerateCasterAether(
+	cardID model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.GenerateCasterAether(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("generate Caster Aether: %w", err)
 	}
 	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -31,6 +32,7 @@ var (
 	boardBackground = color.NRGBA{R: 29, G: 50, B: 55, A: 255}
 	zoneBackground  = color.NRGBA{R: 45, G: 73, B: 78, A: 255}
 	zoneBorder      = color.NRGBA{R: 104, G: 151, B: 155, A: 255}
+	boardForeground = color.NRGBA{R: 240, G: 250, B: 250, A: 255}
 )
 
 type previewState struct {
@@ -42,11 +44,23 @@ type previewState struct {
 
 type cardLookup map[model.CardID]cards.Card
 
+type aetherActionKind uint8
+
+const (
+	aetherActionNone aetherActionKind = iota
+	aetherActionFaceDownCaster
+	aetherActionFaceUpCaster
+	aetherActionToken
+)
+
 // BoardActions translates presentation choices into session-owned commands.
 type BoardActions struct {
 	SubmitOpeningHand          func([]model.MatchCardID, model.Revision)
 	CallFaceDownLevelOne       func(model.MatchCardID, model.Revision)
+	CallFaceUpLevelOne         func(model.MatchCardID, model.Revision)
+	LevelUpCaster              func(model.MatchCardID, model.MatchCardID, model.Revision)
 	GenerateNonElementalAether func(model.MatchCardID, model.Revision)
+	GenerateCasterAether       func(model.MatchCardID, model.Revision)
 	UseCasterToken             func(model.MatchCardID, model.Revision)
 	CompleteCurrentPhase       func(model.Revision)
 	BackLabel                  string
@@ -57,7 +71,7 @@ type BoardActions struct {
 // data changes.
 type BoardScreen struct {
 	content      fyne.CanvasObject
-	status       *widget.Label
+	status       *canvas.Text
 	phaseButtons map[model.Phase]*widget.Button
 	boards       *fyne.Container
 	match        simulatorview.MatchView
@@ -103,8 +117,8 @@ func NewBoardController(
 		fyne.TextAlignLeading,
 		fyne.TextStyle{Bold: true},
 	)
-	screen.status = widget.NewLabel("")
-	screen.status.Importance = widget.LowImportance
+	screen.status = canvas.NewText("", boardForeground)
+	screen.status.TextStyle = fyne.TextStyle{Bold: true}
 	phaseBar := screen.newPhaseBar()
 	screen.updateMetadata()
 
@@ -159,11 +173,14 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 
 	viewerIndex := screen.viewerIndex()
 	callAvailabilityChanged :=
-		screen.actions.CallFaceDownLevelOne != nil &&
+		(screen.actions.CallFaceDownLevelOne != nil || screen.actions.CallFaceUpLevelOne != nil || screen.actions.LevelUpCaster != nil) &&
 			canViewerCallFaceDownLevelOne(previous) != canViewerCallFaceDownLevelOne(match)
 	aetherAvailabilityChanged :=
 		screen.actions.GenerateNonElementalAether != nil &&
 			canViewerGenerateNonElementalAether(previous) != canViewerGenerateNonElementalAether(match)
+	casterAetherAvailabilityChanged :=
+		screen.actions.GenerateCasterAether != nil &&
+			canViewerGenerateCasterAether(previous) != canViewerGenerateCasterAether(match)
 	tokenAvailabilityChanged :=
 		screen.actions.UseCasterToken != nil &&
 			canViewerUseCasterToken(previous) != canViewerUseCasterToken(match)
@@ -172,7 +189,7 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 		position := 0
 		isViewer := playerIndex == viewerIndex
 		playerChanged := !reflect.DeepEqual(previous.Players[playerIndex], match.Players[playerIndex])
-		if !playerChanged && !(isViewer && (callAvailabilityChanged || aetherAvailabilityChanged || tokenAvailabilityChanged)) {
+		if !playerChanged && !(isViewer && (callAvailabilityChanged || aetherAvailabilityChanged || casterAetherAvailabilityChanged || tokenAvailabilityChanged)) {
 			continue
 		}
 		if isViewer {
@@ -218,21 +235,24 @@ func (screen *BoardScreen) newProjectedPlayerBoard(
 		screen.preview,
 		screen.actions,
 		func() model.Revision { return screen.match.Revision },
-		canViewerCallFaceDownLevelOne(screen.match) && screen.actions.CallFaceDownLevelOne != nil,
+		canViewerCallFaceDownLevelOne(screen.match) &&
+			(screen.actions.CallFaceDownLevelOne != nil || screen.actions.CallFaceUpLevelOne != nil || screen.actions.LevelUpCaster != nil),
 		canViewerGenerateNonElementalAether(screen.match) && screen.actions.GenerateNonElementalAether != nil,
+		canViewerGenerateCasterAether(screen.match) && screen.actions.GenerateCasterAether != nil,
 		canViewerUseCasterToken(screen.match) && screen.actions.UseCasterToken != nil,
 	)
 }
 
 func (screen *BoardScreen) updateMetadata() {
 	match := screen.match
-	screen.status.SetText(fmt.Sprintf(
+	screen.status.Text = fmt.Sprintf(
 		"Turn %d • %s • Revision %d • Active player: %s",
 		match.Turn.Number,
 		match.Turn.Phase,
 		match.Revision,
 		match.Turn.ActivePlayer,
-	))
+	)
+	screen.status.Refresh()
 	screen.updatePhaseButtons()
 }
 
@@ -244,6 +264,10 @@ func canViewerCallFaceDownLevelOne(match simulatorview.MatchView) bool {
 }
 
 func canViewerGenerateNonElementalAether(match simulatorview.MatchView) bool {
+	return match.MatchStatus == model.StatusInProgress
+}
+
+func canViewerGenerateCasterAether(match simulatorview.MatchView) bool {
 	return match.MatchStatus == model.StatusInProgress
 }
 
@@ -373,7 +397,7 @@ func newPreviewRegion(preview previewState) fyne.CanvasObject {
 	descriptionScroll := container.NewVScroll(preview.description)
 	descriptionScroll.SetMinSize(fyne.NewSize(0, 145))
 
-	content := container.NewVBox(
+	heading := container.NewVBox(
 		widget.NewLabelWithStyle(
 			"Card Information",
 			fyne.TextAlignCenter,
@@ -383,8 +407,8 @@ func newPreviewRegion(preview previewState) fyne.CanvasObject {
 		preview.image,
 		preview.title,
 		widget.NewSeparator(),
-		descriptionScroll,
 	)
+	content := container.NewBorder(heading, nil, nil, nil, descriptionScroll)
 
 	sizer := canvas.NewRectangle(color.Transparent)
 	sizer.SetMinSize(fyne.NewSize(previewPanelWidth, 0))
@@ -399,8 +423,9 @@ func newPlayerBoard(
 	preview previewState,
 	actions BoardActions,
 	currentRevision func() model.Revision,
-	canCallFaceDownLevelOne bool,
+	canCallLevelOne bool,
 	canGenerateNonElementalAether bool,
+	canGenerateCasterAether bool,
 	canUseCasterToken bool,
 ) fyne.CanvasObject {
 	orbZone := newCardZone(
@@ -457,6 +482,7 @@ func newPlayerBoard(
 		actions,
 		currentRevision,
 		canGenerateNonElementalAether,
+		canGenerateCasterAether,
 		canUseCasterToken,
 	)
 	handZone := newHandZone(
@@ -467,7 +493,7 @@ func newPlayerBoard(
 		preview,
 		actions,
 		currentRevision,
-		canCallFaceDownLevelOne,
+		canCallLevelOne,
 	)
 
 	orbRegion := withMinimumSize(orbZone, fyne.NewSize(sideZoneWidth, 0))
@@ -489,11 +515,8 @@ func newPlayerBoard(
 	background.StrokeWidth = 1
 	background.SetMinSize(fyne.NewSize(0, boardMinHeight))
 
-	label := widget.NewLabelWithStyle(
-		fmt.Sprintf("%s Field — %s", playerName, player.ID),
-		fyne.TextAlignLeading,
-		fyne.TextStyle{Bold: true},
-	)
+	label := canvas.NewText(fmt.Sprintf("%s Field — %s", playerName, player.ID), boardForeground)
+	label.TextStyle = fyne.TextStyle{Bold: true}
 	aether := newAetherPoolDisplay(player.Aether)
 	return container.NewStack(
 		background,
@@ -515,7 +538,7 @@ func newHandZone(
 	preview previewState,
 	actions BoardActions,
 	currentRevision func() model.Revision,
-	canCallFaceDownLevelOne bool,
+	canCallLevelOne bool,
 ) fyne.CanvasObject {
 	if !isViewer {
 		zone := newCardZone(
@@ -532,8 +555,8 @@ func newHandZone(
 		return zone
 	}
 	if player.OpeningHandFinalized {
-		if canCallFaceDownLevelOne {
-			return newFaceDownLevelOneHandZone(
+		if canCallLevelOne {
+			return newLevelOneCallHandZone(
 				playerName,
 				player,
 				definitions,
@@ -632,7 +655,7 @@ func newHandZone(
 	)
 }
 
-func newFaceDownLevelOneHandZone(
+func newLevelOneCallHandZone(
 	playerName string,
 	player simulatorview.PlayerView,
 	definitions cardLookup,
@@ -643,7 +666,34 @@ func newFaceDownLevelOneHandZone(
 	selectedID := model.MatchCardID("")
 	tiles := make([]*CardTile, 0, len(player.Hand))
 	objects := make([]fyne.CanvasObject, 0, len(player.Hand))
-	var callButton *widget.Button
+	var faceDownButton *widget.Button
+	var faceUpButton *widget.Button
+	var levelUpTarget *widget.Select
+	var levelUpButton *widget.Button
+	levelUpTargetsByLabel := make(map[string]model.MatchCardID)
+	selectedTargetID := model.MatchCardID("")
+	updateLevelUpTargets := func(definition cards.Card) {
+		if levelUpTarget == nil || levelUpButton == nil {
+			return
+		}
+		clear(levelUpTargetsByLabel)
+		selectedTargetID = ""
+		options := make([]string, 0)
+		for _, candidate := range eligibleLevelUpTargets(definition, player.CasterZone, definitions) {
+			options = append(options, candidate.label)
+			levelUpTargetsByLabel[candidate.label] = candidate.matchID
+		}
+		levelUpTarget.SetOptions(options)
+		levelUpTarget.ClearSelected()
+		levelUpButton.Disable()
+		if len(options) == 0 {
+			levelUpTarget.Hide()
+			levelUpButton.Hide()
+			return
+		}
+		levelUpTarget.Show()
+		levelUpButton.Show()
+	}
 
 	for _, projectedCard := range player.Hand {
 		projectedCard := projectedCard
@@ -665,37 +715,92 @@ func newFaceDownLevelOneHandZone(
 			}
 			if wasSelected {
 				selectedID = ""
-				callButton.Disable()
+				if faceDownButton != nil {
+					faceDownButton.Disable()
+				}
+				if faceUpButton != nil {
+					faceUpButton.Disable()
+				}
+				updateLevelUpTargets(cards.Card{})
 				return
 			}
 			selectedID = projectedCard.MatchID
 			tile.SetSelected(true)
-			callButton.Enable()
+			if faceDownButton != nil {
+				faceDownButton.Enable()
+			}
+			if faceUpButton != nil {
+				if isFaceUpLevelOneCallDefinition(definition) {
+					faceUpButton.Enable()
+				} else {
+					faceUpButton.Disable()
+				}
+			}
+			updateLevelUpTargets(definition)
 		}
 		tiles = append(tiles, tile)
 		objects = append(objects, tile)
 	}
 
-	callButton = widget.NewButton("Call Selected Face Down", func() {
-		if selectedID == "" || actions.CallFaceDownLevelOne == nil {
-			return
-		}
-		revision := model.Revision(0)
-		if currentRevision != nil {
-			revision = currentRevision()
-		}
-		actions.CallFaceDownLevelOne(selectedID, revision)
-	})
-	callButton.Disable()
+	actionButtons := []fyne.CanvasObject{layout.NewSpacer()}
+	if actions.CallFaceUpLevelOne != nil {
+		faceUpButton = widget.NewButton("Call Selected Face Up", func() {
+			if selectedID == "" {
+				return
+			}
+			revision := model.Revision(0)
+			if currentRevision != nil {
+				revision = currentRevision()
+			}
+			actions.CallFaceUpLevelOne(selectedID, revision)
+		})
+		faceUpButton.Disable()
+		actionButtons = append(actionButtons, faceUpButton)
+	}
+	if actions.CallFaceDownLevelOne != nil {
+		faceDownButton = widget.NewButton("Call Selected Face Down", func() {
+			if selectedID == "" {
+				return
+			}
+			revision := model.Revision(0)
+			if currentRevision != nil {
+				revision = currentRevision()
+			}
+			actions.CallFaceDownLevelOne(selectedID, revision)
+		})
+		faceDownButton.Disable()
+		actionButtons = append(actionButtons, faceDownButton)
+	}
+	if actions.LevelUpCaster != nil {
+		levelUpTarget = widget.NewSelect(nil, func(label string) {
+			selectedTargetID = levelUpTargetsByLabel[label]
+			if selectedID == "" || selectedTargetID == "" {
+				levelUpButton.Disable()
+				return
+			}
+			levelUpButton.Enable()
+		})
+		levelUpTarget.PlaceHolder = "Choose Caster to level up"
+		levelUpTarget.Hide()
+		levelUpButton = widget.NewButton("Level Up Selected", func() {
+			if selectedID == "" || selectedTargetID == "" {
+				return
+			}
+			revision := model.Revision(0)
+			if currentRevision != nil {
+				revision = currentRevision()
+			}
+			actions.LevelUpCaster(selectedID, selectedTargetID, revision)
+		})
+		levelUpButton.Disable()
+		levelUpButton.Hide()
+		actionButtons = append(actionButtons, levelUpTarget, levelUpButton)
+	}
 
 	cardRow := container.NewHScroll(container.NewHBox(objects...))
 	content := container.NewBorder(
 		nil,
-		container.NewHBox(
-			layout.NewSpacer(),
-			widget.NewLabel("Choose one card to Call face down as Level 1."),
-			callButton,
-		),
+		container.NewHBox(actionButtons...),
 		nil,
 		nil,
 		cardRow,
@@ -703,10 +808,65 @@ func newFaceDownLevelOneHandZone(
 	return newZone(
 		playerName,
 		"Hand",
-		"Select one card to Call face down as a Level 1 Caster.",
+		"Select one card to Call as Level 1 or use it to level up a matching Caster.",
 		content,
 		preview,
 	)
+}
+
+type levelUpTargetOption struct {
+	label   string
+	matchID model.MatchCardID
+}
+
+func eligibleLevelUpTargets(
+	upper cards.Card,
+	casterZone []simulatorview.CardView,
+	definitions cardLookup,
+) []levelUpTargetOption {
+	upperLevel, upperLevelValid := definitionLevel(upper)
+	upperName := strings.ToLower(strings.TrimSpace(upper.Name))
+	if !strings.EqualFold(strings.TrimSpace(upper.Type), "caster") ||
+		!upperLevelValid || upperLevel < 2 || upperName == "" {
+		return nil
+	}
+	result := make([]levelUpTargetOption, 0)
+	for _, target := range casterZone {
+		if target.MatchID == "" || target.Face != model.CardFaceUp || target.CardID == model.CasterTokenCardID {
+			continue
+		}
+		definition, found := definitions[target.CardID]
+		if !found || !strings.EqualFold(strings.TrimSpace(definition.Type), "caster") ||
+			strings.ToLower(strings.TrimSpace(definition.Name)) != upperName {
+			continue
+		}
+		targetLevel, targetLevelValid := definitionLevel(definition)
+		if !targetLevelValid || upperLevel != targetLevel+1 {
+			continue
+		}
+		identity := strings.TrimSpace(definition.Name)
+		if subname := strings.TrimSpace(definition.Subname); subname != "" {
+			identity += " — " + subname
+		}
+		result = append(result, levelUpTargetOption{
+			label:   fmt.Sprintf("%s (Level %d, %s)", identity, targetLevel, target.MatchID),
+			matchID: target.MatchID,
+		})
+	}
+	return result
+}
+
+func definitionLevel(definition cards.Card) (int, bool) {
+	level, err := strconv.Atoi(strings.TrimSpace(definition.CostLevel))
+	return level, err == nil
+}
+
+func isFaceUpLevelOneCallDefinition(definition cards.Card) bool {
+	if !strings.EqualFold(strings.TrimSpace(definition.Type), "caster") {
+		return false
+	}
+	level, err := strconv.Atoi(strings.TrimSpace(definition.CostLevel))
+	return err == nil && level == 1
 }
 
 func newCardZone(
@@ -756,6 +916,7 @@ func newAetherCasterZone(
 	actions BoardActions,
 	currentRevision func() model.Revision,
 	canGenerate bool,
+	canGenerateCaster bool,
 	canUseToken bool,
 ) fyne.CanvasObject {
 	eligibleFaceDownCaster := func(card simulatorview.CardView) bool {
@@ -773,8 +934,19 @@ func newAetherCasterZone(
 			card.Face == model.CardFaceUp &&
 			card.Orientation == model.OrientationRecovered
 	}
+	eligibleFaceUpCaster := func(card simulatorview.CardView) bool {
+		definition, found := definitions[card.CardID]
+		return isViewer &&
+			canGenerateCaster &&
+			found &&
+			card.MatchID != "" &&
+			card.CardID != model.CasterTokenCardID &&
+			card.Face == model.CardFaceUp &&
+			card.Orientation == model.OrientationRecovered &&
+			strings.EqualFold(strings.TrimSpace(definition.Type), "Caster")
+	}
 	eligible := func(card simulatorview.CardView) bool {
-		return eligibleFaceDownCaster(card) || eligibleToken(card)
+		return eligibleFaceDownCaster(card) || eligibleFaceUpCaster(card) || eligibleToken(card)
 	}
 	hasEligibleCard := false
 	for _, card := range player.CasterZone {
@@ -798,7 +970,7 @@ func newAetherCasterZone(
 	}
 
 	selectedID := model.MatchCardID("")
-	selectedIsToken := false
+	selectedAction := aetherActionNone
 	tiles := make([]*CardTile, 0, len(player.CasterZone))
 	objects := make([]fyne.CanvasObject, 0, len(player.CasterZone))
 	var actionButton *widget.Button
@@ -823,17 +995,22 @@ func newAetherCasterZone(
 				}
 				if wasSelected {
 					selectedID = ""
-					selectedIsToken = false
+					selectedAction = aetherActionNone
 					actionButton.Disable()
 					actionButton.Hide()
 					return
 				}
 				selectedID = projectedCard.MatchID
-				selectedIsToken = eligibleToken(projectedCard)
 				tile.SetSelected(true)
-				if selectedIsToken {
+				switch {
+				case eligibleToken(projectedCard):
+					selectedAction = aetherActionToken
 					actionButton.SetText("Remove Token for 1 Aether")
-				} else {
+				case eligibleFaceUpCaster(projectedCard):
+					selectedAction = aetherActionFaceUpCaster
+					actionButton.SetText("Rest Selected for Elemental Aether")
+				default:
+					selectedAction = aetherActionFaceDownCaster
 					actionButton.SetText("Rest Selected for 1 Aether")
 				}
 				actionButton.Enable()
@@ -844,7 +1021,7 @@ func newAetherCasterZone(
 		objects = append(objects, tile)
 	}
 
-	actionButton = widget.NewButton("Produce 1 Aether", func() {
+	actionButton = widget.NewButton("Produce Aether", func() {
 		if selectedID == "" {
 			return
 		}
@@ -852,14 +1029,19 @@ func newAetherCasterZone(
 		if currentRevision != nil {
 			revision = currentRevision()
 		}
-		if selectedIsToken {
+		switch selectedAction {
+		case aetherActionToken:
 			if actions.UseCasterToken != nil {
 				actions.UseCasterToken(selectedID, revision)
 			}
-			return
-		}
-		if actions.GenerateNonElementalAether != nil {
-			actions.GenerateNonElementalAether(selectedID, revision)
+		case aetherActionFaceUpCaster:
+			if actions.GenerateCasterAether != nil {
+				actions.GenerateCasterAether(selectedID, revision)
+			}
+		case aetherActionFaceDownCaster:
+			if actions.GenerateNonElementalAether != nil {
+				actions.GenerateNonElementalAether(selectedID, revision)
+			}
 		}
 	})
 	actionButton.Disable()
@@ -880,7 +1062,7 @@ func newAetherCasterZone(
 	return newZone(
 		playerName,
 		"Caster Zone",
-		"Rest a face-down Level 1 Caster or remove the Caster Token to produce one non-elemental Aether.",
+		"Rest a Caster to produce its Aether, or remove the Caster Token to produce one non-elemental Aether.",
 		content,
 		preview,
 	)

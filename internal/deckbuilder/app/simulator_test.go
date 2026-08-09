@@ -53,3 +53,54 @@ func TestBuildSimulatorPrototypeSessionsUsePrivateProjections(t *testing.T) {
 		}
 	}
 }
+
+func TestBuildSimulatorPrototypeSessionsDealsArthurLevelUpPair(t *testing.T) {
+	definitions := []cards.Card{
+		{
+			ID:        "arthur-level-one",
+			Name:      "Arthur",
+			Type:      "Caster",
+			CostLevel: "1",
+		},
+		{
+			ID:        "arthur-level-two",
+			Name:      "Arthur Lv2",
+			Type:      "Caster",
+			CostLevel: "2",
+		},
+		{
+			ID:   "1100",
+			Name: "Caster Token",
+		},
+	}
+	for index := 0; index < 11; index++ {
+		definitions = append(definitions, cards.Card{
+			ID:   fmt.Sprintf("filler-%02d", index+1),
+			Name: fmt.Sprintf("Filler %02d", index+1),
+		})
+	}
+	repository, err := cards.NewRepository(definitions)
+	if err != nil {
+		t.Fatalf("NewRepository() error = %v", err)
+	}
+
+	playerSessions, err := buildSimulatorPrototypeSessions(repository)
+	if err != nil {
+		t.Fatalf("buildSimulatorPrototypeSessions() error = %v", err)
+	}
+	playerOneView, err := playerSessions[0].View()
+	if err != nil {
+		t.Fatalf("Player One View() error = %v", err)
+	}
+	if playerOneView.Turn.ActivePlayer != "player-one" {
+		t.Fatalf("active player = %q; want player-one", playerOneView.Turn.ActivePlayer)
+	}
+
+	handContains := map[string]bool{}
+	for _, card := range playerOneView.Players[0].Hand {
+		handContains[string(card.CardID)] = true
+	}
+	if !handContains["arthur-level-one"] || !handContains["arthur-level-two"] {
+		t.Fatalf("Player One opening hand IDs = %#v; want both Arthur levels", handContains)
+	}
+}

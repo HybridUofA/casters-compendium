@@ -1411,6 +1411,17 @@ func showApplication(
 										}
 										renderPlayers()
 									},
+									GenerateCasterAether: func(
+										cardID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, aetherErr := playerSessions[playerIndex].
+											GenerateCasterAether(cardID, expectedRevision); aetherErr != nil {
+											dialog.ShowError(aetherErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
 									GenerateNonElementalAether: func(
 										cardID model.MatchCardID,
 										expectedRevision model.Revision,
@@ -1429,6 +1440,29 @@ func showApplication(
 										if _, callErr := playerSessions[playerIndex].
 											CallFaceDownLevelOne(cardID, expectedRevision); callErr != nil {
 											dialog.ShowError(callErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									CallFaceUpLevelOne: func(
+										cardID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, callErr := playerSessions[playerIndex].
+											CallFaceUpLevelOne(cardID, expectedRevision); callErr != nil {
+											dialog.ShowError(callErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									LevelUpCaster: func(
+										upperCardID model.MatchCardID,
+										targetCasterID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, levelErr := playerSessions[playerIndex].
+											LevelUpCaster(upperCardID, targetCasterID, expectedRevision); levelErr != nil {
+											dialog.ShowError(levelErr, playerWindows[playerIndex])
 											return
 										}
 										renderPlayers()

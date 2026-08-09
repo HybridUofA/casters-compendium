@@ -48,13 +48,13 @@ Suggested record shape:
 | --- | --- | --- | --- | --- | --- |
 | `turn.phase-order` | Recovery, Draw, Call, Main, Battle, End | Handbook p.14 | `confirmed-modern` | Not started | |
 | `turn.recovery` | At the start of a player's turn, all of that player's Rested cards become Recovered; Reversed cards remain Reversed | Handbook pp.6, 14 | `confirmed-modern` | `TestRecoverPlayerCardsRecoversOnlySpecifiedPlayersRestedFieldCards`; `TestCompleteEndPhaseRecoversIncomingPlayerAtomically` | Recovery completes before its priority sequence |
-| `aether.production` | Resting a Caster produces Aether equal to its Level and of its Element; this action may be performed during either player's turn | Handbook pp.10, 16 | `confirmed-modern` | `TestValidateGenerateNonElementalAetherAllowsEitherPlayerWithoutMutation`; `TestGenerateNonElementalAetherRestsCasterAndUpdatesPool` | A Caster whose ability rests it performs that ability instead |
+| `aether.production` | Resting a Caster produces Aether equal to its Level and of its Element; this action may be performed during either player's turn | Handbook pp.10, 16 | `confirmed-modern` | `TestCalculateCasterAetherMapsEveryElement`; `TestValidateGenerateCasterAetherAllowsControlledCasterWithoutMutation`; `TestGenerateCasterAetherUpdatesEveryElementalPool`; `TestPlayerSessionGenerateCasterAetherUpdatesSharedPublicViews` | A Caster whose ability rests it performs that ability instead |
 | `aether.payment` | Playing a non-Caster card costs its printed amount and requires at least one Aether matching that card's Element | Handbook p.10 | `confirmed-modern` | Not started | |
 | `aether.non-elemental` | The starting Caster Token and a face-down Level 1 Caster produce non-elemental Aether | Handbook pp.13, 15 | `confirmed-modern` | `TestGenerateNonElementalAetherRestsCasterAndUpdatesPool`; `TestUseCasterTokenRemovesTokenAndProducesNonElementalAether`; `TestPlayerSessionGenerateNonElementalAetherAllowsNonActivePlayer`; `TestPlayerSessionUseCasterTokenUpdatesBothPublicViews` | The used token ceases to exist rather than entering Exile; Void remains a distinct Element |
 | `aether.expiration` | All produced and unspent Aether is erased during the End phase | Handbook p.14 | `confirmed-modern` | `TestCompleteCurrentPhaseRunsRemainingSkeletonAndRollsTurn`; `TestCompleteEndPhaseRejectsMissingActivePlayerWithoutClearingAether` | Apply before turn handoff |
 | `chase.lifo` | The latest Chase object resolves first | Handbook p.19; CR 1.2 §6.5 | `confirmed-modern` | Not started | |
 | `chase.priority-after-link` | Turn player gains priority after one link resolves | CR 1.2 §6.5.1.b | `inherited-cr1.2` | Not started | |
-| `caster.facedown-aether` | A face-down Caster produces non-elemental Aether | Handbook p.15 | `confirmed-modern` | Not started | Supersedes old Void behavior |
+| `caster.facedown-aether` | A face-down Caster produces non-elemental Aether | Handbook p.15 | `confirmed-modern` | `TestValidateGenerateNonElementalAetherAllowsEitherPlayerWithoutMutation`; `TestGenerateNonElementalAetherRestsCasterAndUpdatesPool` | Supersedes old Void behavior |
 
 ## Resolving uncertainty
 
@@ -77,7 +77,9 @@ At minimum, do not inherit the following older behavior:
 
 - Caster Tokens replace the former starting coin behavior.
 - Void is an element; face-down Casters produce non-elemental Aether.
-- Caster uniqueness considers name, subname, and traits.
+- A face-up Level 1 Caster conflicts only when another Caster has the same
+  name, subname, and complete trait collection; sharing only one of those
+  identity components is not sufficient.
 - A level-up Caster must share a name with the Caster below it.
 - A face-down Caster cannot be used as the lower card of a level-up.
 - Current deck construction, formats, card text, and errata replace retired

@@ -55,6 +55,7 @@ type CardInstance struct {
 	CardCategory CardCategory
 	Face         CardFace
 	Orientation  CardOrientation
+	Stock        []MatchCardID
 }
 
 type Element string

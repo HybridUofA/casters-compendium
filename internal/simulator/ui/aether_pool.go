@@ -6,7 +6,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	sourceicons "github.com/HybridUofA/casters-compendium/internal/sources/icons"
@@ -66,21 +65,19 @@ func visibleAetherEntries(pool model.AetherPool) []aetherDisplayEntry {
 func newAetherPoolDisplay(pool model.AetherPool) fyne.CanvasObject {
 	entries := visibleAetherEntries(pool)
 	if len(entries) == 0 {
-		label := widget.NewLabel("Aether: 0")
-		label.Importance = widget.LowImportance
-		return label
+		return canvas.NewText("Aether: 0", boardForeground)
 	}
 
 	objects := make([]fyne.CanvasObject, 0, len(entries)+1)
-	label := widget.NewLabel("Aether:")
-	label.Importance = widget.LowImportance
+	label := canvas.NewText("Aether:", boardForeground)
+	label.TextStyle = fyne.TextStyle{Bold: true}
 	objects = append(objects, label)
 	for _, entry := range entries {
 		icon := canvas.NewImageFromResource(entry.resource)
 		icon.FillMode = canvas.ImageFillContain
 		icon.SetMinSize(fyne.NewSize(aetherIconSize, aetherIconSize))
-		amount := widget.NewLabel(fmt.Sprintf("%d", entry.amount))
-		amount.Importance = widget.LowImportance
+		amount := canvas.NewText(fmt.Sprintf("%d", entry.amount), boardForeground)
+		amount.TextStyle = fyne.TextStyle{Bold: true}
 		objects = append(objects, container.NewHBox(icon, amount))
 	}
 	return container.NewHBox(objects...)

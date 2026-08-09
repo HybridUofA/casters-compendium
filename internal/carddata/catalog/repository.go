@@ -69,6 +69,7 @@ func NewRepository(cards []Card) (*Repository, error) {
 	}
 
 	for index, card := range cards {
+		card = gamecards.NormalizeDefinition(card)
 		card.ID = strings.TrimSpace(card.ID)
 		card.Name = strings.TrimSpace(card.Name)
 

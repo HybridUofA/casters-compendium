@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
@@ -37,6 +38,16 @@ func TestNewBoardScreenContainsBothPlayerFieldsAndRequiredZones(t *testing.T) {
 		if !containsText(screen, text) {
 			t.Errorf("board screen does not contain %q", text)
 		}
+	}
+}
+
+func TestTurnStatusUsesHighContrastBoardText(t *testing.T) {
+	controller := NewBoardController(testMatchView(), testDefinitions(), BoardActions{}, nil)
+	if controller.status.Color != boardForeground {
+		t.Fatalf("status color = %#v; want high-contrast board color %#v", controller.status.Color, boardForeground)
+	}
+	if !controller.status.TextStyle.Bold {
+		t.Fatal("turn status is not rendered with bold emphasis")
 	}
 }
 
@@ -105,6 +116,18 @@ func TestEmptyAetherPoolUsesCompactZeroState(t *testing.T) {
 	}
 }
 
+func TestCardDescriptionUsesRemainingPreviewHeight(t *testing.T) {
+	region := newPreviewRegion(newPreviewPanel())
+	region.Resize(fyne.NewSize(previewPanelWidth, 800))
+	descriptionScroll := findScroll(region)
+	if descriptionScroll == nil {
+		t.Fatal("preview region does not contain a description scroller")
+	}
+	if descriptionScroll.Size().Height <= 145 {
+		t.Fatalf("description height = %.1f; want it to expand beyond its 145 minimum", descriptionScroll.Size().Height)
+	}
+}
+
 func TestGenerateNonElementalAetherSubmitsOwnCasterAndCurrentRevision(t *testing.T) {
 	match := testMatchView()
 	match.ViewerID = "player-two"
@@ -130,7 +153,7 @@ func TestGenerateNonElementalAetherSubmitsOwnCasterAndCurrentRevision(t *testing
 		},
 		nil,
 	)
-	generateButton := findButton(screen, "Produce 1 Aether")
+	generateButton := findButton(screen, "Produce Aether")
 	if generateButton == nil {
 		t.Fatal("Aether control was not rendered for the non-active player's eligible Caster")
 	}
@@ -224,7 +247,7 @@ func TestUseCasterTokenControlAppearsAfterSelectionAndSubmitsCurrentRevision(t *
 		},
 		nil,
 	)
-	actionButton := findButton(screen, "Produce 1 Aether")
+	actionButton := findButton(screen, "Produce Aether")
 	if actionButton == nil {
 		t.Fatal("hidden Caster Token action was not constructed")
 	}
@@ -245,6 +268,90 @@ func TestUseCasterTokenControlAppearsAfterSelectionAndSubmitsCurrentRevision(t *
 
 	if usedToken != "player-two-token" || usedRevision != 16 {
 		t.Fatalf("token action submitted token/revision %q/%d; want player-two-token/16", usedToken, usedRevision)
+	}
+}
+
+func TestGenerateCasterAetherControlAppearsAfterSelectionAndSubmitsCurrentRevision(t *testing.T) {
+	match := testMatchView()
+	match.ViewerID = "player-two"
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 18
+	match.Turn.Number = 3
+	match.Turn.Phase = model.PhaseBattle
+	match.Turn.ActivePlayer = "player-one"
+	match.Players[1].CasterZone[1] = simulatorview.CardView{
+		MatchID:     "player-two-faceup-caster",
+		CardID:      "visible-faceup-caster",
+		Face:        model.CardFaceUp,
+		Orientation: model.OrientationRecovered,
+		ShowFace:    true,
+	}
+	generatedBy := model.MatchCardID("")
+	generatedRevision := model.Revision(0)
+	screen := NewBoardScreen(
+		match,
+		testDefinitions(),
+		BoardActions{
+			GenerateCasterAether: func(cardID model.MatchCardID, revision model.Revision) {
+				generatedBy = cardID
+				generatedRevision = revision
+			},
+		},
+		nil,
+	)
+	actionButton := findButton(screen, "Produce Aether")
+	if actionButton == nil || actionButton.Visible() {
+		t.Fatal("face-up Caster action should exist but remain hidden before selection")
+	}
+	caster := findCardTileByMatchID(screen, "player-two-faceup-caster")
+	if caster == nil {
+		t.Fatal("viewer's face-up Caster was not rendered")
+	}
+
+	test.Tap(caster)
+	actionButton = findButton(screen, "Rest Selected for Elemental Aether")
+	if actionButton == nil || !actionButton.Visible() || actionButton.Disabled() {
+		t.Fatal("face-up Caster action did not appear and enable after selection")
+	}
+	test.Tap(actionButton)
+
+	if generatedBy != "player-two-faceup-caster" || generatedRevision != 18 {
+		t.Fatalf("Caster action submitted card/revision %q/%d; want player-two-faceup-caster/18", generatedBy, generatedRevision)
+	}
+}
+
+func TestRestedFaceUpCasterRendersSidewaysAfterBoardUpdate(t *testing.T) {
+	match := testMatchView()
+	match.ViewerID = "player-two"
+	match.MatchStatus = model.StatusInProgress
+	match.Turn.Number = 3
+	match.Turn.Phase = model.PhaseBattle
+	match.Players[1].CasterZone[1] = simulatorview.CardView{
+		MatchID:     "player-two-faceup-caster",
+		CardID:      "visible-faceup-caster",
+		Face:        model.CardFaceUp,
+		Orientation: model.OrientationRecovered,
+		ShowFace:    true,
+	}
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{GenerateCasterAether: func(model.MatchCardID, model.Revision) {}},
+		nil,
+	)
+
+	updated := match
+	updated.Revision++
+	updated.Players[1].CasterZone = append([]simulatorview.CardView(nil), match.Players[1].CasterZone...)
+	updated.Players[1].CasterZone[1].Orientation = model.OrientationRested
+	controller.Update(updated)
+
+	caster := findCardTileByMatchID(controller.Content(), "player-two-faceup-caster")
+	if caster == nil {
+		t.Fatal("updated face-up Caster was not rendered")
+	}
+	if caster.MinSize().Width <= caster.MinSize().Height {
+		t.Fatalf("Rested face-up Caster size = %v; want landscape orientation", caster.MinSize())
 	}
 }
 
@@ -387,6 +494,124 @@ func TestFaceDownLevelOneCallSubmitsSelectedCardAndCurrentRevision(t *testing.T)
 
 	if calledID != "player-one-hand" || calledRevision != 12 {
 		t.Fatalf("face-down Call submitted card/revision %q/%d; want player-one-hand/12", calledID, calledRevision)
+	}
+}
+
+func TestFaceUpLevelOneCallOnlyEnablesForEligibleSelectedCaster(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 14
+	match.Turn.Number = 1
+	match.Turn.Phase = model.PhaseCall
+	match.Players[0].OpeningHandFinalized = true
+	match.Players[0].Hand = []simulatorview.CardView{
+		{MatchID: "servant-in-hand", CardID: "visible-hand-card", ShowFace: true},
+		{MatchID: "caster-in-hand", CardID: "level-one-caster", ShowFace: true},
+	}
+	calledID := model.MatchCardID("")
+	calledRevision := model.Revision(0)
+	screen := NewBoardScreen(
+		match,
+		testDefinitions(),
+		BoardActions{
+			CallFaceDownLevelOne: func(model.MatchCardID, model.Revision) {},
+			CallFaceUpLevelOne: func(cardID model.MatchCardID, revision model.Revision) {
+				calledID = cardID
+				calledRevision = revision
+			},
+		},
+		nil,
+	)
+	faceDownButton := findButton(screen, "Call Selected Face Down")
+	faceUpButton := findButton(screen, "Call Selected Face Up")
+	if faceDownButton == nil || faceUpButton == nil {
+		t.Fatal("both Level 1 Call controls were not rendered")
+	}
+	if !faceDownButton.Disabled() || !faceUpButton.Disabled() {
+		t.Fatal("Call controls were enabled before selecting a card")
+	}
+
+	servant := findCardTile(screen, "visible-hand-card")
+	if servant == nil {
+		t.Fatal("ineligible hand card was not rendered")
+	}
+	test.Tap(servant)
+	if faceDownButton.Disabled() {
+		t.Fatal("face-down Call did not enable for an arbitrary hand card")
+	}
+	if !faceUpButton.Disabled() {
+		t.Fatal("face-up Call enabled for a non-Caster")
+	}
+
+	caster := findCardTile(screen, "level-one-caster")
+	if caster == nil {
+		t.Fatal("eligible Level 1 Caster was not rendered")
+	}
+	test.Tap(caster)
+	if faceUpButton.Disabled() {
+		t.Fatal("face-up Call did not enable for a Level 1 Caster")
+	}
+	test.Tap(faceUpButton)
+	if calledID != "caster-in-hand" || calledRevision != 14 {
+		t.Fatalf("face-up Call submitted card/revision %q/%d; want caster-in-hand/14", calledID, calledRevision)
+	}
+}
+
+func TestLevelUpCasterSelectsUpperAndTargetAtCurrentRevision(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 21
+	match.Turn.Number = 3
+	match.Turn.Phase = model.PhaseCall
+	match.Players[0].OpeningHandFinalized = true
+	match.Players[0].Hand = []simulatorview.CardView{
+		{MatchID: "upper-in-hand", CardID: "level-three-aria", ShowFace: true},
+	}
+	match.Players[0].CasterZone = append(match.Players[0].CasterZone, simulatorview.CardView{
+		MatchID: "target-on-field", CardID: "level-two-aria", Face: model.CardFaceUp,
+		Orientation: model.OrientationRested, ShowFace: true,
+	})
+	gotUpper := model.MatchCardID("")
+	gotTarget := model.MatchCardID("")
+	gotRevision := model.Revision(0)
+	screen := NewBoardScreen(
+		match,
+		testDefinitions(),
+		BoardActions{LevelUpCaster: func(upper, target model.MatchCardID, revision model.Revision) {
+			gotUpper = upper
+			gotTarget = target
+			gotRevision = revision
+		}},
+		nil,
+	)
+	levelButton := findButton(screen, "Level Up Selected")
+	targetSelect := findSelect(screen)
+	if levelButton == nil || targetSelect == nil {
+		t.Fatal("level-up controls were not rendered")
+	}
+	if levelButton.Visible() || targetSelect.Visible() {
+		t.Fatal("level-up controls appeared before selecting an upper Caster")
+	}
+	upper := findCardTile(screen, "level-three-aria")
+	if upper == nil {
+		t.Fatal("upper Caster was not rendered in hand")
+	}
+
+	test.Tap(upper)
+	if !levelButton.Visible() || !targetSelect.Visible() || len(targetSelect.Options) != 1 {
+		t.Fatalf("eligible upper selection produced button/select/options = %t/%t/%v", levelButton.Visible(), targetSelect.Visible(), targetSelect.Options)
+	}
+	if !levelButton.Disabled() {
+		t.Fatal("level-up button enabled before choosing a target")
+	}
+	targetSelect.SetSelected(targetSelect.Options[0])
+	if levelButton.Disabled() {
+		t.Fatal("level-up button did not enable after choosing a target")
+	}
+	test.Tap(levelButton)
+
+	if gotUpper != "upper-in-hand" || gotTarget != "target-on-field" || gotRevision != 21 {
+		t.Fatalf("Level Up submitted %q/%q/%d; want upper-in-hand/target-on-field/21", gotUpper, gotTarget, gotRevision)
 	}
 }
 
@@ -700,6 +925,9 @@ func containsText(object fyne.CanvasObject, text string) bool {
 	if label, ok := object.(*widget.Label); ok && label.Text == text {
 		return true
 	}
+	if canvasText, ok := object.(*canvas.Text); ok && canvasText.Text == text {
+		return true
+	}
 	if button, ok := object.(*widget.Button); ok && button.Text == text {
 		return true
 	}
@@ -720,6 +948,9 @@ func containsTextPart(object fyne.CanvasObject, text string) bool {
 	if label, ok := object.(*widget.Label); ok && strings.Contains(label.Text, text) {
 		return true
 	}
+	if canvasText, ok := object.(*canvas.Text); ok && strings.Contains(canvasText.Text, text) {
+		return true
+	}
 	if fyneContainer, ok := object.(*fyne.Container); ok {
 		for _, child := range fyneContainer.Objects {
 			if containsTextPart(child, text) {
@@ -731,6 +962,20 @@ func containsTextPart(object fyne.CanvasObject, text string) bool {
 		return containsTextPart(scroll.Content, text)
 	}
 	return false
+}
+
+func findScroll(object fyne.CanvasObject) *container.Scroll {
+	if scroll, ok := object.(*container.Scroll); ok {
+		return scroll
+	}
+	if fyneContainer, ok := object.(*fyne.Container); ok {
+		for _, child := range fyneContainer.Objects {
+			if scroll := findScroll(child); scroll != nil {
+				return scroll
+			}
+		}
+	}
+	return nil
 }
 
 func findButton(object fyne.CanvasObject, text string) *widget.Button {
@@ -746,6 +991,23 @@ func findButton(object fyne.CanvasObject, text string) *widget.Button {
 	}
 	if scroll, ok := object.(*container.Scroll); ok {
 		return findButton(scroll.Content, text)
+	}
+	return nil
+}
+
+func findSelect(object fyne.CanvasObject) *widget.Select {
+	if selection, ok := object.(*widget.Select); ok {
+		return selection
+	}
+	if fyneContainer, ok := object.(*fyne.Container); ok {
+		for _, child := range fyneContainer.Objects {
+			if selection := findSelect(child); selection != nil {
+				return selection
+			}
+		}
+	}
+	if scroll, ok := object.(*container.Scroll); ok {
+		return findSelect(scroll.Content)
 	}
 	return nil
 }
@@ -818,6 +1080,27 @@ func testDefinitions() []cards.Card {
 			Ability: "Visible ability.",
 		},
 		{
+			ID:        "level-one-caster",
+			Name:      "Level One Caster",
+			Type:      " CASTER ",
+			CostLevel: " 1 ",
+			Ability:   "Eligible face-up Call.",
+		},
+		{
+			ID:        "level-two-aria",
+			Name:      "Aria",
+			Subname:   "Dawn",
+			Type:      "Caster",
+			CostLevel: "2",
+		},
+		{
+			ID:        "level-three-aria",
+			Name:      " aria ",
+			Subname:   "Ascendant",
+			Type:      " CASTER ",
+			CostLevel: " 3 ",
+		},
+		{
 			ID:      "visible-servant-card",
 			Name:    "Visible Servant",
 			Type:    "Servant",
@@ -840,6 +1123,14 @@ func testDefinitions() []cards.Card {
 			Name:    "Known Face-down Caster",
 			Type:    "Caster",
 			Ability: "Caster ability.",
+		},
+		{
+			ID:        "visible-faceup-caster",
+			Name:      "Visible Face-up Caster",
+			Type:      "Caster",
+			Element:   "Aqua",
+			CostLevel: "2",
+			Ability:   "Face-up Caster ability.",
 		},
 	}
 }

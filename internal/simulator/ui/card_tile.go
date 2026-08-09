@@ -31,6 +31,7 @@ type CardTile struct {
 	size            fyne.Size
 	image           *canvas.Image
 	uprightImage    *canvas.Image
+	sidewaysImage   *canvas.Image
 	selectionBorder *canvas.Rectangle
 	OnPreview       func(cards.Card)
 	OnHiddenPreview func()
@@ -84,18 +85,25 @@ func (tile *CardTile) SetSelected(selected bool) {
 	tile.selectionBorder.Refresh()
 }
 
-// SetSideways rotates a concealed card back clockwise. Portrait tiles swap
-// their layout dimensions so a Rested card retains the same visual scale;
-// already-landscape tiles such as Orbs retain their requested dimensions.
-// This is presentation state only and does not change authoritative state.
+// SetSideways rotates card artwork clockwise. Portrait tiles swap their layout
+// dimensions so a Rested card retains the same visual scale; already-landscape
+// tiles such as Orbs retain their requested dimensions. This is presentation
+// state only and does not change authoritative state.
 func (tile *CardTile) SetSideways(sideways bool) {
 	tile.size = tile.baseSize
 	tile.image = tile.uprightImage
-	if !sideways || tile.View.ShowFace {
+	if !sideways {
 		tile.Refresh()
 		return
 	}
-	tile.image = sidewaysCardBackImage()
+	if tile.sidewaysImage == nil {
+		if tile.View.ShowFace {
+			tile.sidewaysImage = rotatedCanvasImage(tile.uprightImage)
+		} else {
+			tile.sidewaysImage = sidewaysCardBackImage()
+		}
+	}
+	tile.image = tile.sidewaysImage
 	if tile.baseSize.Height > tile.baseSize.Width {
 		tile.size = fyne.NewSize(tile.baseSize.Height, tile.baseSize.Width)
 	}
@@ -157,16 +165,7 @@ func sidewaysCardBackImage() *canvas.Image {
 		if err != nil {
 			return
 		}
-		bounds := source.Bounds()
-		rotated := image.NewNRGBA(image.Rect(0, 0, bounds.Dy(), bounds.Dx()))
-		for sourceY := bounds.Min.Y; sourceY < bounds.Max.Y; sourceY++ {
-			for sourceX := bounds.Min.X; sourceX < bounds.Max.X; sourceX++ {
-				targetX := bounds.Max.Y - sourceY - 1
-				targetY := sourceX - bounds.Min.X
-				rotated.Set(targetX, targetY, source.At(sourceX, sourceY))
-			}
-		}
-		sidewaysCardBack = rotated
+		sidewaysCardBack = rotateImageClockwise(source)
 	})
 	if sidewaysCardBack == nil {
 		return cardBackImage()
@@ -175,6 +174,39 @@ func sidewaysCardBackImage() *canvas.Image {
 	result.FillMode = canvas.ImageFillContain
 	result.ScaleMode = canvas.ImageScaleSmooth
 	return result
+}
+
+func rotatedCanvasImage(source *canvas.Image) *canvas.Image {
+	if source == nil {
+		return nil
+	}
+	bitmap := source.Image
+	if bitmap == nil && source.Resource != nil {
+		bitmap, _, _ = image.Decode(bytes.NewReader(source.Resource.Content()))
+	}
+	if bitmap == nil && source.File != "" {
+		bitmap, _ = cachedCardImage(source.File)
+	}
+	if bitmap == nil {
+		return source
+	}
+	result := canvas.NewImageFromImage(rotateImageClockwise(bitmap))
+	result.FillMode = source.FillMode
+	result.ScaleMode = source.ScaleMode
+	return result
+}
+
+func rotateImageClockwise(source image.Image) image.Image {
+	bounds := source.Bounds()
+	rotated := image.NewNRGBA(image.Rect(0, 0, bounds.Dy(), bounds.Dx()))
+	for sourceY := bounds.Min.Y; sourceY < bounds.Max.Y; sourceY++ {
+		for sourceX := bounds.Min.X; sourceX < bounds.Max.X; sourceX++ {
+			targetX := bounds.Max.Y - sourceY - 1
+			targetY := sourceX - bounds.Min.X
+			rotated.Set(targetX, targetY, source.At(sourceX, sourceY))
+		}
+	}
+	return rotated
 }
 
 func (tile *CardTile) CreateRenderer() fyne.WidgetRenderer {

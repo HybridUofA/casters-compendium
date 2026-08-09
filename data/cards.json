@@ -161,7 +161,7 @@
  },
  {
   "id": "71",
-  "name": "Arthur Lv2",
+  "name": "Arthur",
   "subname": "Mariko Yumejiki",
   "type": "Caster",
   "element": "Void",
@@ -526,7 +526,7 @@
  },
  {
   "id": "235",
-  "name": "Carella lv2",
+  "name": "Carella",
   "subname": "Jyun Fujinmai",
   "type": "Caster",
   "element": "Ignus",
@@ -663,7 +663,7 @@
  },
  {
   "id": "258",
-  "name": "Citra Cayce lv2",
+  "name": "Citra Cayce",
   "subname": "Kaoru Shida",
   "type": "Caster",
   "element": "Aes",
@@ -977,7 +977,7 @@
  },
  {
   "id": "70",
-  "name": "Deshi Lion Lv2",
+  "name": "Deshi Lion",
   "subname": "Rui Saotome",
   "type": "Caster",
   "element": "Aqua",
@@ -1506,7 +1506,7 @@
  },
  {
   "id": "265",
-  "name": "Gawain lv2",
+  "name": "Gawain",
   "subname": "Mika Rokutanda",
   "type": "Caster",
   "element": "Void",
@@ -1563,7 +1563,7 @@
  },
  {
   "id": "38",
-  "name": "Glory Butterfly Lv2",
+  "name": "Glory Butterfly",
   "subname": "Sakura Nishinotouin",
   "type": "Caster",
   "element": "Terra",
@@ -2098,7 +2098,7 @@
  },
  {
   "id": "252",
-  "name": "Karen Urania lv2",
+  "name": "Karen Urania",
   "subname": "Karen Kashima",
   "type": "Caster",
   "element": "Aqua",
@@ -2133,7 +2133,7 @@
  },
  {
   "id": "90",
-  "name": "Kiberia Yosha Lv2",
+  "name": "Kiberia Yosha",
   "subname": "Ichika Asaba",
   "type": "Caster",
   "element": "Silva",
@@ -2443,7 +2443,7 @@
  },
  {
   "id": "107",
-  "name": "Maisey Queen Lv2",
+  "name": "Maisey Queen",
   "subname": "Miwa Torri",
   "type": "Caster",
   "element": "Aes",
@@ -2592,7 +2592,7 @@
  },
  {
   "id": "242",
-  "name": "Miu lv2",
+  "name": "Miu",
   "subname": "Misora Hiraiwa",
   "type": "Caster",
   "element": "Terra",
@@ -2832,7 +2832,7 @@
  },
  {
   "id": "37",
-  "name": "Passion Wing Lv2",
+  "name": "Passion Wing",
   "subname": "Tsubasa Koga",
   "type": "Caster",
   "element": "Ignus",
@@ -2944,7 +2944,7 @@
  },
  {
   "id": "264",
-  "name": "Percival lv2",
+  "name": "Percival",
   "subname": "Tomoka Arimori",
   "type": "Caster",
   "element": "Void",
@@ -3260,7 +3260,7 @@
  },
  {
   "id": "241",
-  "name": "Ran Berfield lv2",
+  "name": "Ran Berfield",
   "subname": "You Chitose",
   "type": "Caster",
   "element": "Silva",
@@ -3353,7 +3353,7 @@
  },
  {
   "id": "73",
-  "name": "Ruka Eremi Lv2",
+  "name": "Ruka Eremi",
   "subname": "Koyori Oonuma",
   "type": "Caster",
   "element": "Luna",
@@ -3844,7 +3844,7 @@
  },
  {
   "id": "229",
-  "name": "Sunny lv2",
+  "name": "Sunny",
   "subname": "Hitori Kusaka",
   "type": "Caster",
   "element": "Solis",
@@ -3988,7 +3988,7 @@
  },
  {
   "id": "251",
-  "name": "Twinkle Charm lv2",
+  "name": "Twinkle Charm",
   "subname": "Momoka Michizuki",
   "type": "Caster",
   "element": "Luna",

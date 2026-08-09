@@ -23,10 +23,10 @@ func TestRecoverPlayerCardsRecoversOnlySpecifiedPlayersRestedFieldCards(t *testi
 			t.Fatalf("card %q orientation = %q; want Recovered", cardID, state.CardInstances[cardID].Orientation)
 		}
 	}
-	if state.CardInstances["p2-reversed-servant"] != beforeReversed {
+	if !reflect.DeepEqual(state.CardInstances["p2-reversed-servant"], beforeReversed) {
 		t.Fatalf("Recovery changed Reversed card\n before: %#v\n  after: %#v", beforeReversed, state.CardInstances["p2-reversed-servant"])
 	}
-	if state.CardInstances["p1-rested-caster"] != beforeOutgoing {
+	if !reflect.DeepEqual(state.CardInstances["p1-rested-caster"], beforeOutgoing) {
 		t.Fatal("Recovery changed the outgoing player's Rested Caster")
 	}
 }
