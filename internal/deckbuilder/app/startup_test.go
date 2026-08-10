@@ -13,6 +13,7 @@ import (
 	"time"
 
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
@@ -128,6 +129,54 @@ func TestGitHubCardImageURL(t *testing.T) {
 	want := githubCardDataRootURL + "/images/123.png"
 	if got != want {
 		t.Fatalf("githubCardImageURL() = %q, want %q", got, want)
+	}
+}
+
+// TestDownloadCardImageFallsBackToRepositorySnapshot verifies a stale upstream
+// image reference cannot abort a card database download.
+func TestDownloadCardImageFallsBackToRepositorySnapshot(t *testing.T) {
+	var requests []string
+	client := &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		requests = append(requests, request.URL.String())
+		if request.URL.Host == "broken.example" {
+			return &http.Response{
+				StatusCode: http.StatusNotFound,
+				Status:     "404 Not Found",
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader("missing")),
+				Request:    request,
+			}, nil
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     "200 OK",
+			Header:     http.Header{"Content-Type": []string{"image/png"}},
+			Body:       io.NopCloser(strings.NewReader("snapshot image")),
+			Request:    request,
+		}, nil
+	})}
+	card := cards.Card{
+		ID:       "1",
+		Name:     "Passion Wing",
+		ImageURL: "https://broken.example/Passion-Wing.png",
+	}
+	directory := t.TempDir()
+	if err := downloadCardImage(context.Background(), client, directory, card, nil); err != nil {
+		t.Fatal(err)
+	}
+	if len(requests) != 2 || requests[0] != card.ImageURL || requests[1] != githubCardImageURL(card) {
+		t.Fatalf("download requests = %#v", requests)
+	}
+	path, found := cardimages.FindIn(directory, card.ID)
+	if !found {
+		t.Fatal("repository snapshot image was not cached")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != "snapshot image" {
+		t.Fatalf("cached image = %q", data)
 	}
 }
 
