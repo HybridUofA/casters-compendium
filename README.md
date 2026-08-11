@@ -25,7 +25,7 @@ maintainer direction and review. The statement also documents the automated
 tests and explicitly authorized production assistance used for v0.1.4's
 Tabletop Simulator integration, the complete v0.1.5 hosted-catalog patch,
 v0.1.6's selectable bundled backgrounds, its first rendering hotfix, and
-v0.1.8-hotfix.1's card-art recovery fix.
+v0.1.8-hotfix.2's card-art recovery fix.
 
 ## Features
 
@@ -79,7 +79,7 @@ v0.1.8-hotfix.1's card-art recovery fix.
 
 ## Roadmap
 
-### What's fixed in v0.1.8-hotfix.1
+### What's fixed in v0.1.8-hotfix.2
 
 - Recover automatically when an upstream card-art URL disappears by using the
   version-controlled artwork snapshot.
@@ -319,13 +319,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.8-hotfix.1_amd64.deb
+sudo apt install ./casters-compendium_0.1.8-hotfix.2_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.8_hotfix.1-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.8_hotfix.2-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

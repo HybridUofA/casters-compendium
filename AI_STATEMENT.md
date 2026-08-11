@@ -116,7 +116,7 @@ This is a contribution-specific production implementation exception. It does
 not silently replace the general post-v0.1.3 policy for unrelated future
 features.
 
-## Disclosed v0.1.8-hotfix.1 exception
+## Disclosed v0.1.8-hotfix.2 exception
 
 Hybrid reported the production Passion Wing artwork failure and explicitly
 authorized OpenAI Codex to diagnose it, implement the repository and catalog
