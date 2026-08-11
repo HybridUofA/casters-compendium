@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -78,10 +79,6 @@ func buildCatalog(settings options) error {
 	if err != nil {
 		return err
 	}
-	encodedDatabase, err := distribution.EncodeCards(repository.All())
-	if err != nil {
-		return err
-	}
 
 	versionDirectory := filepath.Join(settings.Output, "catalog", settings.Version)
 	if _, err := os.Stat(versionDirectory); err == nil {
@@ -98,6 +95,19 @@ func buildCatalog(settings options) error {
 		}
 	}
 	versionURL := settings.BaseURL + "/catalog/" + settings.Version
+
+	// Published records must point back to the immutable artwork shipped with
+	// this catalog. Upstream image URLs are useful source metadata, but they can
+	// disappear or change independently and must not break catalog consumers.
+	publishedCards := repository.All()
+	for index := range publishedCards {
+		publishedCards[index].ImageURL = versionURL + "/images/" +
+			url.PathEscape(strings.TrimSpace(publishedCards[index].ID)) + ".png"
+	}
+	encodedDatabase, err := distribution.EncodeCards(publishedCards)
+	if err != nil {
+		return err
+	}
 
 	// Hosted artwork is normalized to stable <card-id>.png paths. Current source
 	// snapshots are PNG; rejecting a different extension prevents mislabeled

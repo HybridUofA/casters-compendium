@@ -24,7 +24,8 @@ the v0.1.3 repository and website migration included Codex assistance under
 maintainer direction and review. The statement also documents the automated
 tests and explicitly authorized production assistance used for v0.1.4's
 Tabletop Simulator integration, the complete v0.1.5 hosted-catalog patch,
-v0.1.6's selectable bundled backgrounds, and its first rendering hotfix.
+v0.1.6's selectable bundled backgrounds, its first rendering hotfix, and
+v0.1.8-hotfix.1's card-art recovery fix.
 
 ## Features
 
@@ -77,6 +78,13 @@ v0.1.6's selectable bundled backgrounds, and its first rendering hotfix.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's fixed in v0.1.8-hotfix.1
+
+- Recover automatically when an upstream card-art URL disappears by using the
+  version-controlled artwork snapshot.
+- Publish card databases with immutable catalog-owned image URLs instead of
+  unstable upstream links.
 
 ### What's new in v0.1.8
 
@@ -311,13 +319,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.8_amd64.deb
+sudo apt install ./casters-compendium_0.1.8-hotfix.1_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.8-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.1.8_hotfix.1-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

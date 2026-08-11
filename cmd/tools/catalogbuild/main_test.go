@@ -85,6 +85,16 @@ func TestBuildCatalogCreatesCompleteVersionedTree(t *testing.T) {
 		release.Database.Size != int64(len(databaseBytes)) {
 		t.Fatalf("database integrity metadata does not match output: %#v", release.Database)
 	}
+	var publishedCards []cards.Card
+	if err := json.Unmarshal(databaseBytes, &publishedCards); err != nil {
+		t.Fatal(err)
+	}
+	for _, card := range publishedCards {
+		want := "https://tts.casterscompendium.com/catalog/v1/images/" + card.ID + ".png"
+		if card.ImageURL != want {
+			t.Errorf("published image URL for card %s = %q, want %q", card.ID, card.ImageURL, want)
+		}
+	}
 }
 
 func TestBuildCatalogRefusesToOverwriteImmutableVersion(t *testing.T) {
