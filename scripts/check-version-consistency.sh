@@ -51,6 +51,9 @@ require_literal packaging/arch/build-in-container.sh \
 	"tag=$tag" "Arch container source tag"
 require_literal packaging/casters-compendium.1 \
 	"Caster's Compendium $release_version" "manual-page version"
+manpage_checksum="$(sha256sum packaging/casters-compendium.1 | awk '{print $1}')"
+require_literal packaging/arch/PKGBUILD \
+	"'$manpage_checksum'" "manual-page checksum"
 require_literal README.md \
 	"v$release_version" "documented release version"
 require_literal docs/downloads.html \
