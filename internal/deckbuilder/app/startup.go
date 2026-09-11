@@ -261,20 +261,8 @@ func cacheCardImagesUsing(
 	var imageProgress sync.Mutex
 	err = runSetupWorkers(ctx, len(cardList), setupDownloadWorkers, func(index int) error {
 		card := cardList[index]
-		var downloadErr error
-		if imageURL == nil {
-			_, _, downloadErr = cardimages.Download(ctx, httpClient, paths.Images, card)
-		} else {
-			_, _, downloadErr = cardimages.DownloadFromURL(
-				ctx,
-				httpClient,
-				paths.Images,
-				card,
-				imageURL(card),
-			)
-		}
-		if downloadErr != nil {
-			return fmt.Errorf("download image for %q: %w", card.Name, downloadErr)
+		if err := downloadCardImage(ctx, httpClient, paths.Images, card, imageURL); err != nil {
+			return err
 		}
 		if _, found := cardimages.FindThumbnail(card.ID); !found {
 			if _, err := cardimages.CreateThumbnail(card.ID); err != nil {
@@ -301,6 +289,44 @@ func cacheCardImagesUsing(
 	})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+// downloadCardImage uses an explicit catalog URL when one is supplied. Direct
+// upstream downloads fall back to the repository snapshot because upstream
+// artwork can be removed while its database record still references it.
+func downloadCardImage(
+	ctx context.Context,
+	httpClient *http.Client,
+	directory string,
+	card cards.Card,
+	imageURL func(cards.Card) string,
+) error {
+	if imageURL != nil {
+		_, _, err := cardimages.DownloadFromURL(
+			ctx, httpClient, directory, card, imageURL(card),
+		)
+		if err != nil {
+			return fmt.Errorf("download image for %q: %w", card.Name, err)
+		}
+		return nil
+	}
+
+	_, _, upstreamErr := cardimages.Download(ctx, httpClient, directory, card)
+	if upstreamErr == nil {
+		return nil
+	}
+	_, _, snapshotErr := cardimages.DownloadFromURL(
+		ctx, httpClient, directory, card, githubCardImageURL(card),
+	)
+	if snapshotErr != nil {
+		return fmt.Errorf(
+			"download image for %q: upstream failed (%v); repository snapshot failed: %w",
+			card.Name,
+			upstreamErr,
+			snapshotErr,
+		)
 	}
 	return nil
 }
