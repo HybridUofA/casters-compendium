@@ -2,6 +2,8 @@ package deckexport
 
 import (
 	"encoding/json"
+	"fmt"
+	"image/color"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,6 +13,47 @@ import (
 	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
+
+func TestGenerateHostedTTSAssetsScalesBeyondLegacyDeckKeyLimit(t *testing.T) {
+	const cardCount = 379
+	imageDirectory := t.TempDir()
+	definitions := make([]gamecards.Card, 0, cardCount)
+	for index := 1; index <= cardCount; index++ {
+		cardID := fmt.Sprintf("%03d", index)
+		definitions = append(definitions, gamecards.Card{ID: cardID, Name: "Card " + cardID})
+		writeSolidPNG(t, filepath.Join(imageDirectory, cardID+".png"), color.White)
+	}
+	repository, err := cards.NewRepository(definitions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	manifest, err := GenerateHostedTTSAssets(
+		t.TempDir(),
+		"https://tts.casterscompendium.com/catalog/v4/tts",
+		"https://tts.casterscompendium.com/backs/mtd-back-v1.png",
+		"v4",
+		repository,
+		imageDirectory,
+	)
+	if err != nil {
+		t.Fatalf("GenerateHostedTTSAssets() error = %v", err)
+	}
+	if len(manifest.Sheets) != 6 {
+		t.Fatalf("sheet count = %d; want 6", len(manifest.Sheets))
+	}
+	first := manifest.Sheets[0]
+	if first.DeckKey != 1 || first.NumWidth != 10 || first.NumHeight != 7 || first.CardCount != 70 {
+		t.Fatalf("first sheet = %#v; want key 1, 10x7, 70 cards", first)
+	}
+	last := manifest.Sheets[5]
+	if last.DeckKey != 6 || last.NumWidth != 10 || last.NumHeight != 3 || last.CardCount != 29 {
+		t.Fatalf("last sheet = %#v; want key 6, 10x3, 29 cards", last)
+	}
+	if err := manifest.Validate(); err != nil {
+		t.Fatalf("generated manifest is invalid: %v", err)
+	}
+}
 
 func testHostedManifest() distribution.TTSManifest {
 	return distribution.TTSManifest{

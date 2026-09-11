@@ -110,9 +110,11 @@ func TestBreakFilterExcludesEffectReferences(t *testing.T) {
 	}
 }
 
-// TestBundledSearchPrefersDDPrintings covers upstream PR records that point to
-// the same DD artwork instead of a distinct promo image.
-func TestBundledSearchPrefersDDPrintings(t *testing.T) {
+// TestBundledSearchKeepsDistinctPrintingsAndCollapsesSharedArtwork covers
+// upstream records for alternate and promotional printings. Distinct artwork
+// remains selectable while records sharing one image use the lowest card
+// number in ordinary search results.
+func TestBundledSearchKeepsDistinctPrintingsAndCollapsesSharedArtwork(t *testing.T) {
 	repository, err := LoadFile("../../../data/cards.json")
 	if err != nil {
 		t.Fatalf("LoadFile() error = %v", err)
@@ -125,8 +127,15 @@ func TestBundledSearchPrefersDDPrintings(t *testing.T) {
 	}) {
 		passionIDs[card.ID] = true
 	}
-	if !passionIDs["1"] || !passionIDs["186"] || passionIDs["181"] {
-		t.Errorf("Passion Wing search IDs = %#v, want DD card 1 and distinct promo 186", passionIDs)
+	for _, wantedID := range []string{"1", "1101", "1117", "1222", "1246"} {
+		if !passionIDs[wantedID] {
+			t.Errorf("Passion Wing search IDs = %#v, missing current printing %s", passionIDs, wantedID)
+		}
+	}
+	for _, duplicateID := range []string{"181", "186", "1247"} {
+		if passionIDs[duplicateID] {
+			t.Errorf("Passion Wing search IDs = %#v, included removed or shared-art record %s", passionIDs, duplicateID)
+		}
 	}
 
 	pentachiIDs := make(map[string]bool)
@@ -136,15 +145,15 @@ func TestBundledSearchPrefersDDPrintings(t *testing.T) {
 	}) {
 		pentachiIDs[card.ID] = true
 	}
-	if !pentachiIDs["78"] || pentachiIDs["182"] {
-		t.Errorf("Pentachi search IDs = %#v, want only DD card 78", pentachiIDs)
+	if !pentachiIDs["78"] || !pentachiIDs["1218"] || pentachiIDs["182"] || pentachiIDs["1272"] {
+		t.Errorf("Pentachi search IDs = %#v, want base card 78 and alternate-art card 1218", pentachiIDs)
 	}
 
 	// Duplicate IDs remain addressable for compatibility with saved decks.
-	if _, found := repository.FindByID("181"); !found {
-		t.Error("duplicate printing ID 181 no longer resolves")
-	}
 	if _, found := repository.FindByID("182"); !found {
 		t.Error("duplicate printing ID 182 no longer resolves")
+	}
+	if _, found := repository.FindByID("1272"); !found {
+		t.Error("duplicate printing ID 1272 no longer resolves")
 	}
 }

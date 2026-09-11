@@ -1,6 +1,7 @@
 package deckbuilder
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,6 +10,43 @@ import (
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
 )
+
+func TestBundledRawAndNormalizedCardListsHaveMatchingUpdateHashes(t *testing.T) {
+	repository, err := cards.LoadFile("../../../data/cards.json")
+	if err != nil {
+		t.Fatalf("LoadFile() error = %v", err)
+	}
+	rawData, err := os.ReadFile("../../../data/cards.raw.json")
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	var details []speedrobo.CardDetail
+	if err := json.Unmarshal(rawData, &details); err != nil {
+		t.Fatalf("Unmarshal() error = %v", err)
+	}
+	summaries := make([]speedrobo.CardResponse, len(details))
+	for index, detail := range details {
+		summaries[index] = speedrobo.CardResponse{
+			ID:          detail.ID,
+			CardKey:     detail.CardKey,
+			ImageURL:    detail.ImageURL,
+			Expansion:   detail.ExpansionName,
+			PlayTesting: detail.IsPlaytesting,
+		}
+	}
+
+	localHash, err := hashRepositoryCardList(repository)
+	if err != nil {
+		t.Fatalf("hashRepositoryCardList() error = %v", err)
+	}
+	remoteHash, err := hashRemoteCardList(summaries)
+	if err != nil {
+		t.Fatalf("hashRemoteCardList() error = %v", err)
+	}
+	if localHash != remoteHash {
+		t.Fatalf("bundled local hash %q does not match raw-source hash %q", localHash, remoteHash)
+	}
+}
 
 // TestCardListHashesMatchAcrossLocalAndRemoteRepresentations verifies canonical ordering and casing.
 func TestCardListHashesMatchAcrossLocalAndRemoteRepresentations(t *testing.T) {
@@ -23,6 +61,8 @@ func TestCardListHashesMatchAcrossLocalAndRemoteRepresentations(t *testing.T) {
 		{
 			ID:        "1",
 			Name:      "First Card Lv2",
+			Type:      "Caster",
+			CostLevel: "2",
 			ImageURL:  "https://example.com/1.png",
 			Expansion: "Set A",
 		},
@@ -33,7 +73,7 @@ func TestCardListHashesMatchAcrossLocalAndRemoteRepresentations(t *testing.T) {
 	summaries := []speedrobo.CardResponse{
 		{
 			ID:          "1",
-			CardKey:     "First Card lv2",
+			CardKey:     "First Card Super lv2 Rare",
 			ImageURL:    "https://example.com/1.png",
 			Expansion:   "Set A",
 			PlayTesting: "0",
