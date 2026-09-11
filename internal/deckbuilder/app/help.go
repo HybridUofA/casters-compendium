@@ -18,7 +18,11 @@ const howToUseMarkdown = `# How to Use Caster's Compendium
    Element choices use a compact four-column row, and the remaining filters are
    paired to leave more room for card thumbnails.
 3. **Hover over** a card to view its full image and details. Clicking or tapping
-   also works on devices without pointer hover.
+   also works on devices without pointer hover. Gameplay-identical artwork is
+   grouped into one result; use **Artwork / Printing** in the information panel
+   to choose the exact version added to the deck. Select
+   **Show each artwork separately** in Card Search to display those versions as
+   individual results.
 4. **Right-click** a search result to add one copy to the Main Deck.
 5. Hold **Shift** while right-clicking to add one copy to the Side Deck.
 
@@ -63,6 +67,8 @@ You can also drag a search result directly into either deck area.
   Constrained details and filter content scroll within their panels.
 - **Update Card Database** checks the publisher-authorized hosted catalog and
   installs a cryptographically verified card database and artwork.
+- Saved decks using a historical card ID are migrated to the current printing
+  when opened. Save the deck to retain the updated identifiers.
 - **Diagnostic Information** displays a reviewable support summary that can be
   copied into a bug report. It excludes deck contents, credentials, usernames,
   and exact filesystem paths, and nothing is transmitted automatically.

@@ -28,7 +28,7 @@ import (
 const (
 	applicationID      = localdata.SharedApplicationID
 	applicationName    = "Caster's Compendium"
-	applicationVersion = "0.1.8-hotfix.2"
+	applicationVersion = "0.2.0-rc.2"
 )
 
 const setupDownloadWorkers = 6
@@ -466,7 +466,7 @@ func loadOrDownloadCardDatabase(
 			progress("GitHub snapshot is not current; rebuilding card data…", 0, 1)
 		}
 	}
-	repository, err := downloadRemoteCardDatabase(ctx, remote, progress)
+	repository, err := downloadRemoteCardDatabase(ctx, remote, nil, progress)
 	if err != nil {
 		return nil, nil, err
 	}

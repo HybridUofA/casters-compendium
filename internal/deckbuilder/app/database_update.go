@@ -22,6 +22,7 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/carddata/distribution"
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	cardupdate "github.com/HybridUofA/casters-compendium/internal/carddata/update"
+	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
 	"github.com/HybridUofA/casters-compendium/internal/sources/speedrobo"
 )
 
@@ -51,7 +52,7 @@ func hashRepositoryCardList(repository *cards.Repository) (string, error) {
 	for index, card := range cardList {
 		entries[index] = cardListHashEntry{
 			ID:            strings.TrimSpace(card.ID),
-			Name:          strings.ToLower(strings.TrimSpace(card.Name)),
+			Name:          strings.ToLower(gamecards.NormalizeSourceName(card.Name)),
 			ImageURL:      strings.TrimSpace(card.ImageURL),
 			Expansion:     strings.TrimSpace(card.Expansion),
 			IsPlaytesting: card.IsPlaytesting,
@@ -83,7 +84,7 @@ func hashRemoteCardList(summaries []speedrobo.CardResponse) (string, error) {
 		}
 		entries[index] = cardListHashEntry{
 			ID:            strings.TrimSpace(summary.ID),
-			Name:          strings.ToLower(strings.TrimSpace(summary.CardKey)),
+			Name:          strings.ToLower(gamecards.NormalizeSourceName(summary.CardKey)),
 			ImageURL:      strings.TrimSpace(summary.ImageURL),
 			Expansion:     strings.TrimSpace(summary.Expansion),
 			IsPlaytesting: isPlaytesting,
@@ -206,6 +207,7 @@ func fetchRemoteCardList(
 func downloadRemoteCardDatabase(
 	ctx context.Context,
 	remote *remoteCardList,
+	previousRepository *cards.Repository,
 	progress setupProgress,
 ) (*cards.Repository, error) {
 	if remote == nil {
@@ -252,6 +254,12 @@ func downloadRemoteCardDatabase(
 	if err != nil {
 		return nil, err
 	}
+	if previousRepository != nil {
+		normalized, _ = cardupdate.CarryForwardLegacyIDs(
+			previousRepository.All(),
+			normalized,
+		)
+	}
 	return cards.NewRepository(normalized)
 }
 
@@ -293,7 +301,12 @@ func updateApplicationData(
 		}
 	}
 
-	updatedRepository, err := downloadRemoteCardDatabase(ctx, remote, progress)
+	updatedRepository, err := downloadRemoteCardDatabase(
+		ctx,
+		remote,
+		currentRepository,
+		progress,
+	)
 	if err != nil {
 		return nil, err
 	}

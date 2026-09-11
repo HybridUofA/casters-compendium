@@ -91,6 +91,29 @@ func (tile *CardTile) SetSelectedVisual(selected bool) {
 	tile.selectionBorder.Refresh()
 }
 
+// SetCard changes the exact printing represented by a tile while preserving
+// its callbacks, selection state, and drag behavior.
+func (tile *CardTile) SetCard(card cards.Card) {
+	tile.Card = card
+	if tile.dragSource != nil {
+		tile.dragSource.Card = card
+	}
+
+	nextImage := createCardImage(card)
+	if tile.image == nil {
+		tile.image = nextImage
+		tile.Refresh()
+		return
+	}
+
+	tile.image.File = nextImage.File
+	tile.image.Resource = nextImage.Resource
+	tile.image.Image = nextImage.Image
+	tile.image.FillMode = nextImage.FillMode
+	tile.image.ScaleMode = nextImage.ScaleMode
+	tile.image.Refresh()
+}
+
 // EnableDrag associates a source description and lifecycle callbacks with the tile.
 func (tile *CardTile) EnableDrag(
 	source CardDragSource,

@@ -17,7 +17,7 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
-const hostedTTSCardsPerSheet = 3
+const hostedTTSCardsPerSheet = ttsSheetMaxCards
 
 type hostedCatalog interface {
 	decks.CardCatalog
@@ -61,6 +61,10 @@ func GenerateHostedTTSAssets(
 	for start, deckKey := 0, 1; start < len(cardIDs); start, deckKey = start+hostedTTSCardsPerSheet, deckKey+1 {
 		end := min(start+hostedTTSCardsPerSheet, len(cardIDs))
 		sheetIDs := cardIDs[start:end]
+		numWidth, numHeight, err := sheetDimensions(len(sheetIDs))
+		if err != nil {
+			return distribution.TTSManifest{}, fmt.Errorf("calculate hosted sheet %d dimensions: %w", deckKey, err)
+		}
 		filename := fmt.Sprintf("sheet-%03d.png", deckKey)
 		destination := filepath.Join(outputDirectory, filename)
 		if err := writeTTSFileAtomically(destination, func(writer io.Writer) error {
@@ -72,8 +76,8 @@ func GenerateHostedTTSAssets(
 		manifest.Sheets = append(manifest.Sheets, distribution.TTSSheet{
 			DeckKey:   deckKey,
 			FaceURL:   publicDirectoryURL + "/" + filename,
-			NumWidth:  len(sheetIDs),
-			NumHeight: 1,
+			NumWidth:  numWidth,
+			NumHeight: numHeight,
 			CardCount: len(sheetIDs),
 		})
 		for slot, cardID := range sheetIDs {
@@ -103,6 +107,10 @@ func writeHostedTTSFaceSheet(
 	if len(sheetIDs) > hostedTTSCardsPerSheet {
 		return fmt.Errorf("hosted TTS sheets cannot contain more than %d cards", hostedTTSCardsPerSheet)
 	}
+	numWidth, numHeight, err := sheetDimensions(len(sheetIDs))
+	if err != nil {
+		return err
+	}
 
 	images := make([]image.Image, 0, len(sheetIDs))
 	cellWidth := 0
@@ -122,7 +130,7 @@ func writeHostedTTSFaceSheet(
 		}
 	}
 
-	canvas := image.NewRGBA(image.Rect(0, 0, cellWidth*len(sheetIDs), cellHeight))
+	canvas := image.NewRGBA(image.Rect(0, 0, cellWidth*numWidth, cellHeight*numHeight))
 	draw.Draw(
 		canvas,
 		canvas.Bounds(),
@@ -131,8 +139,9 @@ func writeHostedTTSFaceSheet(
 		draw.Src,
 	)
 	for index, cardImage := range images {
-		x := index * cellWidth
-		drawScaledDeckImageTo(canvas, x, 0, cellWidth, cellHeight, cardImage)
+		x := (index % numWidth) * cellWidth
+		y := (index / numWidth) * cellHeight
+		drawScaledDeckImageTo(canvas, x, y, cellWidth, cellHeight, cardImage)
 	}
 	if err := png.Encode(writer, canvas); err != nil {
 		return fmt.Errorf("encode hosted TTS face sheet: %w", err)
@@ -226,13 +235,13 @@ func buildHostedDeckObject(
 	cardObjects := make([]CardObject, 0, len(orderedCardIDs))
 
 	for index, cardID := range orderedCardIDs {
-		location, found := manifest.Cards[cardID]
-		if !found {
-			return DeckObject{}, fmt.Errorf("card %q at position %d is absent from hosted catalog", cardID, index+1)
-		}
 		card, found := repository.FindByID(cardID)
 		if !found {
 			return DeckObject{}, fmt.Errorf("card %q at position %d was not found", cardID, index+1)
+		}
+		location, found := manifest.Cards[card.ID]
+		if !found {
+			return DeckObject{}, fmt.Errorf("card %q at position %d is absent from hosted catalog", card.ID, index+1)
 		}
 		sheet := sheets[location.DeckKey]
 		state := CustomDeckState{

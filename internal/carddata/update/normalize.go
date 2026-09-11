@@ -69,6 +69,7 @@ func FromSpeedrobo(detail speedrobo.CardDetail) (gamecards.Card, error) {
 			card.ExtraFields[field.Label] = field.Value
 		}
 	}
+	card = gamecards.NormalizeDefinition(card)
 
 	if len(card.ExtraFields) == 0 {
 		card.ExtraFields = nil

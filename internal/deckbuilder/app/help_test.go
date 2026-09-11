@@ -16,3 +16,20 @@ func TestHowToUseGuideDocumentsCardRemoval(t *testing.T) {
 		}
 	}
 }
+
+func TestHowToUseGuideDocumentsArtworkSelection(t *testing.T) {
+	for _, instruction := range []string{
+		"Artwork / Printing",
+		"Show each artwork separately",
+	} {
+		if !strings.Contains(howToUseMarkdown, instruction) {
+			t.Fatalf("How to Use guide is missing artwork instruction %q", instruction)
+		}
+	}
+}
+
+func TestHowToUseGuideDocumentsHistoricalIDMigration(t *testing.T) {
+	if !strings.Contains(howToUseMarkdown, "historical card ID") {
+		t.Fatal("How to Use guide is missing historical card ID migration guidance")
+	}
+}

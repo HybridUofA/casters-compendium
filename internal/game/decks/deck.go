@@ -394,6 +394,101 @@ func (deck *Deck) TotalCards() int {
 	return deck.MainTotal() + deck.SideTotal()
 }
 
+// CanonicalizeCardIDs replaces historical catalog aliases with their current
+// card IDs. Aggregate entries that resolve to the same printing are merged,
+// and per-copy ordering is retained. The deck is unchanged if any ID cannot be
+// resolved.
+func (deck *Deck) CanonicalizeCardIDs(repository CardCatalog) (bool, error) {
+	if repository == nil {
+		return false, fmt.Errorf("card repository cannot be nil")
+	}
+
+	canonicalIDs := make(map[string]string)
+	resolve := func(cardID string) (string, error) {
+		cardID = strings.TrimSpace(cardID)
+		if canonicalID, found := canonicalIDs[cardID]; found {
+			return canonicalID, nil
+		}
+		card, found := repository.FindByID(cardID)
+		if !found {
+			return "", fmt.Errorf("unknown card ID %q", cardID)
+		}
+		canonicalID := strings.TrimSpace(card.ID)
+		if canonicalID == "" {
+			return "", fmt.Errorf("card ID %q resolved to an empty canonical ID", cardID)
+		}
+		canonicalIDs[cardID] = canonicalID
+		return canonicalID, nil
+	}
+
+	canonicalizeEntries := func(entries []DeckEntry) ([]DeckEntry, bool, error) {
+		result := make([]DeckEntry, 0, len(entries))
+		indexes := make(map[string]int, len(entries))
+		changed := false
+		for _, entry := range entries {
+			canonicalID, err := resolve(entry.CardID)
+			if err != nil {
+				return nil, false, err
+			}
+			if canonicalID != entry.CardID {
+				changed = true
+			}
+			if index, exists := indexes[canonicalID]; exists {
+				result[index].Quantity += entry.Quantity
+				changed = true
+				continue
+			}
+			indexes[canonicalID] = len(result)
+			result = append(result, DeckEntry{
+				CardID:   canonicalID,
+				Quantity: entry.Quantity,
+			})
+		}
+		return result, changed, nil
+	}
+
+	canonicalizeOrder := func(order []string) ([]string, bool, error) {
+		result := make([]string, len(order))
+		changed := false
+		for index, cardID := range order {
+			canonicalID, err := resolve(cardID)
+			if err != nil {
+				return nil, false, err
+			}
+			result[index] = canonicalID
+			if canonicalID != cardID {
+				changed = true
+			}
+		}
+		return result, changed, nil
+	}
+
+	mainEntries, mainEntriesChanged, err := canonicalizeEntries(deck.MainDeck)
+	if err != nil {
+		return false, fmt.Errorf("canonicalize main deck: %w", err)
+	}
+	sideEntries, sideEntriesChanged, err := canonicalizeEntries(deck.SideDeck)
+	if err != nil {
+		return false, fmt.Errorf("canonicalize side deck: %w", err)
+	}
+	mainOrder, mainOrderChanged, err := canonicalizeOrder(deck.MainOrder)
+	if err != nil {
+		return false, fmt.Errorf("canonicalize main deck order: %w", err)
+	}
+	sideOrder, sideOrderChanged, err := canonicalizeOrder(deck.SideOrder)
+	if err != nil {
+		return false, fmt.Errorf("canonicalize side deck order: %w", err)
+	}
+
+	deck.MainDeck = mainEntries
+	deck.SideDeck = sideEntries
+	deck.MainOrder = mainOrder
+	deck.SideOrder = sideOrder
+	deck.EnsureOrder()
+	return mainEntriesChanged || sideEntriesChanged ||
+		mainOrderChanged || sideOrderChanged, nil
+}
+
 // entriesFor resolves a zone to its mutable aggregate entry slice.
 func (deck *Deck) entriesFor(zone Zone) (*[]DeckEntry, error) {
 	switch zone {

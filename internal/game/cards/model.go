@@ -3,6 +3,7 @@ package cards
 
 type Card struct {
 	ID            string            `json:"id"`
+	LegacyIDs     []string          `json:"legacy_ids,omitempty"`
 	Name          string            `json:"name"`
 	Subname       string            `json:"subname,omitempty"`
 	Type          string            `json:"type"`

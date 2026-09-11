@@ -16,6 +16,8 @@ import (
 )
 
 type mainMenuActions struct {
+	PlayGame         func()
+	OpenDeckEditor   func()
 	NewDeck          func()
 	LoadDeck         func()
 	GenerateImage    func()
@@ -36,10 +38,21 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 	description := widget.NewLabel("Build a deck or convert an existing deck file.")
 	description.Alignment = fyne.TextAlignCenter
 
+	playButton := widget.NewButton("Play a Game (Prototype)", actions.PlayGame)
+	if actions.PlayGame == nil {
+		playButton.Disable()
+	}
+	editorButton := widget.NewButton("Open Deck Editor", actions.OpenDeckEditor)
+	if actions.OpenDeckEditor == nil {
+		editorButton.Disable()
+	}
+
 	menu := container.NewVBox(
 		title,
 		description,
 		widget.NewSeparator(),
+		playButton,
+		editorButton,
 		widget.NewButton("Make a New Deck", actions.NewDeck),
 		widget.NewButton("Load a Deck", actions.LoadDeck),
 		widget.NewButton("Generate Deck Image from Decklist", actions.GenerateImage),
@@ -95,7 +108,7 @@ func showNewDeckDialog(
 func showOpenDeckDialog(
 	window fyne.Window,
 	repository *cards.Repository,
-	onOpened func(*decks.Deck, fyne.URI),
+	onOpened func(*decks.Deck, fyne.URI, bool),
 ) {
 	fileDialog := dialog.NewFileOpen(
 		func(reader fyne.URIReadCloser, openErr error) {
@@ -123,8 +136,12 @@ func showOpenDeckDialog(
 				dialog.ShowError(closeErr, window)
 				return
 			}
-			deck.EnsureOrder()
-			onOpened(deck, uri)
+			migrated, err := deck.CanonicalizeCardIDs(repository)
+			if err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
+			onOpened(deck, uri, migrated)
 		},
 		window,
 	)
@@ -225,6 +242,10 @@ func showGenerateImageFromDecklistDialog(
 				dialog.ShowError(closeErr, window)
 				return
 			}
+			if _, err := deck.CanonicalizeCardIDs(repository); err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
 
 			choice := widget.NewRadioGroup([]string{"Main Deck", "Sideboard"}, nil)
 			choice.SetSelected("Main Deck")
@@ -273,6 +294,10 @@ func showGenerateDecklistDialog(
 			}
 			if closeErr != nil {
 				dialog.ShowError(closeErr, window)
+				return
+			}
+			if _, err := deck.CanonicalizeCardIDs(repository); err != nil {
+				dialog.ShowError(err, window)
 				return
 			}
 			showDecklistSaveDialog(window, deck, repository)

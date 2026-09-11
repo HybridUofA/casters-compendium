@@ -51,6 +51,43 @@
   "extra_fields": null
  },
  {
+  "id": "1217",
+  "name": "Afternoon Ramie",
+  "subname": "Momiji Ogawa",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Whenever an allied [Sweets] enters the field : Put me from your graveyard to your hand.",
+  "flavor": "Mint tea with macarons! Totally gotta try it!",
+  "artist": "Ainoosaru",
+  "card_number": "EX02-Alt02",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Afternoon-Ramie-Alternate-Art.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1245",
+  "name": "Afternoon Ramie",
+  "subname": "Momiji Ogawa",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Whenever an allied [Sweets] enters the field : Put me from your graveyard to your hand.",
+  "flavor": "Mint tea with macarons! Totally gotta try it!",
+  "artist": "Itsuki Hazime",
+  "card_number": "DD04-021",
+  "count": "1",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Afternoon-Ramie-Sample.png",
+  "expansion": "Store Promo 02",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "131",
   "name": "Afternoon Tea",
   "type": "Servant",
@@ -87,6 +124,79 @@
   "extra_fields": null
  },
  {
+  "id": "1155",
+  "name": "Airi",
+  "subname": "Mizuka Noguchi",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest: Put the top three cards of your deck into your graveyard.\n• Rest, banish a servant: Put target [Sweets] servant with a different name than the banished servant from an allied graveyard into your hand.",
+  "flavor": "Hey Nonoka, what should I do?",
+  "artist": "Nekobayashi",
+  "card_number": "DD04-022",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Airi.png",
+  "expansion": "Errata Pack 01",
+  "is_playtesting": false,
+  "extra_fields": null
+ },
+ {
+  "id": "1219",
+  "name": "Airi",
+  "subname": "Mizuka Noguchi",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest: Put the top three cards of your deck into your graveyard.\n• Rest, banish a servant: Put target [Sweets] servant with a different name than the banished servant from an allied graveyard into your hand.",
+  "flavor": "Hey Nonoka, what should I do?",
+  "artist": "Nekobayashi",
+  "card_number": "EX02-Alt04",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Airi-Alternate-Art.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1189",
+  "name": "Airi",
+  "subname": "Mizuka Noguchi",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest: Put the top three cards of your deck into your graveyard.\n• Rest, banish a servant: Put target [Sweets] servant with a different name than the banished servant from an allied graveyard into your hand.",
+  "flavor": "Hey Nonoka, what should I do?",
+  "artist": "Nekobayashi",
+  "card_number": "DD04-022",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Airi-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1310",
+  "name": "Ajari TENGU48",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "[Tengu/Talent]",
+  "cost_level": "4",
+  "attack": "1000",
+  "defense": "1000",
+  "ability": "• Break\n• At the end of the enemy turn: Put me on the bottom of my owner's deck.\n• Enter: Destroy target enemy servant with cost 3 or less.",
+  "flavor": "Every dog has his day!",
+  "artist": "Takamiya Ren",
+  "card_number": "DD06-028",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ajari-TENGU48.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "110",
   "name": "Almeria",
   "subname": "Kurumi Wakui",
@@ -102,6 +212,24 @@
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1203",
+  "name": "Almeria",
+  "subname": "Kurumi Wakui",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "1",
+  "ability": "• Rest, banish a [Cosmetics]: Draw a card.",
+  "flavor": "\"I'll go! Your dad's cakes are the best!\"",
+  "artist": "sakura moyon",
+  "card_number": "DD04-006",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Almeria-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
  },
  {
   "id": "138",
@@ -161,7 +289,7 @@
  },
  {
   "id": "71",
-  "name": "Arthur Lv2",
+  "name": "Arthur",
   "subname": "Mariko Yumejiki",
   "type": "Caster",
   "element": "Void",
@@ -175,6 +303,84 @@
   "is_playtesting": false,
   "extra_fields": {
    "Copies in Product": "2",
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1107",
+  "name": "Arthur",
+  "subname": "Mariko Yumejiki",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "1",
+  "ability": "•Target allied face down Caster gains \"Rest: Target allied {Void} servant gains +500 ATK until end of turn.\" this turn.",
+  "flavor": "Let's get to know each other better.",
+  "artist": "JAIBON",
+  "card_number": "DD02-019",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Arthur-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1138",
+  "name": "Arthur",
+  "subname": "Mariko Yumejiki",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Arthur\" from my Stock: Put the top two cards of your deck into an allied caster zone face down, as a Caster as Rest.",
+  "flavor": "Now that we know each other, let's talk.",
+  "artist": "JAIBON",
+  "card_number": "DD02-020",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Arthur-Super-lv2-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1129",
+  "name": "Arthur",
+  "subname": "Mariko Yumejiki",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Arthur\" from my Stock: Put the top two cards of your deck into an allied caster zone face down, as a Caster as Rest.",
+  "flavor": "Now that we know each other, let's talk.",
+  "artist": "JAIBON",
+  "card_number": "DD02-020",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Arthur-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1297",
+  "name": "ASAMI",
+  "type": "Servant",
+  "element": "Solis",
+  "traits": "[Band/Earnest]",
+  "cost_level": "3",
+  "attack": "1500",
+  "defense": "2000",
+  "ability": "• United Front [Idol] (You may pay this card's elemental aether cost using aether of any element from [Idol] casters. If you do, increase its cost by 1 as you pay its cost.)\n• Enter: Put up to three cards from target player's graveyard on the bottom of the owner's deck.",
+  "flavor": "Here comes the first beat!",
+  "artist": "Ru-en Rouga",
+  "card_number": "DD06-015",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/ASAMI.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": ""
   }
  },
@@ -277,6 +483,26 @@
   }
  },
  {
+  "id": "1196",
+  "name": "Bamanon, Source of Greed",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "Demon",
+  "cost_level": "7",
+  "attack": "4000",
+  "defense": "3000",
+  "ability": "• Double Corrupt (When I corrupt, I corrupt two orbs instead of one.)\n• Enter : Put up to two cards from your hand face down into an allied orb zone as orbs.",
+  "flavor": "Trading in human suffering, she's procured immense wealth.",
+  "artist": "keivin",
+  "card_number": "EX01-032",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bamanon-Source-of-Greed-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
   "id": "27",
   "name": "Barrier of Arrogance",
   "type": "Barrier",
@@ -331,6 +557,24 @@
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1204",
+  "name": "Be Born Again As A Caster",
+  "type": "Conjure",
+  "element": "Void",
+  "traits": "[Madness]",
+  "cost_level": "5",
+  "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n\n• Put target servant into it's owner's caster zone face down, as a caster.",
+  "flavor": "\"I'm so happy.\"",
+  "artist": "MATSUMOTO EIGHT",
+  "card_number": "EX02-036",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Be-Born-Again-As-A-Caster-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": "Rare"
   }
  },
@@ -372,6 +616,26 @@
   "extra_fields": null
  },
  {
+  "id": "1274",
+  "name": "Birdog",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "[Cryptid]",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "1000",
+  "flavor": "A creature that evolved to get close to humans and steal from them.",
+  "artist": "Saiko Takaki",
+  "card_number": "DD05-029",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Birdog.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "228",
   "name": "Bitter Chocolate",
   "type": "Servant",
@@ -385,6 +649,27 @@
   "card_number": "EX02-002",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bitter-Chocolate.png",
   "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1263",
+  "name": "Bloom Lady",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "[Youkai]",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "1000",
+  "ability": "• Enter: Discard your hand. Then draw the same number of cards. (This is not optional)",
+  "flavor": "Let's see if the flowers will bloom.",
+  "artist": "MATSUMOTO EIGHT",
+  "card_number": "DD05-018",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bloom-Lady.png",
+  "expansion": "DD05: Saaya's Adventure",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
@@ -469,6 +754,27 @@
   }
  },
  {
+  "id": "1275",
+  "name": "Brain Eraser",
+  "type": "Servant",
+  "element": "Aqua",
+  "traits": "Supplies",
+  "cost_level": "2",
+  "attack": "0",
+  "defense": "1000",
+  "ability": "• Last Words : Destroy target barrier. (When I am put into a graveyard from the field : Perform the effect.)",
+  "flavor": "An eraser that erases memories.",
+  "artist": "uekino aroe",
+  "card_number": "DD05-030",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Brain-Eraser.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "147",
   "name": "Call Forth",
   "type": "Conjure",
@@ -525,8 +831,11 @@
   }
  },
  {
-  "id": "235",
-  "name": "Carella lv2",
+  "id": "1225",
+  "legacy_ids": [
+   "235"
+  ],
+  "name": "Carella",
   "subname": "Jyun Fujinmai",
   "type": "Caster",
   "element": "Ignus",
@@ -535,11 +844,29 @@
   "flavor": "Leave this to me!",
   "artist": "noki",
   "card_number": "EX02-009",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Carella-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Carella-lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
+  }
+ },
+ {
+  "id": "1208",
+  "name": "Carella",
+  "subname": "Jyun Fujinmai",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "2",
+  "ability": "• Banish a \"Carella\" from my Stock: Target allied servant gains +1000 ATK until end of turn.\n• Rest, discard a caster: Destroy target enemy servant with a cost of 3 or less.",
+  "flavor": "Leave this to me!",
+  "artist": "noki",
+  "card_number": "EX02-009",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Carella-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -560,6 +887,27 @@
   "extra_fields": null
  },
  {
+  "id": "1281",
+  "name": "Cash Cat",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "[Cryptid/Jewelry/Cat]",
+  "cost_level": "1",
+  "attack": "0",
+  "defense": "500",
+  "ability": "• Enter: Each player draws a card.\n• Enter: Look at target enemy orb, then return it.",
+  "flavor": "Did you pull a nice bill?",
+  "artist": "yuko",
+  "card_number": "DD05-036",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cash-Cat.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "1100",
   "name": "Caster Token",
   "type": "",
@@ -569,6 +917,27 @@
   "expansion": "Tokens (auto-generated)",
   "is_playtesting": true,
   "extra_fields": null
+ },
+ {
+  "id": "1260",
+  "name": "Cat Girl",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "[Demon/Cat/Youkai]",
+  "cost_level": "4",
+  "attack": "2000",
+  "defense": "0",
+  "ability": "• Unity\n• Enter : Reveal cards from the top of your deck until you reveal a [Demon], [Cat], or [Youkai] servant with a cost of 2 or less. Put that card into the field and the rest into your graveyard.",
+  "flavor": "Meow, meow, meow, this is an ambush!",
+  "artist": "uekino aroe",
+  "card_number": "DD05-015",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cat-Girl.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "169",
@@ -605,6 +974,24 @@
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1201",
+  "name": "Cestria",
+  "subname": "Izumi Matsuka",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "1",
+  "ability": "• Rest: Rest target Lv1 enemy caster. Play this ability only during an enemy battle phase.",
+  "flavor": "Kaya, Ichika, are we going to the aviary today?",
+  "artist": "ShiroYayoi",
+  "card_number": "EX02-031",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cestria-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": "Rare"
   }
  },
@@ -623,7 +1010,44 @@
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1190",
+  "name": "Chain of Hearts",
+  "subname": "Haruka Yanase",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an enemy servant was returned to its owner's hand from the field this turn.",
+  "flavor": "Risa, you really don't have to go all out.",
+  "artist": "Pisuke",
+  "card_number": "EX02-011",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Chain-of-Hearts-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1293",
+  "name": "Challenge",
+  "type": "Conjure",
+  "element": "Ignus",
+  "traits": "[Earnest]",
+  "cost_level": "1",
+  "ability": "• United Front [Idol] (You may pay this card's elemental aether cost using aether of any element from [Idol] casters. If you do, increase its cost by 1 as you pay its cost.)\n• Until the end of the turn, target servant gains \"When I would corrupt an orb this turn, you may destroy target barrier instead.\" and \"DCT(7): When I corrupt an orb, destroy target barrier\"",
+  "flavor": "We can't lose to some harpies!",
+  "artist": "MATSUMOTO EIGHT",
+  "card_number": "DD06-011",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Challenge.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
   }
  },
  {
@@ -645,6 +1069,25 @@
   "extra_fields": null
  },
  {
+  "id": "1270",
+  "name": "Charyl Thomas",
+  "subname": "Suzuho Yonezu",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Rest: As long as you control less servants than your opponent, allied servants can't be attacked until end of turn. (If reversed servants can't be attacked, the player may be attacked instead.)",
+  "flavor": "\"I want to take Kureba to the mall!\"",
+  "artist": "Takamiya Ren",
+  "card_number": "DD05-025",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Charyl-Thomas.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "105",
   "name": "Citra Cayce",
   "subname": "Kaoru Shida",
@@ -662,8 +1105,11 @@
   "extra_fields": null
  },
  {
-  "id": "258",
-  "name": "Citra Cayce lv2",
+  "id": "1230",
+  "legacy_ids": [
+   "258"
+  ],
+  "name": "Citra Cayce",
   "subname": "Kaoru Shida",
   "type": "Caster",
   "element": "Aes",
@@ -672,11 +1118,48 @@
   "flavor": "Miracle~Make Up!",
   "artist": "sakura chomi",
   "card_number": "EX02-032",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Citra-Cayce-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Citra-Cayce-lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
+  }
+ },
+ {
+  "id": "1213",
+  "name": "Citra Cayce",
+  "subname": "Kaoru Shida",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Citra Cayce\" from my Stock: Search your deck for a Lv1 caster you do not control and put it into the field. Then shuffle your deck. Play this ability only during main timing.\n• Rest, return a Lv1 allied caster to its owner's hand: Up to two target allied [Cosmetics] gain +1000 ATK until end of turn.",
+  "flavor": "Miracle~Make Up!",
+  "artist": "sakura chomi",
+  "card_number": "EX02-032",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Citra-Cayce-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1113",
+  "name": "Citra Cayce",
+  "subname": "Kaoru Shida",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "1",
+  "ability": "• Rest, return a Lv1 allied caster to its owner's hand: Target allied servant gains +1000 ATK until end of turn.",
+  "flavor": "\"But you solve them with no hints, Nagi-chan. Amazing!\"",
+  "artist": "sasaki kounosuke",
+  "card_number": "DD04-001",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Citra-Cayce-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
   }
  },
  {
@@ -715,6 +1198,24 @@
   "extra_fields": null
  },
  {
+  "id": "1202",
+  "name": "Clara Shurei",
+  "subname": "Iroha Murase",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Reverse target enemy servant.",
+  "flavor": "Uwa!! Miwa Torii in the flesh! I'm a big fan!\"",
+  "artist": "Yuzuki Kihiro",
+  "card_number": "DD04-004",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Clara-Shurei-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
   "id": "4",
   "name": "Clarisse Marida",
   "subname": "Taruho Tachibana",
@@ -731,6 +1232,24 @@
   "extra_fields": {
    "Copies in Product": "2",
    "Notes": ""
+  }
+ },
+ {
+  "id": "1184",
+  "name": "Clarisse Marida",
+  "subname": "Taruho Tachibana",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Target allied [Youkai] gains [Double Corrupt] until end of turn.",
+  "flavor": "Mashiro! Mahoro! Let's unwind at a cafe today.",
+  "artist": "gajumaru",
+  "card_number": "DD01-005",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Clarisse-Marida-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -751,6 +1270,27 @@
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1277",
+  "name": "Clever Set Square",
+  "type": "Servant",
+  "element": "Aqua",
+  "traits": "[Supplies]",
+  "cost_level": "3",
+  "attack": "1500",
+  "defense": "1500",
+  "ability": "• I gain +1500 ATK while your opponent controls an Ignus or Terra servant.\n• I gain +1500 DEF while your opponent controls a Solis or Silva servant.\n• I gain [Hubris] while your opponent controls a Luna or Aes servant.\n• I gain [Double Corrupt] while your opponent controls a Void or Aqua servant.",
+  "flavor": "\"Now then, which will you use?\" - Glow Desire",
+  "artist": "AKI",
+  "card_number": "DD05-032",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Clever-Set-Square.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "115",
@@ -787,6 +1327,25 @@
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1276",
+  "name": "Compensation",
+  "type": "Conjure",
+  "element": "Luna",
+  "traits": "Greed",
+  "cost_level": "3",
+  "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.) \n• Put the top card of your deck into an allied orb zone face down, as an orb.",
+  "flavor": "\"Protect me once again, my orb.\"",
+  "artist": "kawaryu",
+  "card_number": "DD05-031",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Compensation.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "88",
@@ -844,6 +1403,24 @@
   }
  },
  {
+  "id": "1102",
+  "name": "Crimson Nicola",
+  "subname": "Nagi Sawara",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if two or more allied servants entered the field this turn.",
+  "flavor": "Akira, your puzzles are way too difficult!",
+  "card_number": "DD01-004",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Crimson-Nicola-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
   "id": "127",
   "name": "Crispy Cookie",
   "type": "Servant",
@@ -882,6 +1459,25 @@
   }
  },
  {
+  "id": "1279",
+  "name": "Critical Hit",
+  "type": "Conjure",
+  "element": "Aqua",
+  "traits": "[Research]",
+  "cost_level": "5",
+  "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Quickcast (You may play me any time.)\n• Destroy target enemy servant with a cost of 5 or less.",
+  "flavor": "It's extremely effective!",
+  "artist": "MATSUMOTO EIGHT",
+  "card_number": "DD05-034",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Critical-Hit.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "130",
   "name": "Crunchy Crunchy Rusk",
   "type": "Servant",
@@ -898,6 +1494,25 @@
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1305",
+  "name": "Cuella Merenga",
+  "subname": "Chiru Sakamoto",
+  "type": "Caster",
+  "element": "Aqua",
+  "traits": "[Talent]",
+  "ability": "• If I am in an allied graveyard remove me from the game, discard a [Talent]: Search your deck for a [Tengu], reveal it, and put it into your hand. Shuffle your deck.",
+  "flavor": "\"Huh? Another error?\"",
+  "artist": "Kamijo Roro",
+  "card_number": "DD06-023",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cuella-Merenga.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "49",
@@ -976,8 +1591,26 @@
   }
  },
  {
+  "id": "1223",
+  "name": "Deshi Lion",
+  "subname": "Rui Saotome",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Put target Supplies in an allied graveyard into your hand.",
+  "flavor": "Mira! Can you paint this design I drew?",
+  "artist": "noki",
+  "card_number": "DD02-002",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Deshi-Lion-Hyper-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
   "id": "70",
-  "name": "Deshi Lion Lv2",
+  "name": "Deshi Lion",
   "subname": "Rui Saotome",
   "type": "Caster",
   "element": "Aqua",
@@ -992,6 +1625,44 @@
   "extra_fields": {
    "Copies in Product": "2",
    "Notes": ""
+  }
+ },
+ {
+  "id": "1137",
+  "name": "Deshi Lion",
+  "subname": "Rui Saotome",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Deshi Lion\" from my Stock: Search your deck for a [Supplies] servant with a cost of 3 or less and put it into the field as Rest. Then shuffle your deck.",
+  "flavor": "How's this? Is it within your expectations?!",
+  "artist": "noki",
+  "card_number": "DD02-003",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Deshi-Lion-lv2-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1106",
+  "name": "Deshi Lion",
+  "subname": "Rui Saotome",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Put target Supplies in an allied graveyard into your hand.",
+  "flavor": "Mira! Can you paint this design I drew?",
+  "artist": "noki",
+  "card_number": "DD02-002",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Deshi-Lion-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
   }
  },
  {
@@ -1012,6 +1683,27 @@
   "is_playtesting": false,
   "extra_fields": {
    "Rarity": "Normal"
+  }
+ },
+ {
+  "id": "1118",
+  "name": "Diablos the Deciever",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "Demon",
+  "cost_level": "7",
+  "attack": "7000",
+  "defense": "4000",
+  "ability": "• Double Corrupt (When I corrupt, I corrupt two orbs instead of one.)\n• At end of your turn : Return an allied caster from the field to its owner's hand.",
+  "flavor": "Fakes aren't too different from the real thing.",
+  "artist": "Nanase Kokoa",
+  "card_number": "EX01-026",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Diablos-the-Deciever-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
   }
  },
  {
@@ -1050,6 +1742,27 @@
   "is_playtesting": false,
   "extra_fields": {
    "Copies in Product": "4",
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1253",
+  "name": "Disembodied Soul",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "Youkai",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
+  "ability": "[Unity](Whenever I attack : You may rest any number of recovered allied servants that share a Trait with me. If you do, I gain +X ATK until end of turn, where X is the total ATK of servants rested this way)",
+  "flavor": "A manifestation of furious anger.",
+  "artist": "gozz",
+  "card_number": "DD05-008",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Disembodied-Soul.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": ""
   }
  },
@@ -1107,6 +1820,66 @@
   "is_playtesting": false,
   "extra_fields": {
    "Rarity": "Normal"
+  }
+ },
+ {
+  "id": "1124",
+  "name": "Eli Superior",
+  "subname": "Mayu Ono",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "1",
+  "ability": "• Rest, banish a recovered [Insect] or [Plant]: Destroy target enemy servant with a cost equal to or less than the cost of the card banished for this ability's cost.",
+  "flavor": "Geeze Honoka, you worry too much.",
+  "artist": "sakura moyon",
+  "card_number": "EX01-010",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Eli-Superior-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1288",
+  "name": "Emi Schardt",
+  "subname": "Marin Ichinose",
+  "type": "Caster",
+  "element": "Aqua",
+  "traits": "[Idol/Earnest]",
+  "cost_level": "1",
+  "ability": "• Rest: Look at the top three cards of your deck. Then put them back in any order.",
+  "flavor": "\"Don't look at any other girls... Just look at me, ok?\"",
+  "artist": "Rubisama",
+  "card_number": "DD06-006",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Emi-Schardt.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1300",
+  "name": "ERENA",
+  "type": "Servant",
+  "element": "Terra",
+  "traits": "[Band/Earnest]",
+  "cost_level": "5",
+  "attack": "1000",
+  "defense": "4000",
+  "ability": "• United Front [Idol]\n\n• DCT(10) (If there are ten or more cards with [Earnest] in an allied graveyard, I gain the following ability): [Enter]:Destroy target servant and Destroy target rested servant. \n\n• DCT(15): I gain Hubris and Triple Corrupt(When I corrupt, I corrupt three orbs instead of one).",
+  "flavor": "Hello everybody?!",
+  "artist": "tomimin",
+  "card_number": "DD06-018",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/ERENA.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
   }
  },
  {
@@ -1221,6 +1994,27 @@
   }
  },
  {
+  "id": "1262",
+  "name": "Explosive Bamboo",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "Youkai/Plant",
+  "cost_level": "2",
+  "attack": "3000",
+  "defense": "0",
+  "ability": "• At end of turn : Destroy me if I battled an enemy servant this turn.",
+  "flavor": "Powerful, but frail.",
+  "artist": "Saiko Takaki",
+  "card_number": "DD05-017",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Explosive-Bamboo.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "81",
   "name": "Extravagant Necklace",
   "type": "Servant",
@@ -1255,6 +2049,63 @@
   "is_playtesting": false,
   "extra_fields": {
    "Rarity": "Normal"
+  }
+ },
+ {
+  "id": "1119",
+  "name": "Faare A Popierre",
+  "subname": "Michiru Uchiki",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "1",
+  "ability": "• Rest: Put target Cosumetics in an allied graveyard on top of your deck.",
+  "flavor": "I wonder... will anyone like me?",
+  "artist": "Marui-no",
+  "card_number": "EX01-013",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Faare-A-Popierre-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1133",
+  "name": "Faare A Popierre",
+  "subname": "Michiru Uchiki",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "1",
+  "ability": "• Rest: Put target Cosumetics in an allied graveyard on top of your deck.",
+  "flavor": "I wonder... will anyone like me?",
+  "artist": "Marui-no",
+  "card_number": "EX01-ALT02",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Faare-A-Popierre-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1258",
+  "name": "Fair and Square",
+  "type": "Barrier",
+  "element": "Ignus",
+  "traits": "[Rage]",
+  "cost_level": "1",
+  "ability": "• Players cannot put cards into their orb zone.\n•Banish this card: Draw a card.",
+  "flavor": "Let's have a fair and square magic duel!",
+  "artist": "kawaryu",
+  "card_number": "DD05-013",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Fair-and-Square.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
   }
  },
  {
@@ -1319,6 +2170,46 @@
   }
  },
  {
+  "id": "1254",
+  "name": "Firewheel",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "Youkai",
+  "cost_level": "4",
+  "attack": "1000",
+  "defense": "1000",
+  "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Enter: Destroy target enemy servant with a cost of 3 or less.",
+  "flavor": "I'll just help myself to your soul.",
+  "artist": "M ganzy",
+  "card_number": "DD05-009",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Firewheel.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1264",
+  "name": "Flame of Indignation",
+  "type": "Conjure",
+  "element": "Ignus",
+  "traits": "Rage",
+  "cost_level": "5",
+  "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Destroy target enemy servant with a cost of 6 or less.",
+  "flavor": "Burn to ash!",
+  "artist": "mie",
+  "card_number": "DD05-019",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Flame-of-Indignation.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "18",
   "name": "Flame of Indignation",
   "type": "Conjure",
@@ -1357,20 +2248,41 @@
   }
  },
  {
-  "id": "183",
-  "name": "Forced Repatriation",
-  "type": "Conjure",
-  "element": "Terra",
-  "traits": "Pride",
-  "cost_level": "3",
-  "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Return target rested enemy servant to its owner's hand.",
-  "flavor": "\"Go back.\"",
-  "artist": "mie",
-  "card_number": "PR001-004",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Forced-Repatriation.png",
-  "expansion": "Influencer Promo Pack",
-  "is_playtesting": false,
-  "extra_fields": null
+  "id": "1252",
+  "name": "Flame Rouge",
+  "subname": "Risa Ibushi",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied servant destroyed an enemy servant in battle this turn.",
+  "flavor": "Let's heat things up~",
+  "artist": "sakura chomi",
+  "card_number": "DD05-007",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Flame-Rouge.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1185",
+  "name": "Flame Rouge",
+  "subname": "Risa Ibushi",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied servant destroyed an enemy servant in battle this turn.",
+  "flavor": "Let's heat things up~",
+  "artist": "sakura chomi",
+  "card_number": "DD01-006",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Flame-Rouge-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
  },
  {
   "id": "28",
@@ -1392,6 +2304,22 @@
   }
  },
  {
+  "id": "183",
+  "name": "Forced Repatriation",
+  "type": "Conjure",
+  "element": "Terra",
+  "traits": "Pride",
+  "cost_level": "3",
+  "ability": "• Break (When this card is put into your hand from an orb zone, you may play it immediately without paying its cost.)\n• Return target rested enemy servant to its owner's hand.",
+  "flavor": "\"Go back.\"",
+  "artist": "mie",
+  "card_number": "PR001-004",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Forced-Repatriation.png",
+  "expansion": "Influencer Promo Pack",
+  "is_playtesting": false,
+  "extra_fields": null
+ },
+ {
   "id": "91",
   "name": "Forre Mellow",
   "subname": "Nahoko Tosaka",
@@ -1407,6 +2335,65 @@
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1152",
+  "name": "Forre Mellow",
+  "subname": "Nahoko Tosaka",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if no allied cards, except Casters, have been played this turn. Play this ability only during your end phase.",
+  "flavor": "Oh, I caught another rare butterfly. I need to show Sakura-san!",
+  "artist": "sakura chomi",
+  "card_number": "DD03-020",
+  "count": "1",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Forre-Mellow.png",
+  "expansion": "Store Promo 01",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1112",
+  "name": "Forre Mellow",
+  "subname": "Nahoko Tosaka",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if no allied cards have been played this turn. Play this ability only during your end phase.",
+  "flavor": "Oh, I caught another rare butterfly. I need to show Sakura-san!",
+  "artist": "sakura chomi",
+  "card_number": "DD03-020",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Forre-Mellow-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1312",
+  "name": "Fuken Bou TENGU48",
+  "type": "Servant",
+  "element": "Aqua",
+  "traits": "[Tengu/Talent]",
+  "cost_level": "5",
+  "attack": "3000",
+  "defense": "3000",
+  "ability": "• At the end of the enemy turn: Put me on the bottom of my owner's deck.\n• All Tengu you control gain \"Enter: Declare a card name. Then reveal the bottom card of your deck, if it is a [Tengu] with the declared name, put it onto the field.\".",
+  "flavor": "Time ripens all things; no man is born wise.",
+  "artist": "kyoka sera",
+  "card_number": "DD06-030",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Fuken-Bou-TENGU48.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "236",
@@ -1425,24 +2412,6 @@
   "extra_fields": {
    "Notes": ""
   }
- },
- {
-  "id": "184",
-  "name": "Furious Dragon",
-  "type": "Servant",
-  "element": "Ignus",
-  "traits": "Dragon",
-  "cost_level": "6",
-  "attack": "2000",
-  "defense": "2000",
-  "ability": "• [Double Corrupt] (When this servant corrupts, it corrupts two orbs instead of one.)\n• I gain +500 ATK and DEF for each allied {Ignus} caster.",
-  "flavor": "All it knows is anger.",
-  "artist": "gozz",
-  "card_number": "PR001-005",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Furious-Dragon.png",
-  "expansion": "Influencer Promo Pack",
-  "is_playtesting": false,
-  "extra_fields": null
  },
  {
   "id": "15",
@@ -1466,6 +2435,24 @@
   }
  },
  {
+  "id": "184",
+  "name": "Furious Dragon",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "Dragon",
+  "cost_level": "6",
+  "attack": "2000",
+  "defense": "2000",
+  "ability": "• [Double Corrupt] (When this servant corrupts, it corrupts two orbs instead of one.)\n• I gain +500 ATK and DEF for each allied {Ignus} caster.",
+  "flavor": "All it knows is anger.",
+  "artist": "gozz",
+  "card_number": "PR001-005",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Furious-Dragon.png",
+  "expansion": "Influencer Promo Pack",
+  "is_playtesting": false,
+  "extra_fields": null
+ },
+ {
   "id": "248",
   "name": "Gadfly Wasp",
   "type": "Servant",
@@ -1480,6 +2467,27 @@
   "card_number": "EX02-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gadfly-Wasp.png",
   "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1309",
+  "name": "Garan Bou TENGU48",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "[Tengu/Talent]",
+  "cost_level": "5",
+  "attack": "3000",
+  "defense": "2000",
+  "ability": "• At the end of the enemy turn: Put me on the bottom of my owner's deck.\n• All Tengu you control gain \"Enter: Corrupt target orb.\".",
+  "flavor": "If you put your heart and soul into it, anything is possible!",
+  "artist": "Nanase Kokoa",
+  "card_number": "DD06-027",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Garan-Bou-TENGU48.png",
+  "expansion": "DD06: Battle of the Bands",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
@@ -1505,8 +2513,11 @@
   }
  },
  {
-  "id": "265",
-  "name": "Gawain lv2",
+  "id": "1232",
+  "legacy_ids": [
+   "265"
+  ],
+  "name": "Gawain",
   "subname": "Mika Rokutanda",
   "type": "Caster",
   "element": "Void",
@@ -1515,11 +2526,47 @@
   "flavor": "\"Oof. Alright, that one hurt.\"",
   "artist": "JAIBON",
   "card_number": "EX02-039",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain-lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
+  }
+ },
+ {
+  "id": "1215",
+  "name": "Gawain",
+  "subname": "Mika Rokutanda",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Gawain\" from my Stock : Put the top card of your deck into an allied orb zone face down, as an orb.\n• Rest : If both you and your opponent have no orbs, you win the game.",
+  "flavor": "\"Oof. Alright, that one hurt.\"",
+  "artist": "JAIBON",
+  "card_number": "EX02-039",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1205",
+  "name": "Gawain",
+  "subname": "Mika Rokutanda",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "1",
+  "ability": "• Rest: If an allied orb would be corrupted, you may turn me face down instead.",
+  "flavor": "You'll soon see that pain is not always so bad.",
+  "artist": "JAIBON",
+  "card_number": "DD02-023",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -1563,7 +2610,7 @@
  },
  {
   "id": "38",
-  "name": "Glory Butterfly Lv2",
+  "name": "Glory Butterfly",
   "subname": "Sakura Nishinotouin",
   "type": "Caster",
   "element": "Terra",
@@ -1577,6 +2624,183 @@
   "is_playtesting": false,
   "extra_fields": {
    "Copies in Product": "2",
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1136",
+  "name": "Glory Butterfly",
+  "subname": "Sakura Nishinotouin",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Glory Butterfly\" from my Stock: Destroy target servant with a cost of 3 or less.\n• Rest: Target allied servant gains +1000 DEF until end of turn.",
+  "flavor": "Miss Tsubasa, today I'm going to teach you some manners.",
+  "artist": "Nekobayashi",
+  "card_number": "DD01-021",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Glory-Butterfly-lv2-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1103",
+  "name": "Glory Butterfly",
+  "subname": "Sakura Nishinotouin",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "1",
+  "ability": "• Rest: Target allied servant gains +500 DEF until end of turn.",
+  "flavor": "Miss Hanna, after school let's go to the greenhouse.",
+  "artist": "Nekobayashi",
+  "card_number": "DD01-020",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Glory-Butterfly-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1127",
+  "name": "Glory Butterfly",
+  "subname": "Sakura Nishinotouin",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Glory Butterfly\" from my Stock: Destroy target servant with a cost of 3 or less.\n• Rest: Target allied servant gains +1000 DEF until end of turn.",
+  "flavor": "Miss Tsubasa, today I'm going to teach you some manners.",
+  "artist": "Nekobayashi",
+  "card_number": "DD01-021",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Glory-Butterfly-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1265",
+  "name": "Glow Desire",
+  "subname": "Runa Tsukinaga",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Rest: Target servant with ATK greater than its printed ATK gains +1000 ATK until end of turn.",
+  "flavor": "\"Kotoko! Was your alchemy a success?\"",
+  "artist": "Ru-en Rouga",
+  "card_number": "DD05-020",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Glow-Desire.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1266",
+  "name": "Glow Desire",
+  "subname": "Runa Tsukinaga",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "2",
+  "ability": "• Banish a \"Glow Desire\" from my Stock: Target allied {Luna} servant gains +500 ATK until end of turn. Draw a card.\n• Rest: Target servant with ATK higher than its printed ATK gains +2000 ATK until end of turn.",
+  "flavor": "\"Bum bada bum! Super unleash!\"",
+  "artist": "Ru-en Rouga",
+  "card_number": "DD05-021",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Glow-Desire-Lv2.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1280",
+  "name": "Goblin Merchant",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "[Cryptid]",
+  "cost_level": "6",
+  "attack": "5000",
+  "defense": "5000",
+  "ability": "• Double Corrupt (When I corrupt, I corrupt two orbs instead of one.)\n• Discard two cards: Return me to my owner's hand. Enemy players may also play this ability.",
+  "flavor": "\"Yay! Look at all this money!\" - Goblin Merchant",
+  "artist": "Ryo Taniguchi",
+  "card_number": "DD05-035",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Goblin-Merchant.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1273",
+  "name": "Goblin Moneylender",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "Cryptid",
+  "cost_level": "3",
+  "attack": "2000",
+  "defense": "2000",
+  "ability": "• Enter: Play rock-paper-scissors with target enemy player. The winning draws two cards.\n• Last Words: Play rock-paper-scissors with target enemy player. The loser discards three cards.",
+  "flavor": "It's time to collect on your loan~",
+  "artist": "Ryo Taniguchi",
+  "card_number": "DD05-028",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Goblin-Moneylender.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1282",
+  "name": "Goblin Thief",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "[Cryptid]",
+  "cost_level": "3",
+  "attack": "4000",
+  "defense": "1000",
+  "ability": "• Whenever I am attacked: That attacking player gains control of this card.",
+  "flavor": "Wait, wait! I'm changing sides!",
+  "artist": "Ryo Taniguchi",
+  "card_number": "DD05-037",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Goblin-Thief.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1267",
+  "name": "Grace",
+  "subname": "Suzu Tachibana",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Whenever an allied Jewelry enters the field : Recover me.",
+  "flavor": "\"Fufufu, she's such an airhead, it's fun to tease her!\"",
+  "artist": "sakura moyon",
+  "card_number": "DD05-022",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Grace.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": ""
   }
  },
@@ -1596,6 +2820,25 @@
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1110",
+  "name": "Grace",
+  "subname": "Suzu Tachibana",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Whenever an allied Jewelry enters the field : Recover this card.",
+  "flavor": "\"Fufufu, she's such an airhead, it's fun to tease her!\"",
+  "artist": "sakura moyon",
+  "card_number": "DD03-005",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Grace-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
  },
  {
   "id": "64",
@@ -1638,6 +2881,27 @@
   "extra_fields": null
  },
  {
+  "id": "1257",
+  "name": "Gretel",
+  "type": "Servant",
+  "element": "Solis",
+  "traits": "[Sweets/Youkai]",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "0",
+  "ability": "• Rest, discard a card: Put target \"Hansel\" from an allied graveyard onto the field.",
+  "flavor": "I got it! Omnomnom",
+  "artist": "noki",
+  "card_number": "DD05-012",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gretel.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "29",
   "name": "Griphon",
   "type": "Servant",
@@ -1674,6 +2938,48 @@
   "is_playtesting": false,
   "extra_fields": {
    "Copies in Product": "4",
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1259",
+  "name": "Hansel",
+  "type": "Servant",
+  "element": "Solis",
+  "traits": "[Sweets/Youkai]",
+  "cost_level": "3",
+  "attack": "1000",
+  "defense": "1000",
+  "ability": "• Rest, discard a card: Put target \"Gretel\" from an allied graveyard onto the field.",
+  "flavor": "Just follow the bread crums",
+  "artist": "noki",
+  "card_number": "DD05-014",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hansel.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1256",
+  "name": "Hard Pancake",
+  "type": "Servant",
+  "element": "Solis",
+  "traits": "Sweets",
+  "cost_level": "4",
+  "attack": "0",
+  "defense": "3000",
+  "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Enter : Put target servant with cost 3 or less in an allied graveyard into your hand. (When I enter the field : Perform the effect.)",
+  "flavor": "One more please!",
+  "artist": "Yuko Nagasaki",
+  "card_number": "DD05-011",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hard-Pancake.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": ""
   }
  },
@@ -1716,6 +3022,47 @@
   "extra_fields": null
  },
  {
+  "id": "1220",
+  "name": "Harpy",
+  "type": "Servant",
+  "element": "Silva",
+  "traits": "Cryptid",
+  "cost_level": "4",
+  "attack": "1000",
+  "defense": "1000",
+  "ability": "• Break (When I am put into your hand from an orb zone, you may play me immediately without paying my cost.)\n• Enter : Return target servant with total cost four or less to its owner's hand. (When I enter the field : Perform the effect.)",
+  "flavor": "The one sent away is the most surprised.",
+  "artist": "AKI",
+  "card_number": "EX02-Alt05",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Harpy-Alternate-Art.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1294",
+  "name": "HARU",
+  "type": "Servant",
+  "element": "Silva",
+  "traits": "[Band/Earnest]",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
+  "ability": "• United Front [Idol] (You may pay this card's elemental aether cost using aether of any element from [Idol] casters. If you do, increase its cost by 1 as you pay its cost.)\n\n• When I attack, put the top card of your deck into your graveyard.",
+  "flavor": "Let's just go with the flow~",
+  "artist": "yuko",
+  "card_number": "DD06-012",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/HARU.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "63",
   "name": "Hastur",
   "type": "Servant",
@@ -1734,6 +3081,44 @@
   "extra_fields": {
    "Copies in Product": "4",
    "Notes": ""
+  }
+ },
+ {
+  "id": "1153",
+  "name": "Hastur",
+  "type": "Servant",
+  "element": "Void",
+  "traits": "Cthulhu",
+  "cost_level": "5",
+  "attack": "2000",
+  "defense": "2000",
+  "ability": "• Last Words : Target player banishes servants equal to the number of face down casters they control.",
+  "flavor": "Banishment, this world!",
+  "artist": "Saiko Takaki",
+  "card_number": "DD02-027",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hastur.png",
+  "expansion": "Errata Pack 01",
+  "is_playtesting": false,
+  "extra_fields": null
+ },
+ {
+  "id": "1206",
+  "name": "Hastur",
+  "type": "Servant",
+  "element": "Void",
+  "traits": "Cthulhu",
+  "cost_level": "5",
+  "attack": "2000",
+  "defense": "2000",
+  "ability": "• Last Words : Target player banishes servants equal to the number of face down casters they control.",
+  "flavor": "Banishment, this world!",
+  "artist": "Saiko Takaki",
+  "card_number": "DD02-027",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hastur-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -1776,6 +3161,25 @@
   "extra_fields": null
  },
  {
+  "id": "1307",
+  "name": "Heavenly Kitchen",
+  "type": "Conjure",
+  "element": "Solis",
+  "traits": "[Hunger/Talent]",
+  "cost_level": "2",
+  "ability": "• United Front [Talent] (You may pay this card's elemental aether cost using aether of any element from [Talent] casters. If you do, increase its cost by 1 as you pay its cost.)\n• Reveal any number of cards from your hand. Discard all casters revealed and for each [Tengu] and/or [Heroic Spirit] revealed, search your deck for a caster and put it into an allied graveyard. Shuffle your deck.",
+  "flavor": "NO! Those were for the students!",
+  "artist": "Tokiwa",
+  "card_number": "DD06-025",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Heavenly-Kitchen.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "58",
   "name": "Heretic",
   "type": "Servant",
@@ -1812,6 +3216,25 @@
   "is_playtesting": false,
   "extra_fields": {
    "Rarity": "Normal"
+  }
+ },
+ {
+  "id": "1120",
+  "name": "Hilde Willow",
+  "subname": "Shizuku Mizumoto",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Rest: Look at the top card of an enemy deck. You may put that card on the bottom of that enemy deck.",
+  "flavor": "\"Rui, your luck is looking really awful this month!\"",
+  "artist": "oyume",
+  "card_number": "EX01-012",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hilde-Willow-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
   }
  },
  {
@@ -2003,6 +3426,24 @@
   }
  },
  {
+  "id": "1194",
+  "name": "Iroha Maltz",
+  "subname": "Hanna Miyama",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "1",
+  "ability": "• Rest: Reverse target allied [Plant].",
+  "flavor": "Hey, Nahoko, is everyone going to the greenhouse?",
+  "artist": "sakura chomi",
+  "card_number": "DD01-022",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Iroha-Maltz-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
   "id": "111",
   "name": "Irresistible Rouge",
   "type": "Servant",
@@ -2093,12 +3534,15 @@
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "Notes": "Rare"
+   "Notes": ""
   }
  },
  {
-  "id": "252",
-  "name": "Karen Urania lv2",
+  "id": "1229",
+  "legacy_ids": [
+   "252"
+  ],
+  "name": "Karen Urania",
   "subname": "Karen Kashima",
   "type": "Caster",
   "element": "Aqua",
@@ -2107,11 +3551,47 @@
   "flavor": "\"Command the stars!\"",
   "artist": "Kutori PanYa",
   "card_number": "EX02-026",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania-lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "Notes": "Super Rare"
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1212",
+  "name": "Karen Urania",
+  "subname": "Karen Kashima",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "2",
+  "ability": "• Banish a \"Karen Urania\" from my Stock: Until end of turn, the next time target allied servant would be destroyed by non-battle, it isn't destroyed.\n• Rest: Draw two cards and discard a card if an allied servant was destroyed by non-battle this turn.",
+  "flavor": "\"Command the stars!\"",
+  "artist": "Kutori PanYa",
+  "card_number": "EX02-026",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1198",
+  "name": "Karen Urania",
+  "subname": "Karen Kashima",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied servant was destroyed by non-battle this turn.",
+  "flavor": "\"I only know about stars.\"",
+  "artist": "Kutori PanYa",
+  "card_number": "EX02-027",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -2133,7 +3613,7 @@
  },
  {
   "id": "90",
-  "name": "Kiberia Yosha Lv2",
+  "name": "Kiberia Yosha",
   "subname": "Ichika Asaba",
   "type": "Caster",
   "element": "Silva",
@@ -2147,6 +3627,63 @@
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1140",
+  "name": "Kiberia Yosha",
+  "subname": "Ichika Asaba",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "2",
+  "ability": "• Rest, banish a\"Kiberia Yosha\" from my Stock: Return target enemy servant with a cost of 4 or less to its owner's hand.\n• Rest: Target enemy servant gains -1000 ATK until end of turn.",
+  "flavor": "Izumi-chan smells good again today~?",
+  "artist": "Matsurika Yoko",
+  "card_number": "DD03-019",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kiberia-Yosha-lv2-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1111",
+  "name": "Kiberia Yosha",
+  "subname": "Ichika Asaba",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "1",
+  "ability": "• Rest: Target enemy servant gains -500 ATK until end of turn.",
+  "flavor": "Kaya, why are you always eating sweets?",
+  "artist": "Matsurika Yoko",
+  "card_number": "DD03-018",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kiberia-Yosha-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1131",
+  "name": "Kiberia Yosha",
+  "subname": "Ichika Asaba",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "2",
+  "ability": "• Rest, banish a\"Kiberia Yosha\" from my Stock: Return target enemy servant with a cost of 4 or less to its owner's hand.\n• Rest: Target enemy servant gains -1000 ATK until end of turn.",
+  "flavor": "Izumi-chan smells good again today~?",
+  "artist": "Matsurika Yoko",
+  "card_number": "DD03-019",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kiberia-Yosha-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
  },
  {
   "id": "16",
@@ -2205,6 +3742,26 @@
   }
  },
  {
+  "id": "1286",
+  "name": "Kurono Coley",
+  "subname": "Shuna Todoroki",
+  "type": "Caster",
+  "element": "Terra",
+  "traits": "[Idol/Earnest]",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Target allied [Band] gains Hubris until end of turn.",
+  "flavor": "\"You can love me, but I won't reciprocate those feelings. \"",
+  "artist": "Matsurika Yoko",
+  "card_number": "DD06-004",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Kurono-Coley.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "43",
   "name": "Lablarite",
   "subname": "Maya Shimofuji",
@@ -2221,6 +3778,24 @@
   "extra_fields": {
    "Copies in Product": "2",
    "Notes": ""
+  }
+ },
+ {
+  "id": "1200",
+  "name": "Lablarite",
+  "subname": "Maya Shimofuji",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Rest: Target [Supplies] gets +500 ATK this turn for each other {Aqua} Caster you control.",
+  "flavor": "It can't be helped. I'll lend you my power.",
+  "artist": "Mile",
+  "card_number": "DD02-006",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lablarite-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -2243,6 +3818,25 @@
   }
  },
  {
+  "id": "1108",
+  "name": "Lancelot",
+  "subname": "Rin Nakahara",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "1",
+  "ability": "• Rest, banish a face down Caster: Destroy target enemy servant with a cost of 3 or less.",
+  "flavor": "Ora! Go forth! Evil gods!",
+  "artist": "JAIBON",
+  "card_number": "DD02-025",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lancelot-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
   "id": "97",
   "name": "Lazy Spirit",
   "type": "Servant",
@@ -2262,6 +3856,45 @@
   "extra_fields": null
  },
  {
+  "id": "1313",
+  "name": "Lesson from the Talented",
+  "type": "Barrier",
+  "element": "Luna",
+  "traits": "[Talent]",
+  "cost_level": "2",
+  "ability": "• United Front [Talent] (You may pay this card's elemental aether cost using aether of any element from [Talent] casters. If you do, increase its cost by 1 as you pay its cost.)\n• Pay 1 aether: Remove from the chase target automatic ability of a [Tengu].",
+  "flavor": "It's always okay to get back up and try one more time!",
+  "artist": "QK",
+  "card_number": "DD06-031",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lesson-from-the-Talented.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1285",
+  "name": "Lief",
+  "subname": "Hiyo Yotsuba",
+  "type": "Caster",
+  "element": "Silva",
+  "traits": "[Idol/Earnest]",
+  "cost_level": "1",
+  "ability": "• Rest: Produce one aether of any element. Spend this aether only to play [Earnest] cards.",
+  "flavor": "\"I wish to become your support \"",
+  "artist": "ainoosaru",
+  "card_number": "DD06-003",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lief.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "227",
   "name": "Lilia Chocolate",
   "subname": "Mao Mizoguchi",
@@ -2273,6 +3906,24 @@
   "artist": "Mayo",
   "card_number": "EX02-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lilia-Chocolate.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1187",
+  "name": "Lilia Chocolate",
+  "subname": "Mao Mizoguchi",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Remove a number of [Sweets] in an allied graveyard from the game equal to the cost of target enemy servant. If you do, destroy that servant. Play this ability only during an allied main phase.",
+  "flavor": "\"I won't lose in swimming to Momoka today!\"",
+  "artist": "Mayo",
+  "card_number": "EX02-001",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lilia-Chocolate-Rare.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
@@ -2298,6 +3949,64 @@
   }
  },
  {
+  "id": "1122",
+  "name": "Lily Verde",
+  "subname": "Sayuri Shiratori",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Target enemy servant gains Slow Start until end of turn.",
+  "flavor": "We just broke 300,000 subscribers! Are we famous?",
+  "artist": "sakura moyon",
+  "card_number": "EX01-009",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lily-Verde-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1269",
+  "name": "Linarite",
+  "subname": "Mikage Yuhara",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an enemy player played an Enter ability this turn.",
+  "flavor": "\"Whatcha up to miss Oowada!?\"",
+  "artist": "Ru-en Rouga",
+  "card_number": "DD05-024",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Linarite.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1255",
+  "name": "Little Match Girl",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "Youkai",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "1000",
+  "flavor": "A girl who embraced death with a smile.",
+  "artist": "gozz",
+  "card_number": "DD05-010",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Little-Match-Girl.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "8",
   "name": "Little Match Girl",
   "type": "Servant",
@@ -2314,6 +4023,27 @@
   "is_playtesting": false,
   "extra_fields": {
    "Copies in Product": "4",
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1261",
+  "name": "Little Red Riding Hood",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "[Cryptid/Youkai]",
+  "cost_level": "2",
+  "attack": "500",
+  "defense": "500",
+  "ability": "• Enter: Target any number of servants. Discard your hand. If the total cost of servants targeted this way is equal to or less than the amount of cards discarded, destory them.",
+  "flavor": "You're not grandma! You're the wolf!",
+  "artist": "JAIBON",
+  "card_number": "DD05-016",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Little-Red-Riding-Hood.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": ""
   }
  },
@@ -2345,12 +4075,30 @@
   "ability": "• Rest: Draw a card if a card was played by its Break ability this turn.",
   "flavor": "Suzu, you really tease too much. I'm ignoring you.",
   "artist": "yua",
-  "card_number": "EX02-Alt04",
+  "card_number": "EX02-018",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Louise-Bayli.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
-   "Notes": "Super Rare"
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1193",
+  "name": "Louise Bayli",
+  "subname": "Shiho Haseya",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if a card was played by its Break ability this turn.",
+  "flavor": "Suzu, you really tease too much. I'm ignoring you.",
+  "artist": "yua",
+  "card_number": "EX02-018",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Louise-Bayli-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -2391,6 +4139,24 @@
   "extra_fields": null
  },
  {
+  "id": "1188",
+  "name": "Lufue Yuni",
+  "subname": "Suzume Yabuki",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest: Put the top card of your deck into an allied graveyard. If that card is a [Sweets], draw a card.",
+  "flavor": "\"I'm going to eat snacks with Yuzuki after school again!\"",
+  "artist": "Tsukumi",
+  "card_number": "DD04-019",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lufue-Yuni-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
   "id": "74",
   "name": "Lumielle",
   "subname": "Kana Izuhara",
@@ -2406,6 +4172,24 @@
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1197",
+  "name": "Lumielle",
+  "subname": "Kana Izuhara",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Rest: Swap the ATK and DEF of target enemy servant until end of turn",
+  "flavor": "Runa~ Shall we go see Kotoko's experiments today?",
+  "artist": "Rubisama",
+  "card_number": "DD03-003",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lumielle-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
  },
  {
   "id": "85",
@@ -2443,7 +4227,7 @@
  },
  {
   "id": "107",
-  "name": "Maisey Queen Lv2",
+  "name": "Maisey Queen",
   "subname": "Miwa Torri",
   "type": "Caster",
   "element": "Aes",
@@ -2457,6 +4241,144 @@
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1114",
+  "name": "Maisey Queen",
+  "subname": "Miwa Torri",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "1",
+  "ability": "• Rest: Reveal the top card of your deck. If it's a Cosmetics with a cost of 1, put it into the field.",
+  "flavor": "\"Uu...I can feel it. An intense glance at me!\"",
+  "artist": "Tsukumi",
+  "card_number": "DD04-002",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Maisey-Queen-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1132",
+  "name": "Maisey Queen",
+  "subname": "Miwa Torri",
+  "type": "Caster",
+  "element": "Aes",
+  "cost_level": "1",
+  "ability": "• Rest: Reveal the top card of your deck. If it's a Cosmetics with a cost of 1, put it into the field.",
+  "flavor": "\"Uu...I can feel it. An intense glance at me!\"",
+  "artist": "Tsukumi",
+  "card_number": "DD04-002",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Maisey-Queen-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1289",
+  "name": "Maria Ai",
+  "subname": "Ai Hongou",
+  "type": "Caster",
+  "element": "Aes",
+  "traits": "[Idol/Earnest]",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an [Idol] not named \"Maria Ai\" played a non-aether ability this turn.",
+  "flavor": "\"Please listen to our song.\"",
+  "artist": "sakura moyon",
+  "card_number": "DD06-007",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Maria-Ai.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1290",
+  "name": "Maria Ai",
+  "subname": "Ai Hongou",
+  "type": "Caster",
+  "element": "Aes",
+  "traits": "[Idol/Earnest]",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Maria Ai\" from my Stock : Search your deck for a [Band] with a cost equal to or less than the total amount of [Earnest] cards in an allied graveyard and put it into the field. Then shuffle your deck.",
+  "flavor": "\"Do you feel our beat?\"",
+  "artist": "sakura moyon",
+  "card_number": "DD06-008",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Maria-Ai-Lv2.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1283",
+  "name": "Marigold",
+  "subname": "Amane Hinata",
+  "type": "Caster",
+  "element": "Solis",
+  "traits": "[Idol/Earnest]",
+  "cost_level": "1",
+  "ability": "• Rest: Put the top card of your deck into an allied graveyard. If it's a [Band], draw a card.",
+  "flavor": "\"I'll be your sunshine. Can you feel my heat?\"",
+  "artist": "Pisuke",
+  "card_number": "DD06-001",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Marigold.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1271",
+  "name": "Marin Coffret",
+  "subname": "Eri Shimojou",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Enter: Search your deck for a [Supplies], reveal it and put it into your hand. Then shuffle your deck.",
+  "flavor": "\"A mysterious new card? Really?\"",
+  "artist": "Tachibana Komoro",
+  "card_number": "DD05-026",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Marin-Coffret.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1295",
+  "name": "MEI",
+  "type": "Servant",
+  "element": "Ignus",
+  "traits": "[Band/Earnest]",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "500",
+  "ability": "• United Front [Idol] (You may pay this card's elemental aether cost using aether of any element from [Idol] casters. If you do, increase its cost by 1 as you pay its cost.)\n• DCT(5)(If there are five or more cards with [Earnest] in an allied graveyard, I gain the following ability.): When I attack, you may give me +2000 ATK this turn. If you do, destroy me at the end of the turn.",
+  "flavor": "Encore! Encore!",
+  "artist": "JAIBON",
+  "card_number": "DD06-013",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/MEI.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "128",
@@ -2512,6 +4434,25 @@
   "is_playtesting": false,
   "extra_fields": {
    "Rarity": "Normal"
+  }
+ },
+ {
+  "id": "1125",
+  "name": "Merlin",
+  "subname": "Yuka Fujikawa",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "1",
+  "ability": "• Enter : Look at target enemy orb, then return it. Draw a card.",
+  "flavor": "Analysis complete. Arthur, your next orders?",
+  "artist": "JAIBON",
+  "card_number": "EX01-014",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Merlin-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
   }
  },
  {
@@ -2572,6 +4513,25 @@
   "extra_fields": null
  },
  {
+  "id": "1249",
+  "name": "Mia Laira",
+  "subname": "Manami Kawada",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Target allied servant gains +1000 ATK until end of turn.",
+  "flavor": "\"Tsubasa. If you're ever in trouble, you can always tell me.\"",
+  "artist": "noki",
+  "card_number": "DD05-004",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Mia-Laira.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "23",
   "name": "Miu",
   "subname": "Misora Hiraiwa",
@@ -2591,8 +4551,11 @@
   }
  },
  {
-  "id": "242",
-  "name": "Miu lv2",
+  "id": "1227",
+  "legacy_ids": [
+   "242"
+  ],
+  "name": "Miu",
   "subname": "Misora Hiraiwa",
   "type": "Caster",
   "element": "Terra",
@@ -2601,11 +4564,47 @@
   "flavor": "Butterfly Illusion!",
   "artist": "mie",
   "card_number": "EX02-016",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu-lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
+  }
+ },
+ {
+  "id": "1210",
+  "name": "Miu",
+  "subname": "Misora Hiraiwa",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "2",
+  "ability": "• Banish a \"Miu\" from my Stock: Put all cards in your hand on the bottom of your deck in any order. Then draw that many cards.\n• Rest: Destroy target non-[Insect] servant with cost 3 or less if an [Insect] servant you control was destroyed or banished this turn.",
+  "flavor": "Butterfly Illusion!",
+  "artist": "mie",
+  "card_number": "EX02-016",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1195",
+  "name": "Miu",
+  "subname": "Misora Hiraiwa",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied [Insect] was destroyed or banished this turn.",
+  "flavor": "You want to see some new magic, You?",
+  "artist": "mie",
+  "card_number": "DD01-025",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -2645,6 +4644,44 @@
   "extra_fields": null
  },
  {
+  "id": "1116",
+  "name": "Mona Styla",
+  "subname": "Hina Kujyou",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest: Put target servant from an enemy graveyard on the bottom of its owner's deck.",
+  "flavor": "\"Is everyone coming to the green room today?\"",
+  "artist": "Matsurika Yoko",
+  "card_number": "DD04-018",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Mona-Styla-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1134",
+  "name": "Mona Styla",
+  "subname": "Hina Kujyou",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest: Put target servant from an enemy graveyard on the bottom of its owner's deck.",
+  "flavor": "\"Is everyone coming to the green room today?\"",
+  "artist": "Matsurika Yoko",
+  "card_number": "EX01-ALT06",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Mona-Styla-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
   "id": "121",
   "name": "Nebula Soleil",
   "subname": "Natsume Hoshigaoka",
@@ -2660,6 +4697,25 @@
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1115",
+  "name": "Nebula Soleil",
+  "subname": "Natsume Hoshigaoka",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• If you would play a caster as part of your call phase, you may play me face up from an allied graveyard instead.",
+  "flavor": "\"Hey, hey everyone! Are you watching our broadcast?\"",
+  "artist": "ShiroYayoi",
+  "card_number": "DD04-017",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Nebula-Soleil-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
  },
  {
   "id": "179",
@@ -2715,6 +4771,27 @@
   "is_playtesting": false,
   "extra_fields": {
    "Copies in Product": "4",
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1299",
+  "name": "NON",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "[Band/Earnest]",
+  "cost_level": "4",
+  "attack": "2000",
+  "defense": "1500",
+  "ability": "• United Front [Idol]\n\n• DCT(3):Break\n\n• Enter: Draw two cards. Then, discard two cards. (When I enter the field : perform the effect)",
+  "flavor": "This is our melody!",
+  "artist": "sakura chomi",
+  "card_number": "DD06-017",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/NON.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": ""
   }
  },
@@ -2797,6 +4874,9 @@
  },
  {
   "id": "1",
+  "legacy_ids": [
+   "181"
+  ],
   "name": "Passion Wing",
   "subname": "Tsubasa Koga",
   "type": "Caster",
@@ -2815,24 +4895,83 @@
   }
  },
  {
-  "id": "181",
+  "id": "1247",
   "name": "Passion Wing",
-  "subname": "Saaya Matsui",
+  "subname": "Tsubasa Koga",
   "type": "Caster",
   "element": "Ignus",
   "cost_level": "1",
-  "ability": "• As long as your opponent controls six or more orbs, cards they control lose Break.\n• Rest: Target allied servant with cost of 2 or less gains +500 ATK until end of turn.",
-  "flavor": "I'll try making a beat down deck for now.",
-  "artist": "Ru-en Rouga",
-  "card_number": "PR001-001",
+  "ability": "• Rest: Target allied servant gains +500 ATK until end of turn.",
+  "flavor": "Miss Manami, thanks for always being so kind.",
+  "artist": "sakura moyon",
+  "card_number": "DD05-002",
+  "count": "2",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing.png",
-  "expansion": "Influencer Promo Pack",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1222",
+  "name": "Passion Wing",
+  "subname": "Tsubasa Koga",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Target allied servant gains +500 ATK until end of turn.",
+  "flavor": "Miss Manami, thanks for always being so kind.",
+  "artist": "sakura moyon",
+  "card_number": "EX02-Alt07",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-Alternate-Art.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1117",
+  "name": "Passion Wing",
+  "subname": "Tsubasa Koga",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Target allied servant gains +500 ATK until end of turn.",
+  "flavor": "Miss Manami, thanks for always being so kind.",
+  "artist": "sakura moyon",
+  "card_number": "DD01-001",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-Hyper-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
   "is_playtesting": false,
-  "extra_fields": null
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Hyper Rare"
+  }
+ },
+ {
+  "id": "1248",
+  "name": "Passion Wing",
+  "subname": "Tsubasa Koga",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "2",
+  "ability": "• Banish a \"Passion Wing\" from my Stock: Destroy target enemy servant with a cost of 2 or less.\n• Rest: Target allied servant gains +1000 ATK until end of turn.",
+  "flavor": "Miss Sakura, I'm going to get serious!",
+  "artist": "sakura moyon",
+  "card_number": "DD05-003",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-lv2.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "37",
-  "name": "Passion Wing Lv2",
+  "name": "Passion Wing",
   "subname": "Tsubasa Koga",
   "type": "Caster",
   "element": "Ignus",
@@ -2847,6 +4986,44 @@
   "extra_fields": {
    "Copies in Product": "2",
    "Notes": ""
+  }
+ },
+ {
+  "id": "1135",
+  "name": "Passion Wing",
+  "subname": "Tsubasa Koga",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "2",
+  "ability": "• Banish a \"Passion Wing\" from my Stock: Destroy target enemy servant with a cost of 2 or less.\n• Rest: Target allied servant gains +1000 ATK until end of turn.",
+  "flavor": "Miss Sakura, I'm going to get serious!",
+  "artist": "sakura moyon",
+  "card_number": "DD01-002",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-lv2-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1101",
+  "name": "Passion Wing",
+  "subname": "Tsubasa Koga",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Target allied servant gains +500 ATK until end of turn.",
+  "flavor": "Miss Manami, thanks for always being so kind.",
+  "artist": "sakura moyon",
+  "card_number": "DD01-001",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
   }
  },
  {
@@ -2866,6 +5043,44 @@
   "extra_fields": null
  },
  {
+  "id": "1246",
+  "name": "Passion Wing Saaya",
+  "subname": "Saaya Matsui",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• As long as your opponent controls six or more orbs, cards they control lose Break.\n• Rest: Target allied servant with cost of 2 or less gains +500 ATK until end of turn.",
+  "flavor": "\"I'll try making a beat down deck for now.\"",
+  "artist": "Ru-en Rouga",
+  "card_number": "DD05-001",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-Saaya.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1126",
+  "name": "Passion Wing",
+  "subname": "Tsubasa Koga",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "2",
+  "ability": "• Banish a \"Passion Wing\" from my Stock: Destroy target enemy servant with a cost of 2 or less.\n• Rest: Target allied servant gains +1000 ATK until end of turn.",
+  "flavor": "Miss Sakura, I'm going to get serious!",
+  "artist": "sakura moyon",
+  "card_number": "DD01-002",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
   "id": "11",
   "name": "Patience Bag",
   "type": "Servant",
@@ -2883,6 +5098,26 @@
   "is_playtesting": false,
   "extra_fields": {
    "Copies in Product": "2",
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1284",
+  "name": "Patzer Alga",
+  "subname": "Kureha Ootori",
+  "type": "Caster",
+  "element": "Ignus",
+  "traits": "[Idol/Earnest]",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Target allied servant gains + 1000 ATK until end of turn.",
+  "flavor": "\"You can fall in love with me, but you'll get burned!\"",
+  "artist": "tyanohinano",
+  "card_number": "DD06-002",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Patzer-Alga.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
    "Notes": ""
   }
  },
@@ -2924,6 +5159,47 @@
   "extra_fields": null
  },
  {
+  "id": "1272",
+  "name": "Pentachi",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "Youkai",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
+  "ability": "• Enter : Look at target enemy orb, then return it. (When this card enters the field : Perform the effect.)",
+  "flavor": "It glitters even in the darkness.",
+  "artist": "Ru-en Rouga",
+  "card_number": "DD05-027",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pentachi.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1218",
+  "name": "Pentachi",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "Youkai",
+  "cost_level": "1",
+  "attack": "500",
+  "defense": "0",
+  "ability": "• Enter : Look at target enemy orb, then return it. (When this card enters the field : Perform the effect.)",
+  "flavor": "It glitters even in the darkness.",
+  "artist": "Ru-en Rouga",
+  "card_number": "EX02-Alt03",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pentachi-Alternate-Art.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
   "id": "60",
   "name": "Percival",
   "subname": "Tomoka Arimori",
@@ -2943,8 +5219,29 @@
   }
  },
  {
-  "id": "264",
-  "name": "Percival lv2",
+  "id": "1216",
+  "name": "Percival",
+  "subname": "Tomoka Arimori",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "1",
+  "ability": "• Rest: Turn target face up Lv1 allied caster face down.",
+  "flavor": "Let's wipe your brain into a clean slate~",
+  "artist": "OJONPA",
+  "card_number": "EX02-Alt01",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival-Alternate-Art.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1231",
+  "legacy_ids": [
+   "264"
+  ],
+  "name": "Percival",
   "subname": "Tomoka Arimori",
   "type": "Caster",
   "element": "Void",
@@ -2953,11 +5250,29 @@
   "flavor": "This is a new world.",
   "artist": "JAIBON",
   "card_number": "EX02-038",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival-lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
+  }
+ },
+ {
+  "id": "1214",
+  "name": "Percival",
+  "subname": "Tomoka Arimori",
+  "type": "Caster",
+  "element": "Void",
+  "cost_level": "2",
+  "ability": "• Rest, Banish a \"Percival\" from my Stock OR Banish a face down caster: Discard your hand. Then draw three cards.",
+  "flavor": "This is a new world.",
+  "artist": "JAIBON",
+  "card_number": "EX02-038",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -3016,6 +5331,25 @@
   "extra_fields": null
  },
  {
+  "id": "1306",
+  "name": "Polly",
+  "subname": "Naru Nomiya",
+  "type": "Caster",
+  "element": "Aes",
+  "traits": "[Talent]",
+  "ability": "• Rest: Remove from the chase target automatic ability of a [Tengu].",
+  "flavor": "\"Help Kiwa out won't ya? I'll buy you some doughnuts!\"",
+  "artist": "noki",
+  "card_number": "DD06-024",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Polly.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "245",
   "name": "Pompous Delphinium",
   "type": "Servant",
@@ -3030,6 +5364,25 @@
   "card_number": "EX02-019",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pompous-Delphinium.png",
   "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1292",
+  "name": "Popularity Contest",
+  "type": "Conjure",
+  "element": "Solis",
+  "traits": "[Earnest]",
+  "cost_level": "1",
+  "ability": "• United Front [Idol] (You may pay this card's elemental aether cost using aether of any element from [Idol] casters. If you do, increase its cost by 1 as you pay its cost.)\n• Reveal the top 3 cards of your deck. Your opponent chooses one of the revealed cards. Put the chosen card into your hand and put the rest into your graveyard.",
+  "flavor": "The more rigorous the competition, the more brightly the girls shine.",
+  "artist": "kawaryu",
+  "card_number": "DD06-010",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Popularity-Contest.png",
+  "expansion": "DD06: Battle of the Bands",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
@@ -3129,6 +5482,25 @@
   }
  },
  {
+  "id": "1104",
+  "name": "Princess Papillon",
+  "subname": "Saya Ichijyou",
+  "type": "Caster",
+  "element": "Terra",
+  "cost_level": "1",
+  "ability": "• Rest, discard a caster: Put target Insect in an allied graveyard into your hand.",
+  "flavor": "\"Dance for me once again.\"",
+  "artist": "Ayami Mugiharu",
+  "card_number": "DD01-023",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Princess-Papillon-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
   "id": "24",
   "name": "Proclamation of Life and Death",
   "type": "Conjure",
@@ -3160,6 +5532,26 @@
   "card_number": "EX02-014",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Procrastination.png",
   "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1287",
+  "name": "Pulitzer Lotta",
+  "subname": "Rio Takeuchi",
+  "type": "Caster",
+  "element": "Luna",
+  "traits": "[Idol/Earnest]",
+  "cost_level": "1",
+  "ability": "• DCT(4)(If there are four or more cards with [Earnest] in an allied graveyard, I gain the following ability.): Rest, banish an orb: Put target allied [Band] servant into your orb zone face down as an orb.",
+  "flavor": "\"Keep watching me more and more!\"",
+  "artist": "sakura chomi",
+  "card_number": "DD06-005",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pulitzer-Lotta.png",
+  "expansion": "DD06: Battle of the Bands",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
@@ -3242,6 +5634,41 @@
   }
  },
  {
+  "id": "1121",
+  "name": "Rafina Soa",
+  "subname": "Mei Takayanagi",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Rest: Recover target Lv1 allied caster.",
+  "flavor": "\"Sayuri! Natsume! We need some new outfits for our new single!\"",
+  "artist": "Matsurika Yoko",
+  "card_number": "EX01-011",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Rafina-Soa-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1154",
+  "name": "Ran Berfield",
+  "subname": "You Chitose",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "1",
+  "ability": "• Rest: Return target allied [Cryptid] or [Plant] servant to its owner's hand. If you do, another target allied servant gains +500 ATK until end of turn.",
+  "flavor": "\"Miu! Show me some magic!\"",
+  "artist": "Sanosuke Sakuma",
+  "card_number": "DD03-021",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield.png",
+  "expansion": "Errata Pack 01",
+  "is_playtesting": false,
+  "extra_fields": null
+ },
+ {
   "id": "92",
   "name": "Ran Berfield",
   "subname": "You Chitose",
@@ -3259,18 +5686,78 @@
   "extra_fields": null
  },
  {
-  "id": "241",
-  "name": "Ran Berfield lv2",
+  "id": "1226",
+  "legacy_ids": [
+   "241"
+  ],
+  "name": "Ran Berfield",
   "subname": "You Chitose",
   "type": "Caster",
   "element": "Silva",
   "cost_level": "2",
-  "ability": "• Banish a \"Ran Berfield\" from my Stock: Remove target servant from the game. At end of turn → Put it into the field under its owner's control.",
+  "ability": "• Banish a \"Ran Berfield\" from my Stock: Remove target servant from the game. At end of turn: Put it into the field under its owner's control.",
   "flavor": "Go forth! Daze!",
   "artist": "Sanosuke Sakuma",
   "card_number": "EX02-015",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield-lv2.png",
   "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1209",
+  "name": "Ran Berfield",
+  "subname": "You Chitose",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "2",
+  "ability": "• Banish a \"Ran Berfield\" from my Stock: Remove target servant from the game. At end of turn: Put it into the field under its owner's control.",
+  "flavor": "Go forth! Daze!",
+  "artist": "Sanosuke Sakuma",
+  "card_number": "EX02-015",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1191",
+  "name": "Ran Berfield",
+  "subname": "You Chitose",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "1",
+  "ability": "• Rest: Return target [Plant] or [Cryptid] allied servant to its owner's hand. If you do, another target allied servant gains +500 ATK until end of turn.",
+  "flavor": "\"Miu! Show me some magic!\"",
+  "artist": "Sanosuke Sakuma",
+  "card_number": "DD03-021",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1296",
+  "name": "REINA",
+  "type": "Servant",
+  "element": "Aqua",
+  "traits": "[Band/Earnest]",
+  "cost_level": "2",
+  "attack": "0",
+  "defense": "1500",
+  "ability": "• United Front [Idol] (You may pay this card's elemental aether cost using aether of any element from [Idol] casters. If you do, increase its cost by 1 as you pay its cost.)\n• DCT(7)(If there are seven or more cards with [Earnest] in an allied graveyard, I gain the following ability.): When I Enter as reversed, you may exchange control of me and target enemy servant with a cost of 5 or less.",
+  "flavor": "Don't be so fixated on me!",
+  "artist": "tokiwa",
+  "card_number": "DD06-014",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/REINA.png",
+  "expansion": "DD06: Battle of the Bands",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
@@ -3335,6 +5822,25 @@
   }
  },
  {
+  "id": "1302",
+  "name": "Ruby",
+  "subname": "Anzu Tsubaki",
+  "type": "Caster",
+  "element": "Ignus",
+  "traits": "[Talent]",
+  "ability": "• Discard a [Tengu]: If you would play a caster as part of your call phase, you may play me face up from an allied graveyard instead.\n• Rest: Target allied [Tengu] gains +500 ATK until end of turn.",
+  "flavor": "\"Please give your support to Hiyo Yotsuba!\"",
+  "artist": "ainoosaru",
+  "card_number": "DD06-020",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ruby.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "72",
   "name": "Ruka Eremi",
   "subname": "Koyori Oonuma",
@@ -3353,7 +5859,7 @@
  },
  {
   "id": "73",
-  "name": "Ruka Eremi Lv2",
+  "name": "Ruka Eremi",
   "subname": "Koyori Oonuma",
   "type": "Caster",
   "element": "Luna",
@@ -3367,6 +5873,65 @@
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1139",
+  "name": "Ruka Eremi",
+  "subname": "Koyori Oonuma",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "2",
+  "ability": "• Banish a \"Ruka Eremi\" from my Stock: Draw a card.\n• Rest: Target allied servant gains +200 ATK for each card in your hand until end of turn.",
+  "flavor": "\"Something money can't solve? I guess I'll solve it with magic.\"",
+  "artist": "JURI",
+  "card_number": "DD03-002",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ruka-Eremi-lv2-Super-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Super Rare"
+  }
+ },
+ {
+  "id": "1109",
+  "name": "Ruka Eremi",
+  "subname": "Koyori Oonuma",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Rest: Target allied servant gains +100 ATK for each card in your hand until end of turn.",
+  "flavor": "\"I'll decide this with my fortune.\"",
+  "artist": "JURI",
+  "card_number": "DD03-001",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ruka-Eremi-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
+  "id": "1308",
+  "name": "Sagami Bou TENGU48",
+  "type": "Servant",
+  "element": "Aes",
+  "traits": "[Tengu/Talent]",
+  "cost_level": "5",
+  "attack": "3000",
+  "defense": "3000",
+  "ability": "• At the end of the enemy turn: Put me on the bottom of my owner's deck.\n• Enter: Gain control of target enemy servant as long as I am on the field. (Even if control of me changes, you retain control of the targeted card.)",
+  "flavor": "Come follow me.",
+  "artist": "Tokiwa",
+  "card_number": "DD06-026",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sagami-Bou-TENGU48.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "44",
@@ -3426,6 +5991,25 @@
   }
  },
  {
+  "id": "1105",
+  "name": "Saira Treverse",
+  "subname": "Akira Nakaya",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• [Rest]: Draw a card if enemy servants attacked twice or more this turn.",
+  "flavor": "\"Can you solve my puzzle?\"",
+  "artist": "Haruichi Kido",
+  "card_number": "DD02-001",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Saira-Treverse-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
+  }
+ },
+ {
   "id": "14",
   "name": "Salamander",
   "type": "Servant",
@@ -3464,6 +6048,25 @@
   "extra_fields": null
  },
  {
+  "id": "1304",
+  "name": "Serenity Insania",
+  "subname": "Kazari Fujishiro",
+  "type": "Caster",
+  "element": "Luna",
+  "traits": "[Talent]",
+  "ability": "• Rest: Play an [Enter] ability of target allied [Tengu].",
+  "flavor": "\"You can do it! Let's try one more time!\"",
+  "artist": "QK",
+  "card_number": "DD06-022",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Serenity-Insania.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "48",
   "name": "Servant Exchange",
   "type": "Conjure",
@@ -3500,6 +6103,63 @@
   "extra_fields": null
  },
  {
+  "id": "1291",
+  "name": "Sexy Song",
+  "type": "Conjure",
+  "element": "Aes",
+  "traits": "[Earnest]",
+  "cost_level": "4",
+  "ability": "• United Front [Idol] (You may pay this card's elemental aether cost using aether of any element from [Idol] casters. If you do, increase its cost by 1 as you pay its cost.)\n• DCT(5): Break\n• Gain control of target enemy servant with a cost of 4 or less.",
+  "flavor": "Didn't ask, don't care",
+  "artist": "Ojonpa",
+  "card_number": "DD06-009",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sexy-Song.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1303",
+  "name": "Sheer Gray",
+  "subname": "Hasumi Yano",
+  "type": "Caster",
+  "element": "Silva",
+  "traits": "[Talent]",
+  "ability": "• Rest: Produce one aether of any element. Spend this aether only to play [Talent] cards.",
+  "flavor": "\"I feel like I can achieve something if I try.\"",
+  "artist": "Yuzuki Kihiro",
+  "card_number": "DD06-021",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sheer-Gray.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1251",
+  "name": "Shera Angellica",
+  "subname": "Riko Kohashi",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied servant corrupted an enemy orb this turn.",
+  "flavor": "Hitori, let me copy your homework!",
+  "artist": "Takamiya Ren",
+  "card_number": "DD05-006",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Shera-Angellica.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "232",
   "name": "Shera Angellica",
   "subname": "Riko Kohashi",
@@ -3511,6 +6171,24 @@
   "artist": "Takamiya Ren",
   "card_number": "EX02-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Shera-Angellica.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1186",
+  "name": "Shera Angellica",
+  "subname": "Riko Kohashi",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied servant corrupted an enemy orb this turn.",
+  "flavor": "Hitori, let me copy your homework!",
+  "artist": "Takamiya Ren",
+  "card_number": "EX02-006",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Shera-Angellica-Rare.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
@@ -3660,7 +6338,7 @@
   "cost_level": "5",
   "attack": "3000",
   "defense": "3000",
-  "ability": "• Last Words → Put up to two servants with a cost of two or less each from your hand into the field.",
+  "ability": "• Last Words: Put up to two servants with a cost of two or less each from your hand into the field.",
   "flavor": "Greed destroys you, but you get a lot too. So there's some benefits.",
   "artist": "Moopic",
   "card_number": "EX02-021",
@@ -3843,8 +6521,11 @@
   }
  },
  {
-  "id": "229",
-  "name": "Sunny lv2",
+  "id": "1224",
+  "legacy_ids": [
+   "229"
+  ],
+  "name": "Sunny",
   "subname": "Hitori Kusaka",
   "type": "Caster",
   "element": "Solis",
@@ -3853,11 +6534,48 @@
   "flavor": "\"I won't forgive anyone who hurts Rikocchi.\"",
   "artist": "Inomura Tomori",
   "card_number": "EX02-003",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunny-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunny-lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
+  }
+ },
+ {
+  "id": "1207",
+  "name": "Sunny",
+  "subname": "Hitori Kusaka",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "2",
+  "ability": "• Banish a \"Sunny\" from my Stock: Target enemy player discards a card. Play this ability only during main timing.\n• Rest: Put target servant with a cost of 3 or less that was discarded from an enemy hand this turn into an allied servant zone.",
+  "flavor": "\"I won't forgive anyone who hurts Rikocchi.\"",
+  "artist": "Inomura Tomori",
+  "card_number": "EX02-003",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunny-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1123",
+  "name": "Sunny",
+  "subname": "Hitori Kusaka",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an enemy discarded a card this turn.",
+  "flavor": "\"Huh? Where's Rikocchi?\"",
+  "artist": "Foo Midori",
+  "card_number": "EX01-007",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunny-Rare.png",
+  "expansion": "EX01: The Bell Tolls",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": "Randomly Inserted into packs",
+   "Rarity": "Rare"
   }
  },
  {
@@ -3876,6 +6594,24 @@
   "expansion": "DD03: Forgotten in the Moonlight",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1192",
+  "name": "Sweet Pea",
+  "subname": "Saya Udagawa",
+  "type": "Caster",
+  "element": "Silva",
+  "cost_level": "1",
+  "ability": "• Rest: Target allied servant loses Slow Start until end of turn.",
+  "flavor": "You sure know a lot, Karen-chan.",
+  "artist": "tomimin",
+  "card_number": "DD03-022",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sweet-Pea-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
  },
  {
   "id": "135",
@@ -3916,6 +6652,25 @@
   }
  },
  {
+  "id": "1301",
+  "name": "Tart Chantilly",
+  "subname": "Remon Matsuyama",
+  "type": "Caster",
+  "element": "Solis",
+  "traits": "[Talent]",
+  "ability": "• As long as I am in your graveyard, you may pay 1 less to play Tengu cards. (That cost can't be reduced lower than 1.)",
+  "flavor": "\"I wonder what club Hotaro chose.\"",
+  "artist": "BANAMONS*",
+  "card_number": "DD06-019",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Tart-Chantilly.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "109",
   "name": "Tenel Frula",
   "subname": "Sahoko Mitazono",
@@ -3931,6 +6686,84 @@
   "expansion": "DD04: Popularity Contest",
   "is_playtesting": false,
   "extra_fields": null
+ },
+ {
+  "id": "1314",
+  "name": "Tengu's Harvest",
+  "type": "Barrier",
+  "element": "Silva",
+  "traits": "[Talent]",
+  "cost_level": "2",
+  "ability": "• United Front [Talent] (You may pay this card's elemental aether cost using aether of any element from [Talent] casters. If you do, increase its cost by 1 as you pay its cost.)\n• You may pay 1 less when playing [Tengu]. (Cost cannot be less than 1)\n• You may only have one \"Tengu's Harvest\" in play.",
+  "flavor": "Any chore is more fun if we work together!",
+  "artist": "Yuko Nagasaki",
+  "card_number": "DD06-032",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Tengus-Harvest.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1268",
+  "name": "Terija Anazui",
+  "subname": "Asumi Serita",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Rest: Remove from the Chase target ability of an allied [Cryptid].",
+  "flavor": "\"I'm gonna spend today relaxing with Mito at the secondhand book store!\"",
+  "artist": "haruken",
+  "card_number": "DD05-023",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Terija-Anazui.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1315",
+  "name": "The Pinnacle of Talent",
+  "type": "Conjure",
+  "element": "Terra",
+  "traits": "[Talent]",
+  "cost_level": "2",
+  "ability": "• United Front [Talent]\n• As an additional cost to play this card, reveal one [Talent] in your hand and put it on the bottom of your deck.\n• Quickcast\n• Return target Conjure or Barrier in the chase to its owner's hand.",
+  "flavor": "At the peak of mastery lies a new journey.",
+  "artist": "Ojonpa",
+  "card_number": "DD06-033",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/The-Pinnacle-of-Talent.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1298",
+  "name": "TOMOMI",
+  "type": "Servant",
+  "element": "Aes",
+  "traits": "[Band/Earnest]",
+  "cost_level": "4",
+  "attack": "3000",
+  "defense": "1000",
+  "ability": "• United Front [Idol]\n• DCT(5)(If there are 3 or more cards with [Earnest] in an allied graveyard, I gain the following ability.): Enter: Rest all enemy casters.\n• Break",
+  "flavor": "Yay! Let's dance together!",
+  "artist": "Yuzuki Kihiro",
+  "card_number": "DD06-016",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/TOMOMI.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
  },
  {
   "id": "139",
@@ -3970,6 +6803,45 @@
   }
  },
  {
+  "id": "1221",
+  "name": "Toxic Turkey",
+  "type": "Servant",
+  "element": "Solis",
+  "traits": "Cryptid",
+  "cost_level": "4",
+  "attack": "2000",
+  "defense": "1000",
+  "ability": "• Whenever I attack an enemy servant : Destroy that enemy servant.",
+  "flavor": "An avatar of revenge for all the birds that are killed on a certain day every year.",
+  "artist": "Takumi Sugikawa",
+  "card_number": "EX02-Alt06",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Toxic-Turkey-Alternate-Art.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
+  }
+ },
+ {
+  "id": "1250",
+  "name": "Tricker Heather",
+  "subname": "Kaya Tomari",
+  "type": "Caster",
+  "element": "Solis",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied spell or ability destroyed an enemy servant this turn.",
+  "flavor": "\"Will you try a candy, Ichika?\"",
+  "artist": "Ru-en Rouga",
+  "card_number": "DD05-005",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Tricker-Heather.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "77",
   "name": "Twinkle Charm",
   "subname": "Runa Tsukinaga",
@@ -3987,8 +6859,30 @@
   "extra_fields": null
  },
  {
-  "id": "251",
-  "name": "Twinkle Charm lv2",
+  "id": "1151",
+  "name": "Twinkle Charm",
+  "subname": "Runa Tsukinaga",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if you drew a card by the effect of a conjure this turn.",
+  "flavor": "\"I want tea time with Mahiro-san~.\"",
+  "artist": "Tam-U",
+  "card_number": "DD03-006",
+  "count": "1",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm.png",
+  "expansion": "Store Promo 01",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
+  "id": "1228",
+  "legacy_ids": [
+   "251"
+  ],
+  "name": "Twinkle Charm",
   "subname": "Momoka Michizuki",
   "type": "Caster",
   "element": "Luna",
@@ -3997,11 +6891,29 @@
   "flavor": "Why don't you have one more?",
   "artist": "Tam-U",
   "card_number": "EX02-025",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm-Lv2.png",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm-lv2.png",
   "expansion": "EX02: Gifted Program",
   "is_playtesting": true,
   "extra_fields": {
    "Notes": ""
+  }
+ },
+ {
+  "id": "1211",
+  "name": "Twinkle Charm",
+  "subname": "Momoka Michizuki",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "2",
+  "ability": "• Rest, banish a \"Twinkle Charm\" from my Stock: Search your deck for a servant with the same name as target allied servant with a cost of 2 or less and put it into the field. Then shuffle your deck.\n• Rest: Draw a card.",
+  "flavor": "Why don't you have one more?",
+  "artist": "Tam-U",
+  "card_number": "EX02-025",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm-lv2-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  },
  {
@@ -4140,6 +7052,27 @@
   }
  },
  {
+  "id": "1278",
+  "name": "Witty Mechanical Pencil",
+  "type": "Servant",
+  "element": "Aqua",
+  "traits": "[Supplies]",
+  "cost_level": "2",
+  "attack": "1000",
+  "defense": "500",
+  "ability": "Pay 1 Aether : I gain +500 ATK until end of turn.",
+  "flavor": "*Click Click*",
+  "artist": "sasaki kounosuke",
+  "card_number": "DD05-033",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Witty-Mechanical-Pencil.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "239",
   "name": "Wooden Bear",
   "type": "Servant",
@@ -4175,6 +7108,27 @@
   "is_playtesting": false,
   "extra_fields": {
    "Rarity": "Normal"
+  }
+ },
+ {
+  "id": "1311",
+  "name": "Zenki Bou TENGU48",
+  "type": "Servant",
+  "element": "Luna",
+  "traits": "[Tengu/Talent]",
+  "cost_level": "5",
+  "attack": "3000",
+  "defense": "3000",
+  "ability": "• At the end of the enemy turn: Put me on the bottom of my owner's deck.\n• All Tengu you control gain \"Enter: Put a card from your hand into an allied orb zone face down as an orb.\".",
+  "flavor": "An uncut gem does not sparkle.",
+  "artist": "Tokiwa",
+  "card_number": "DD06-029",
+  "count": "4",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Zenki-Bou-TENGU48.png",
+  "expansion": "DD06: Battle of the Bands",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
   }
  },
  {
@@ -4214,6 +7168,24 @@
   "extra_fields": {
    "Copies in Product": "2",
    "Notes": ""
+  }
+ },
+ {
+  "id": "1199",
+  "name": "Zoi Russel",
+  "subname": "Kotoko Mizusaku",
+  "type": "Caster",
+  "element": "Aqua",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied servant was destroyed in battle this turn.",
+  "flavor": "\"Runa, you're interested in this kind of thing?\"",
+  "artist": "NANAHARA",
+  "card_number": "DD02-004",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Zoi-Russel-Rare.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": "Rare"
   }
  }
 ]

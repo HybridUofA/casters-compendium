@@ -26,6 +26,8 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/deckio"
 	"github.com/HybridUofA/casters-compendium/internal/decklibrary"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
+	simulatorui "github.com/HybridUofA/casters-compendium/internal/simulator/ui"
 )
 
 // checkedValues returns option names whose corresponding checkboxes are selected.
@@ -301,6 +303,7 @@ func showApplication(
 	var currentTemplateID string
 	deckDirty := false
 	var showMainMenu func()
+	var openDeckEditor func()
 	var makeNewDeck func()
 	var loadDeck func()
 	var saveDeck func()
@@ -323,6 +326,14 @@ func showApplication(
 	cardNameLabel.TextStyle = fyne.TextStyle{
 		Bold: true,
 	}
+
+	printingLabel := widget.NewLabel("Artwork / Printing")
+	printingSelect := widget.NewSelect(nil, nil)
+	printingLabel.Hide()
+	printingSelect.Hide()
+	printingCards := make(map[string]cards.Card)
+	updatingPrinting := false
+	var onPrintingChanged func(cards.Card)
 
 	cardDetailsLabel := widget.NewLabel(
 		"Select a card to view its details.",
@@ -403,12 +414,76 @@ func showApplication(
 		cardPreview.Refresh()
 	}
 
+	printingSelect.OnChanged = func(selected string) {
+		if updatingPrinting {
+			return
+		}
+
+		card, found := printingCards[selected]
+		if !found {
+			return
+		}
+
+		showCard(card)
+		if onPrintingChanged != nil {
+			onPrintingChanged(card)
+		}
+	}
+
+	showPrintingGroup := func(
+		group cards.PrintingGroup,
+		selectedID string,
+		onChanged func(cards.Card),
+	) {
+		selected := group.Preferred
+		options := make([]string, 0, len(group.Printings))
+		printingCards = make(map[string]cards.Card, len(group.Printings))
+		selectedOption := ""
+
+		for _, printing := range group.Printings {
+			option := printingOptionLabel(printing)
+			if _, duplicate := printingCards[option]; duplicate {
+				option = fmt.Sprintf("%s [%s]", option, printing.ID)
+			}
+			options = append(options, option)
+			printingCards[option] = printing
+			if printing.ID == selectedID {
+				selected = printing
+				selectedOption = option
+			}
+		}
+
+		if selectedOption == "" && len(options) > 0 {
+			selectedOption = options[0]
+		}
+
+		onPrintingChanged = onChanged
+		updatingPrinting = true
+		printingSelect.Options = options
+		printingSelect.SetSelected(selectedOption)
+		updatingPrinting = false
+
+		if len(options) > 1 {
+			printingLabel.Show()
+			printingSelect.Show()
+		} else {
+			printingLabel.Hide()
+			printingSelect.Hide()
+		}
+
+		showCard(selected)
+	}
+
 	detailsScroll := container.NewVScroll(cardDetailsLabel)
 
 	detailsScroll.SetMinSize(fyne.NewSize(0, 180))
 
 	detailsPanel := container.NewBorder(
-		cardNameLabel,
+		container.NewVBox(
+			cardNameLabel,
+			printingLabel,
+			printingSelect,
+		),
 		nil,
 		nil,
 		nil,
@@ -924,6 +999,11 @@ func showApplication(
 		nil,
 	)
 
+	showAllPrintingsCheck := widget.NewCheck(
+		"Show each artwork separately",
+		nil,
+	)
+
 	elementOptions := repository.Elements()
 
 	elementChecks := make(
@@ -994,21 +1074,46 @@ func showApplication(
 			IncludeTesting: includeTestingCheck.Checked,
 		}
 
-		matches := repository.Filter(filter)
+		groups := repository.FilterPrintingGroups(filter)
+		printingCount := 0
+		for _, group := range groups {
+			printingCount += len(group.Printings)
+		}
 
-		cards.SortForSearch(matches)
+		if showAllPrintingsCheck.Checked {
+			separateGroups := make([]cards.PrintingGroup, 0, printingCount)
+			for _, group := range groups {
+				for _, printing := range group.Printings {
+					separateGroups = append(separateGroups, cards.PrintingGroup{
+						Preferred: printing,
+						Printings: []cards.Card{printing},
+					})
+				}
+			}
+			groups = separateGroups
+		}
 
-		resultCountLabel.SetText(fmt.Sprintf(
-			"%d matching card(s)",
-			len(matches),
-		))
+		if printingCount == len(groups) {
+			resultCountLabel.SetText(fmt.Sprintf(
+				"%d matching card(s)",
+				len(groups),
+			))
+		} else {
+			resultCountLabel.SetText(fmt.Sprintf(
+				"%d matching card(s), %d printings",
+				len(groups),
+				printingCount,
+			))
+		}
 
 		searchResultsGrid.RemoveAll()
 
-		for _, match := range matches {
-			matchedCard := match
+		for _, resultGroup := range groups {
+			matchedGroup := resultGroup
+			matchedCard := matchedGroup.Preferred
 
-			cardTile := deckgui.NewCardTile(
+			var cardTile *deckgui.CardTile
+			cardTile = deckgui.NewCardTile(
 				matchedCard,
 
 				/*
@@ -1016,7 +1121,13 @@ func showApplication(
 					Show the card in the preview panel.
 				*/
 				func(selected cards.Card) {
-					showCard(selected)
+					showPrintingGroup(
+						matchedGroup,
+						selected.ID,
+						func(printing cards.Card) {
+							cardTile.SetCard(printing)
+						},
+					)
 				},
 
 				/*
@@ -1120,6 +1231,14 @@ func showApplication(
 		runSearch()
 	}
 
+	showAllPrintingsCheck.OnChanged = func(_ bool) {
+		if updatingFilters {
+			return
+		}
+
+		runSearch()
+	}
+
 	searchEntry.OnChanged = func(_ string) {
 		if updatingFilters {
 			return
@@ -1164,6 +1283,7 @@ func showApplication(
 			expansionSelect.SetSelected(anyOption)
 
 			includeTestingCheck.SetChecked(false)
+			showAllPrintingsCheck.SetChecked(false)
 
 			updatingFilters = false
 
@@ -1182,7 +1302,11 @@ func showApplication(
 		container.NewVBox(widget.NewLabel("Trait"), traitSelect),
 		container.NewVBox(widget.NewLabel("Keyword"), keywordSelect),
 		container.NewVBox(widget.NewLabel("Expansion"), expansionSelect),
-		container.NewVBox(widget.NewLabel("Card Pool"), includeTestingCheck),
+		container.NewVBox(
+			widget.NewLabel("Card Pool"),
+			includeTestingCheck,
+			showAllPrintingsCheck,
+		),
 	)
 
 	searchControls := container.NewVBox(
@@ -1273,7 +1397,11 @@ func showApplication(
 			dialog.ShowError(openErr, window)
 			return
 		}
-		opened.EnsureOrder()
+		migrated, migrateErr := opened.CanonicalizeCardIDs(repository)
+		if migrateErr != nil {
+			dialog.ShowError(migrateErr, window)
+			return
+		}
 		*deck = *opened
 		currentDeckPath = path
 		currentTemplateID = ""
@@ -1283,7 +1411,7 @@ func showApplication(
 		}
 		fyne.CurrentApp().Preferences().SetString(activeDeckPreferenceKey, path)
 		selection.Clear()
-		deckDirty = false
+		deckDirty = migrated
 		showEditor()
 	}
 	loadOfficialTemplate = func(templateID string) {
@@ -1305,7 +1433,7 @@ func showApplication(
 		showEditor()
 	}
 	loadDeck = func() {
-		showOpenDeckDialog(window, repository, func(opened *decks.Deck, uri fyne.URI) {
+		showOpenDeckDialog(window, repository, func(opened *decks.Deck, uri fyne.URI, migrated bool) {
 			*deck = *opened
 			if strings.EqualFold(uri.Extension(), ".json") {
 				currentDeckURI = uri
@@ -1315,7 +1443,7 @@ func showApplication(
 			currentDeckPath = uri.Path()
 			currentTemplateID = ""
 			fyne.CurrentApp().Preferences().SetString(activeDeckPreferenceKey, uri.Path())
-			deckDirty = false
+			deckDirty = migrated
 			showEditor()
 		})
 	}
@@ -1338,9 +1466,164 @@ func showApplication(
 			deckDirty = false
 		}
 	}
+	openDeckEditor = func() {
+		lastSelection := fyne.CurrentApp().Preferences().String(activeDeckPreferenceKey)
+		if strings.HasPrefix(lastSelection, officialTemplatePreferencePrefix) {
+			loadOfficialTemplate(strings.TrimPrefix(lastSelection, officialTemplatePreferencePrefix))
+			return
+		}
+		if lastSelection != "" {
+			if _, statErr := os.Stat(lastSelection); statErr == nil {
+				loadLibraryDeck(lastSelection)
+				return
+			}
+		}
+		loadOfficialTemplate("dd01-ignus")
+	}
 	showMainMenu = func() {
 		window.SetTitle(applicationName)
 		setWindowContent(window, buildMainMenu(window, mainMenuActions{
+			PlayGame: func() {
+				playerSessions, err := buildSimulatorPrototypeSessions(repository)
+				if err != nil {
+					dialog.ShowError(err, window)
+					return
+				}
+				playerWindows := [2]fyne.Window{
+					window,
+					fyne.CurrentApp().NewWindow(applicationName + " — Player Two"),
+				}
+				playerWindows[0].SetTitle(applicationName + " — Player One")
+				playerWindows[1].Resize(fyne.NewSize(1400, 850))
+				cardDefinitions := repository.All()
+				var playerScreens [2]*simulatorui.BoardScreen
+
+				var renderPlayers func()
+				renderPlayers = func() {
+					for index, playerSession := range playerSessions {
+						matchView, viewErr := playerSession.View()
+						if viewErr != nil {
+							dialog.ShowError(viewErr, playerWindows[index])
+							continue
+						}
+						if playerScreens[index] == nil {
+							playerIndex := index
+							back := func() {
+								if playerIndex == 0 {
+									playerWindows[1].Close()
+									showMainMenu()
+									return
+								}
+								playerWindows[1].Close()
+							}
+							backLabel := "Back to Main Menu"
+							if index == 1 {
+								backLabel = "Close Player Two Window"
+							}
+							playerScreens[index] = simulatorui.NewBoardController(
+								matchView,
+								cardDefinitions,
+								simulatorui.BoardActions{
+									BackLabel: backLabel,
+									UseCasterToken: func(
+										tokenID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, tokenErr := playerSessions[playerIndex].
+											UseCasterToken(tokenID, expectedRevision); tokenErr != nil {
+											dialog.ShowError(tokenErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									GenerateCasterAether: func(
+										cardID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, aetherErr := playerSessions[playerIndex].
+											GenerateCasterAether(cardID, expectedRevision); aetherErr != nil {
+											dialog.ShowError(aetherErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									GenerateNonElementalAether: func(
+										cardID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, aetherErr := playerSessions[playerIndex].
+											GenerateNonElementalAether(cardID, expectedRevision); aetherErr != nil {
+											dialog.ShowError(aetherErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									CallFaceDownLevelOne: func(
+										cardID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, callErr := playerSessions[playerIndex].
+											CallFaceDownLevelOne(cardID, expectedRevision); callErr != nil {
+											dialog.ShowError(callErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									CallFaceUpLevelOne: func(
+										cardID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, callErr := playerSessions[playerIndex].
+											CallFaceUpLevelOne(cardID, expectedRevision); callErr != nil {
+											dialog.ShowError(callErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									LevelUpCaster: func(
+										upperCardID model.MatchCardID,
+										targetCasterID model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, levelErr := playerSessions[playerIndex].
+											LevelUpCaster(upperCardID, targetCasterID, expectedRevision); levelErr != nil {
+											dialog.ShowError(levelErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									CompleteCurrentPhase: func(expectedRevision model.Revision) {
+										if _, phaseErr := playerSessions[playerIndex].
+											CompleteCurrentPhase(expectedRevision); phaseErr != nil {
+											dialog.ShowError(phaseErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+									SubmitOpeningHand: func(
+										replace []model.MatchCardID,
+										expectedRevision model.Revision,
+									) {
+										if _, submitErr := playerSessions[playerIndex].
+											SubmitOpeningHandDecision(replace, expectedRevision); submitErr != nil {
+											dialog.ShowError(submitErr, playerWindows[playerIndex])
+											return
+										}
+										renderPlayers()
+									},
+								},
+								back,
+							)
+							setWindowContent(playerWindows[index], playerScreens[index].Content())
+							continue
+						}
+						playerScreens[index].Update(matchView)
+					}
+				}
+				renderPlayers()
+				playerWindows[1].Show()
+			},
+			OpenDeckEditor:   openDeckEditor,
 			NewDeck:          makeNewDeck,
 			LoadDeck:         loadDeck,
 			GenerateImage:    func() { showGenerateImageFromDecklistDialog(window, repository) },
@@ -1355,17 +1638,5 @@ func showApplication(
 	}
 
 	runSearch()
-	lastSelection := fyne.CurrentApp().Preferences().String(activeDeckPreferenceKey)
-	if strings.HasPrefix(lastSelection, officialTemplatePreferencePrefix) {
-		loadOfficialTemplate(strings.TrimPrefix(lastSelection, officialTemplatePreferencePrefix))
-		return
-	}
-	if lastSelection != "" {
-		lastDeckPath := lastSelection
-		if _, statErr := os.Stat(lastDeckPath); statErr == nil {
-			loadLibraryDeck(lastDeckPath)
-			return
-		}
-	}
-	loadOfficialTemplate("dd01-ignus")
+	showMainMenu()
 }

@@ -79,12 +79,18 @@ v0.1.8-hotfix.2's card-art recovery fix.
 
 ## Roadmap
 
-### What's fixed in v0.1.8-hotfix.2
+### What's new in v0.2.0-rc.2
 
-- Recover automatically when an upstream card-art URL disappears by using the
-  version-controlled artwork snapshot.
-- Publish card databases with immutable catalog-owned image URLs instead of
-  unstable upstream links.
+- Refresh the publisher catalog to 379 cards, including the latest Duel Deck
+  and expansion data and artwork.
+- Group gameplay-identical alternate artwork into one search result while
+  retaining exact-printing selection and an expanded artwork view.
+- Preserve historical card IDs across publisher record replacements and
+  migrate saved decks to canonical IDs when opened.
+- Scale hosted Tabletop Simulator catalogs to efficient 70-card sheets and
+  retain portable multiplayer exports as the database grows.
+- Add simulator groundwork for explicit elemental aether payments and ongoing
+  call/level-up behavior.
 
 ### What's new in v0.1.8
 
@@ -319,13 +325,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.1.8-hotfix.2_amd64.deb
+sudo apt install ./casters-compendium_0.2.0-rc.2_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.1.8_hotfix.2-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.2.0_rc.2-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations
