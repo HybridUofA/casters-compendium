@@ -32,6 +32,28 @@ type Filter struct {
 	IncludeTesting bool
 }
 
+// PrintingGroup collects cards with identical gameplay data but different
+// physical printings. Preferred is the ordinary printing shown by default.
+type PrintingGroup struct {
+	Preferred Card
+	Printings []Card
+}
+
+// printingIdentity contains only fields that affect how a card plays. Fields
+// such as the card ID, set number, expansion, image, rarity, flavor text, and
+// artist identify a physical printing and intentionally do not participate.
+type printingIdentity struct {
+	name      string
+	subname   string
+	cardType  string
+	element   string
+	traits    string
+	costLevel string
+	attack    string
+	defense   string
+	ability   string
+}
+
 // LoadFile decodes and validates a normalized card database from disk.
 func LoadFile(path string) (*Repository, error) {
 	data, err := os.ReadFile(path)
@@ -70,7 +92,6 @@ func NewRepository(cards []Card) (*Repository, error) {
 
 	for index, card := range cards {
 		card = gamecards.NormalizeDefinition(card)
-		card.ID = strings.TrimSpace(card.ID)
 		card.Name = strings.TrimSpace(card.Name)
 
 		if card.ID == "" {
@@ -103,6 +124,19 @@ func NewRepository(cards []Card) (*Repository, error) {
 			repository.byName[nameKey],
 			card,
 		)
+	}
+
+	for _, card := range repository.cards {
+		for _, legacyID := range card.LegacyIDs {
+			if _, exists := repository.byID[legacyID]; exists {
+				return nil, fmt.Errorf(
+					"legacy card ID %q for %q conflicts with another card ID",
+					legacyID,
+					card.ID,
+				)
+			}
+			repository.byID[legacyID] = card
+		}
 	}
 	repository.searchCards = preferredSearchPrintings(repository.cards)
 
@@ -259,6 +293,104 @@ func (repository *Repository) Filter(options Filter) []Card {
 	}
 
 	return matches
+}
+
+// FilterPrintingGroups applies the ordinary card filters and then collapses
+// gameplay-identical artwork into one search result. Every matching distinct
+// artwork remains available in the returned group, including alternate art.
+func (repository *Repository) FilterPrintingGroups(options Filter) []PrintingGroup {
+	matches := repository.Filter(options)
+	SortForSearch(matches)
+
+	groups := make([]PrintingGroup, 0, len(matches))
+	groupIndexes := make(map[printingIdentity]int, len(matches))
+
+	for _, card := range matches {
+		identity := gameplayIdentity(card)
+		index, found := groupIndexes[identity]
+		if !found {
+			groupIndexes[identity] = len(groups)
+			groups = append(groups, PrintingGroup{
+				Preferred: card,
+				Printings: []Card{card},
+			})
+			continue
+		}
+
+		groups[index].Printings = append(groups[index].Printings, card)
+	}
+
+	for index := range groups {
+		printings := groups[index].Printings
+		sort.SliceStable(printings, func(i, j int) bool {
+			return preferredPrintingLess(printings[i], printings[j])
+		})
+		groups[index].Preferred = printings[0]
+	}
+
+	return groups
+}
+
+func gameplayIdentity(card Card) printingIdentity {
+	return printingIdentity{
+		name:      normalizeText(card.Name),
+		subname:   normalizeText(card.Subname),
+		cardType:  normalizeText(card.Type),
+		element:   normalizeText(card.Element),
+		traits:    normalizedTraitIdentity(card.Traits),
+		costLevel: normalizeText(card.CostLevel),
+		attack:    normalizeText(card.Attack),
+		defense:   normalizeText(card.Defense),
+		ability:   normalizeText(card.Ability),
+	}
+}
+
+func normalizedTraitIdentity(value string) string {
+	traits := splitTraits(value)
+	for index := range traits {
+		traits[index] = normalizeText(traits[index])
+	}
+	sort.Strings(traits)
+	return strings.Join(traits, "\x00")
+}
+
+// preferredPrintingLess places an ordinary printing before explicitly marked
+// alternate-art and rarity variants, then uses stable catalog metadata.
+func preferredPrintingLess(left Card, right Card) bool {
+	leftRank := printingVariantRank(left)
+	rightRank := printingVariantRank(right)
+	if leftRank != rightRank {
+		return leftRank < rightRank
+	}
+
+	leftNumber := normalizeText(left.CardNumber)
+	rightNumber := normalizeText(right.CardNumber)
+	if leftNumber != rightNumber {
+		return leftNumber < rightNumber
+	}
+
+	return normalizeText(left.ID) < normalizeText(right.ID)
+}
+
+func printingVariantRank(card Card) int {
+	cardNumber := normalizeText(card.CardNumber)
+	imageURL := normalizeText(card.ImageURL)
+	if strings.Contains(cardNumber, "alt") || strings.Contains(imageURL, "alternate-art") {
+		return 2
+	}
+	if strings.Contains(imageURL, "-rare.") ||
+		strings.Contains(imageURL, "-super-rare.") ||
+		strings.Contains(imageURL, "-hyper-rare.") {
+		return 1
+	}
+
+	for key, value := range card.ExtraFields {
+		if normalizeText(key) == "rarity" && normalizeText(value) != "" {
+			return 1
+		}
+	}
+
+	return 0
 }
 
 // All returns a defensive copy of every card in repository order.

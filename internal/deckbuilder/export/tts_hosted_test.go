@@ -138,6 +138,29 @@ func TestBuildHostedSavedObjectRejectsUnpublishedCard(t *testing.T) {
 	}
 }
 
+func TestBuildHostedSavedObjectResolvesLegacyCardID(t *testing.T) {
+	deck := &decks.Deck{
+		SchemaVersion: 1,
+		Name:          "Historical Deck",
+		MainDeck:      []decks.DeckEntry{{CardID: "old-1", Quantity: 1}},
+		MainOrder:     []string{"old-1"},
+	}
+	repository, err := cards.NewRepository([]gamecards.Card{{
+		ID: "1", LegacyIDs: []string{"old-1"}, Name: "One",
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	object, err := BuildHostedSavedObject(deck, testHostedManifest(), repository)
+	if err != nil {
+		t.Fatalf("BuildHostedSavedObject() error = %v", err)
+	}
+	if got := object.ObjectStates[0].DeckIDs; len(got) != 1 || got[0] != 100 {
+		t.Fatalf("legacy deck IDs = %#v, want canonical hosted ID 100", got)
+	}
+}
+
 func TestInstallHostedTTSDeckWritesOnlySavedObject(t *testing.T) {
 	root := newTestTTSRoot(t)
 	deck := &decks.Deck{

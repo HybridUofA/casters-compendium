@@ -83,6 +83,18 @@ type AetherPool struct {
 	NonElemental int
 }
 
+type AetherPayment struct {
+	Aes          int
+	Aqua         int
+	Ignus        int
+	Luna         int
+	Silva        int
+	Solis        int
+	Terra        int
+	Void         int
+	NonElemental int
+}
+
 type PlayerState struct {
 	ID PlayerID
 	// Index 0 of PlayerState.Deck is the top of the Deck.

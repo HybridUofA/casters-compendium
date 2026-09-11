@@ -19,6 +19,7 @@ func main() {
 	rawPath := flag.String("raw", "data/cards.raw.json", "raw card-detail output path")
 	normalizedPath := flag.String("normalized", "data/cards.json", "normalized card output path")
 	flag.Parse()
+	previous := readPreviousCards(*normalizedPath)
 
 	client, err := speedrobo.NewClient()
 	if err != nil {
@@ -45,6 +46,7 @@ func main() {
 		}
 		normalized = append(normalized, card)
 	}
+	normalized, migrations := cardupdate.CarryForwardLegacyIDs(previous, normalized)
 	if _, err := catalog.NewRepository(normalized); err != nil {
 		log.Fatalf("validate normalized repository: %v", err)
 	}
@@ -65,6 +67,24 @@ func main() {
 	}
 
 	fmt.Printf("Refreshed %d cards\n", len(normalized))
+	for _, migration := range migrations {
+		fmt.Printf("Preserved legacy card ID %s as %s\n", migration.LegacyID, migration.CanonicalID)
+	}
+}
+
+func readPreviousCards(path string) []cards.Card {
+	data, err := os.ReadFile(path)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		log.Fatalf("read previous normalized card database: %v", err)
+	}
+	var previous []cards.Card
+	if err := json.Unmarshal(data, &previous); err != nil {
+		log.Fatalf("decode previous normalized card database: %v", err)
+	}
+	return previous
 }
 
 func marshalJSON(value any) ([]byte, error) {

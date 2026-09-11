@@ -122,9 +122,6 @@ func LevelUpCaster(state *model.MatchState, catalog rules.CardCatalog, actingPla
 	if !exists {
 		return fmt.Errorf("card %q not found in card instances", upperID)
 	}
-	if len(levelUp.Stock) != 0 {
-		return fmt.Errorf("cards in hand cannot have Stock")
-	}
 	target, exists := state.CardInstances[targetID]
 	if !exists {
 		return fmt.Errorf("card %q not found in card instances", targetID)

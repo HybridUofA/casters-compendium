@@ -157,3 +157,58 @@ func TestBundledSearchKeepsDistinctPrintingsAndCollapsesSharedArtwork(t *testing
 		t.Error("duplicate printing ID 1272 no longer resolves")
 	}
 }
+
+// TestFilterPrintingGroupsCollapsesGameplayIdenticalCards verifies artwork and
+// set metadata do not create redundant search entries, while rules changes do.
+func TestFilterPrintingGroupsCollapsesGameplayIdenticalCards(t *testing.T) {
+	repository, err := NewRepository([]Card{
+		{
+			ID: "base", Name: "Example", Type: "Servant", Element: "Luna",
+			Traits: "[Scholar][Spirit]", CostLevel: "1", Attack: "500", Ability: "Enter: Draw.",
+			CardNumber: "DD01-001", Expansion: "First", ImageURL: "base.png",
+		},
+		{
+			ID: "rare", Name: "Example", Type: "Servant", Element: "Luna",
+			Traits: "[Spirit][Scholar]", CostLevel: "1", Attack: "500", Ability: "Enter: Draw.",
+			CardNumber: "EX01-001", Expansion: "Second", ImageURL: "rare.png",
+			Artist: "Different Artist", Flavor: "Different flavor",
+			ExtraFields: map[string]string{"Rarity": "Super Rare"},
+		},
+		{
+			ID: "changed", Name: "Example", Type: "Servant", Element: "Luna",
+			Traits: "[Scholar][Spirit]", CostLevel: "1", Attack: "500", Ability: "Enter: Draw two.",
+			CardNumber: "DD02-001", Expansion: "Second", ImageURL: "changed.png",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewRepository() error = %v", err)
+	}
+
+	groups := repository.FilterPrintingGroups(Filter{Name: "Example"})
+	if len(groups) != 2 {
+		t.Fatalf("FilterPrintingGroups() returned %d groups, want 2", len(groups))
+	}
+	if groups[0].Preferred.ID != "base" {
+		t.Errorf("first preferred printing = %q, want base", groups[0].Preferred.ID)
+	}
+	if len(groups[0].Printings) != 2 {
+		t.Errorf("first group has %d printings, want 2", len(groups[0].Printings))
+	}
+}
+
+// TestFilterPrintingGroupsHonorsPrintingFilters verifies an expansion filter
+// selects a matching physical printing before gameplay grouping occurs.
+func TestFilterPrintingGroupsHonorsPrintingFilters(t *testing.T) {
+	repository, err := NewRepository([]Card{
+		{ID: "first", Name: "Example", Type: "Barrier", Expansion: "First", ImageURL: "first.png"},
+		{ID: "second", Name: "Example", Type: "Barrier", Expansion: "Second", ImageURL: "second.png"},
+	})
+	if err != nil {
+		t.Fatalf("NewRepository() error = %v", err)
+	}
+
+	groups := repository.FilterPrintingGroups(Filter{Expansions: []string{"Second"}})
+	if len(groups) != 1 || len(groups[0].Printings) != 1 || groups[0].Preferred.ID != "second" {
+		t.Fatalf("filtered groups = %#v, want only second printing", groups)
+	}
+}

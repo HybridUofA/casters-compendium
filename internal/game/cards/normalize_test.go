@@ -56,3 +56,24 @@ func TestNormalizeSourceNameRemovesUpstreamPrintingLabels(t *testing.T) {
 		}
 	}
 }
+
+func TestNormalizeDefinitionCleansLegacyIDs(t *testing.T) {
+	card := NormalizeDefinition(Card{
+		ID:        " 1225 ",
+		LegacyIDs: []string{"235", " 235 ", "", "1225", "229"},
+		Name:      "Carella",
+	})
+
+	if card.ID != "1225" {
+		t.Fatalf("normalized ID = %q, want 1225", card.ID)
+	}
+	want := []string{"229", "235"}
+	if len(card.LegacyIDs) != len(want) {
+		t.Fatalf("legacy IDs = %#v, want %#v", card.LegacyIDs, want)
+	}
+	for index := range want {
+		if card.LegacyIDs[index] != want[index] {
+			t.Fatalf("legacy IDs = %#v, want %#v", card.LegacyIDs, want)
+		}
+	}
+}

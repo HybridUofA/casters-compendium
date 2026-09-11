@@ -207,6 +207,7 @@ func fetchRemoteCardList(
 func downloadRemoteCardDatabase(
 	ctx context.Context,
 	remote *remoteCardList,
+	previousRepository *cards.Repository,
 	progress setupProgress,
 ) (*cards.Repository, error) {
 	if remote == nil {
@@ -253,6 +254,12 @@ func downloadRemoteCardDatabase(
 	if err != nil {
 		return nil, err
 	}
+	if previousRepository != nil {
+		normalized, _ = cardupdate.CarryForwardLegacyIDs(
+			previousRepository.All(),
+			normalized,
+		)
+	}
 	return cards.NewRepository(normalized)
 }
 
@@ -294,7 +301,12 @@ func updateApplicationData(
 		}
 	}
 
-	updatedRepository, err := downloadRemoteCardDatabase(ctx, remote, progress)
+	updatedRepository, err := downloadRemoteCardDatabase(
+		ctx,
+		remote,
+		currentRepository,
+		progress,
+	)
 	if err != nil {
 		return nil, err
 	}

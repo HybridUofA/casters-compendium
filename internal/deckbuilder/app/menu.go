@@ -108,7 +108,7 @@ func showNewDeckDialog(
 func showOpenDeckDialog(
 	window fyne.Window,
 	repository *cards.Repository,
-	onOpened func(*decks.Deck, fyne.URI),
+	onOpened func(*decks.Deck, fyne.URI, bool),
 ) {
 	fileDialog := dialog.NewFileOpen(
 		func(reader fyne.URIReadCloser, openErr error) {
@@ -136,8 +136,12 @@ func showOpenDeckDialog(
 				dialog.ShowError(closeErr, window)
 				return
 			}
-			deck.EnsureOrder()
-			onOpened(deck, uri)
+			migrated, err := deck.CanonicalizeCardIDs(repository)
+			if err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
+			onOpened(deck, uri, migrated)
 		},
 		window,
 	)
@@ -238,6 +242,10 @@ func showGenerateImageFromDecklistDialog(
 				dialog.ShowError(closeErr, window)
 				return
 			}
+			if _, err := deck.CanonicalizeCardIDs(repository); err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
 
 			choice := widget.NewRadioGroup([]string{"Main Deck", "Sideboard"}, nil)
 			choice.SetSelected("Main Deck")
@@ -286,6 +294,10 @@ func showGenerateDecklistDialog(
 			}
 			if closeErr != nil {
 				dialog.ShowError(closeErr, window)
+				return
+			}
+			if _, err := deck.CanonicalizeCardIDs(repository); err != nil {
+				dialog.ShowError(err, window)
 				return
 			}
 			showDecklistSaveDialog(window, deck, repository)

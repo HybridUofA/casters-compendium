@@ -198,6 +198,31 @@ func TestCardTileSetSelectedVisualNilBorder(t *testing.T) {
 	tile.SetSelectedVisual(true)
 }
 
+// TestCardTileSetCardUpdatesInteractions verifies changing artwork also changes
+// the exact card passed through click and drag behavior.
+func TestCardTileSetCardUpdatesInteractions(t *testing.T) {
+	original := cards.Card{ID: "original", Name: "Example"}
+	replacement := cards.Card{ID: "alternate", Name: "Example"}
+	var clicked cards.Card
+	tile := NewCardTile(original, nil, func(card cards.Card, _ bool) {
+		clicked = card
+	})
+	tile.EnableDrag(CardDragSource{Kind: DragFromSearch, Card: original}, nil, nil, nil)
+
+	tile.SetCard(replacement)
+	tile.MouseUp(&desktop.MouseEvent{Button: desktop.MouseButtonSecondary})
+
+	if tile.Card.ID != replacement.ID {
+		t.Errorf("tile card ID = %q, want %q", tile.Card.ID, replacement.ID)
+	}
+	if tile.dragSource == nil || tile.dragSource.Card.ID != replacement.ID {
+		t.Fatalf("drag source = %#v, want replacement card", tile.dragSource)
+	}
+	if clicked.ID != replacement.ID {
+		t.Fatalf("right-click card ID = %q, want %q", clicked.ID, replacement.ID)
+	}
+}
+
 // TestCardTileRendererStacksSelectionBorderAboveImage verifies the border is the top layer.
 func TestCardTileRendererStacksSelectionBorderAboveImage(t *testing.T) {
 	tile := newVisualTestCardTile(t, "MISSING-RENDERER-TEST")

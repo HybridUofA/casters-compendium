@@ -832,6 +832,9 @@
  },
  {
   "id": "1225",
+  "legacy_ids": [
+   "235"
+  ],
   "name": "Carella",
   "subname": "Jyun Fujinmai",
   "type": "Caster",
@@ -1103,6 +1106,9 @@
  },
  {
   "id": "1230",
+  "legacy_ids": [
+   "258"
+  ],
   "name": "Citra Cayce",
   "subname": "Kaoru Shida",
   "type": "Caster",
@@ -2508,6 +2514,9 @@
  },
  {
   "id": "1232",
+  "legacy_ids": [
+   "265"
+  ],
   "name": "Gawain",
   "subname": "Mika Rokutanda",
   "type": "Caster",
@@ -3530,6 +3539,9 @@
  },
  {
   "id": "1229",
+  "legacy_ids": [
+   "252"
+  ],
   "name": "Karen Urania",
   "subname": "Karen Kashima",
   "type": "Caster",
@@ -4540,6 +4552,9 @@
  },
  {
   "id": "1227",
+  "legacy_ids": [
+   "242"
+  ],
   "name": "Miu",
   "subname": "Misora Hiraiwa",
   "type": "Caster",
@@ -4859,6 +4874,9 @@
  },
  {
   "id": "1",
+  "legacy_ids": [
+   "181"
+  ],
   "name": "Passion Wing",
   "subname": "Tsubasa Koga",
   "type": "Caster",
@@ -5220,6 +5238,9 @@
  },
  {
   "id": "1231",
+  "legacy_ids": [
+   "264"
+  ],
   "name": "Percival",
   "subname": "Tomoka Arimori",
   "type": "Caster",
@@ -5666,6 +5687,9 @@
  },
  {
   "id": "1226",
+  "legacy_ids": [
+   "241"
+  ],
   "name": "Ran Berfield",
   "subname": "You Chitose",
   "type": "Caster",
@@ -6498,6 +6522,9 @@
  },
  {
   "id": "1224",
+  "legacy_ids": [
+   "229"
+  ],
   "name": "Sunny",
   "subname": "Hitori Kusaka",
   "type": "Caster",
@@ -6852,6 +6879,9 @@
  },
  {
   "id": "1228",
+  "legacy_ids": [
+   "251"
+  ],
   "name": "Twinkle Charm",
   "subname": "Momoka Michizuki",
   "type": "Caster",

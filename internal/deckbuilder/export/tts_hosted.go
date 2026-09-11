@@ -235,13 +235,13 @@ func buildHostedDeckObject(
 	cardObjects := make([]CardObject, 0, len(orderedCardIDs))
 
 	for index, cardID := range orderedCardIDs {
-		location, found := manifest.Cards[cardID]
-		if !found {
-			return DeckObject{}, fmt.Errorf("card %q at position %d is absent from hosted catalog", cardID, index+1)
-		}
 		card, found := repository.FindByID(cardID)
 		if !found {
 			return DeckObject{}, fmt.Errorf("card %q at position %d was not found", cardID, index+1)
+		}
+		location, found := manifest.Cards[card.ID]
+		if !found {
+			return DeckObject{}, fmt.Errorf("card %q at position %d is absent from hosted catalog", card.ID, index+1)
 		}
 		sheet := sheets[location.DeckKey]
 		state := CustomDeckState{

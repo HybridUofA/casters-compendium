@@ -2,6 +2,7 @@ package cards
 
 import (
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -31,6 +32,23 @@ func NormalizeSourceName(name string) string {
 // NormalizeDefinition canonicalizes source-specific representation details
 // before a printed card definition is used by deck or simulator rules.
 func NormalizeDefinition(card Card) Card {
+	card.ID = strings.TrimSpace(card.ID)
+	seenIDs := map[string]struct{}{card.ID: {}}
+	legacyIDs := make([]string, 0, len(card.LegacyIDs))
+	for _, legacyID := range card.LegacyIDs {
+		legacyID = strings.TrimSpace(legacyID)
+		if legacyID == "" {
+			continue
+		}
+		if _, duplicate := seenIDs[legacyID]; duplicate {
+			continue
+		}
+		seenIDs[legacyID] = struct{}{}
+		legacyIDs = append(legacyIDs, legacyID)
+	}
+	sort.Strings(legacyIDs)
+	card.LegacyIDs = legacyIDs
+
 	card.Name = strings.TrimSpace(card.Name)
 	if strings.EqualFold(strings.TrimSpace(card.Type), "caster") {
 		level, err := strconv.Atoi(strings.TrimSpace(card.CostLevel))
