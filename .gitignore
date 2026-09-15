@@ -11,6 +11,7 @@
 bin/
 build/
 dist/
+node_modules/
 
 # Generated deck images
 exports/

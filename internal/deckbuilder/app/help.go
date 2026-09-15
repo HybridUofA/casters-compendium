@@ -58,6 +58,9 @@ You can also drag a search result directly into either deck area.
   sheets and the MTD card back, so multiplayer participants can load its art.
   Standard TTS data locations are detected automatically; a custom location
   only needs to be selected once. Local sheets are used as an offline fallback.
+- **TTS Card Back** opens the safeguarded browser uploader. Paste the resulting
+  permanent URL into the same dialog to save that back with the editable deck;
+  clear it to restore the official back.
 - The main menu can also create an image directly from a text decklist or convert a JSON deck into a text decklist.
 
 ## Card data and appearance

@@ -206,6 +206,9 @@ The deck controls provide the following file and export operations:
   assets into the detected Tabletop Simulator data directory. If the hosted
   catalog is unavailable, it installs local assets and explains the multiplayer
   limitation.
+- **TTS Card Back** opens the safeguarded player-asset uploader and stores its
+  immutable custom-back URL with the editable deck. Leaving the URL blank keeps
+  the publisher-approved default back.
 - **Rename** changes the deck's display and default export name.
 - **Main Menu** returns to deck creation, file conversion, database update,
   appearance settings, and the built-in **How to Use** guide.

@@ -102,3 +102,11 @@ bucket. It does not need account administration permission. The workflow:
 
 Never place R2 credentials in the repository, desktop application, catalog
 files, saved TTS objects, or support logs.
+
+## Player custom assets
+
+Player uploads do not belong in this publisher-authorized catalog or its R2
+bucket. The independent service under `web/custom-assets` stores normalized
+player images in a separately permissioned bucket and serves immutable URLs
+from `custom-assets.casterscompendium.com`. Its setup and operational controls
+are documented in that service's README.

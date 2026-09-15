@@ -3,6 +3,7 @@ package deckbuilder
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 	"github.com/HybridUofA/casters-compendium/internal/carddata/distribution"
@@ -37,12 +38,19 @@ func installPreferredTTSDeck(
 	deck *decks.Deck,
 	repository *cards.Repository,
 ) (paths deckexport.TTSInstallPaths, hosted bool, fallbackReason error, err error) {
+	customBackURL := strings.TrimSpace(deck.TTSCardBackURL)
+	if err := deckexport.ValidateCustomTTSCardBackURL(customBackURL); err != nil {
+		return deckexport.TTSInstallPaths{}, false, nil, err
+	}
 	client, clientErr := hostedCatalogClientFactory()
 	if clientErr == nil {
 		_, release, releaseErr := client.FetchCurrent(ctx)
 		if releaseErr == nil {
 			manifest, manifestErr := client.FetchTTSManifest(ctx, release)
 			if manifestErr == nil {
+				if customBackURL != "" {
+					manifest.CardBackURL = customBackURL
+				}
 				paths, hostedErr := deckexport.InstallHostedTTSDeck(
 					root,
 					deck,
@@ -61,6 +69,12 @@ func installPreferredTTSDeck(
 		}
 	} else {
 		fallbackReason = clientErr
+	}
+	if customBackURL != "" {
+		return deckexport.TTSInstallPaths{}, false, fallbackReason, fmt.Errorf(
+			"custom card-back export requires the hosted card catalog: %w",
+			fallbackReason,
+		)
 	}
 
 	paths, localErr := deckexport.InstallTTSDeck(
