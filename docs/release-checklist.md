@@ -63,6 +63,7 @@ Use `N/A` only with a short explanation.
 - [ ] Known limitations and deferred issues are documented.
 - [ ] Release notes describe user-visible changes and compatibility concerns.
 - [ ] The stable tag points to the exact accepted source commit.
+- [ ] The release workflow's `Deploy released website` job succeeded.
 - [ ] GitHub release downloads and website links resolve.
 - [ ] Discord announcement contains working release and download links.
 - [ ] A short post-release launch and core-flow check passed.

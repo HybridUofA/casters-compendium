@@ -79,8 +79,11 @@ v0.1.8-hotfix.2's card-art recovery fix.
 
 ## Roadmap
 
-### What's new in v0.2.0-rc.2
+### What's new in v0.2.0-rc.3
 
+- Keep higher-level casters distinct during deck construction and preserve
+  `Lv2`, `Lv3`, and later suffixes in Speedrobo-compatible text imports and
+  exports.
 - Refresh the publisher catalog to 379 cards, including the latest Duel Deck
   and expansion data and artwork.
 - Group gameplay-identical alternate artwork into one search result while
@@ -325,13 +328,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.2.0-rc.2_amd64.deb
+sudo apt install ./casters-compendium_0.2.0-rc.3_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.2.0_rc.2-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.2.0_rc.3-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

@@ -29,6 +29,24 @@ func NormalizeSourceName(name string) string {
 	return strings.TrimSpace(name)
 }
 
+// DecklistName returns the card name used by Speedrobo-compatible text
+// decklists. Caster levels above one are part of that interchange name even
+// though NormalizeDefinition removes the source-only level suffix from the
+// rules name stored in the shared catalog.
+func DecklistName(card Card) string {
+	card = NormalizeDefinition(card)
+	name := strings.TrimSpace(card.Name)
+	if !strings.EqualFold(strings.TrimSpace(card.Type), "caster") {
+		return name
+	}
+
+	level, err := strconv.Atoi(strings.TrimSpace(card.CostLevel))
+	if err != nil || level <= 1 {
+		return name
+	}
+	return name + " Lv" + strconv.Itoa(level)
+}
+
 // NormalizeDefinition canonicalizes source-specific representation details
 // before a printed card definition is used by deck or simulator rules.
 func NormalizeDefinition(card Card) Card {

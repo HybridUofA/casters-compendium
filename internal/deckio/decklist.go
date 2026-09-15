@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
@@ -221,8 +222,24 @@ func resolveDecklistCard(
 	name string,
 	expansion string,
 ) (cards.Card, error) {
-	for _, card := range repository.FindByName(name) {
-		if strings.EqualFold(strings.TrimSpace(card.Expansion), expansion) {
+	candidates := repository.FindByName(name)
+	baseName := gamecards.NormalizeSourceName(name)
+	if !strings.EqualFold(baseName, name) {
+		seen := make(map[string]struct{}, len(candidates))
+		for _, card := range candidates {
+			seen[card.ID] = struct{}{}
+		}
+		for _, card := range repository.FindByName(baseName) {
+			if _, duplicate := seen[card.ID]; duplicate {
+				continue
+			}
+			candidates = append(candidates, card)
+		}
+	}
+
+	for _, card := range candidates {
+		if strings.EqualFold(strings.TrimSpace(card.Expansion), expansion) &&
+			strings.EqualFold(gamecards.DecklistName(card), name) {
 			return card, nil
 		}
 	}
