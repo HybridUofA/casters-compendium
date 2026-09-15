@@ -37,14 +37,16 @@ Continuous integration runs the same check and rejects metadata drift.
 2. Update `VERSION`, packaging metadata, documentation, and candidate release
    notes together.
 3. Run the version-consistency check and create an `-rc.N` tag.
-4. Let GitHub build the actual packages users would receive.
+4. Let GitHub build the actual packages users would receive. After publishing
+   the release, the same workflow deploys the validated website snapshot from
+   that exact tag.
 5. Install those packages and complete
    [the release checklist](release-checklist.md). Record tester names, platforms,
    package names, and results in the release issue or pull request.
 6. Correct failures with a new candidate. Do not reuse or move an existing tag.
 7. After acceptance, create the stable tag from the exact approved source
-   commit and verify its checksums, SBOM, provenance, website links, and
-   announcement.
+   commit and verify its checksums, SBOM, provenance, automatically deployed
+   website links, and announcement.
 
 Manual checklist entries must be completed by a person who actually performed
 the test. Automation and AI assistance must not mark visual or platform checks

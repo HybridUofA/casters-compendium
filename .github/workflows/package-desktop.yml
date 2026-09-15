@@ -261,3 +261,15 @@ jobs:
               --generate-notes \
               "${prerelease[@]}"
           fi
+
+  deploy-website:
+    name: Deploy released website
+    if: github.ref_type == 'tag'
+    needs: release
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
+    with:
+      source_ref: ${{ github.ref }}
