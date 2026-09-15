@@ -57,6 +57,27 @@ func TestNormalizeSourceNameRemovesUpstreamPrintingLabels(t *testing.T) {
 	}
 }
 
+func TestDecklistNameRestoresHigherCasterLevel(t *testing.T) {
+	tests := []struct {
+		name string
+		card Card
+		want string
+	}{
+		{name: "level one caster", card: Card{Name: "Arthur", Type: "Caster", CostLevel: "1"}, want: "Arthur"},
+		{name: "level two normalized caster", card: Card{Name: "Arthur", Type: "Caster", CostLevel: "2"}, want: "Arthur Lv2"},
+		{name: "level suffix is not duplicated", card: Card{Name: "Arthur Lv2", Type: "Caster", CostLevel: "2"}, want: "Arthur Lv2"},
+		{name: "non-caster cost", card: Card{Name: "Abolition", Type: "Conjure", CostLevel: "2"}, want: "Abolition"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := DecklistName(test.card); got != test.want {
+				t.Fatalf("DecklistName() = %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
 func TestNormalizeDefinitionCleansLegacyIDs(t *testing.T) {
 	card := NormalizeDefinition(Card{
 		ID:        " 1225 ",

@@ -134,6 +134,99 @@ Side Total: 2 cards
 	}
 }
 
+// TestSpeedroboDecklistRoundTripDistinguishesCasterLevels reproduces issues
+// #37 and #38: normalized catalog names must still import and export the Lv2
+// suffix required by Speedrobo's text format.
+func TestSpeedroboDecklistRoundTripDistinguishesCasterLevels(t *testing.T) {
+	repository, err := cards.NewRepository([]cards.Card{
+		{ID: "arthur-1", Name: "Arthur", Type: "Caster", CostLevel: "1", Expansion: "DD02: Away Game"},
+		{ID: "arthur-2", Name: "Arthur Lv2", Type: "Caster", CostLevel: "2", Expansion: "DD02: Away Game"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	input := `Deck: Arthur Levels
+Game: The Caster Chronicles
+
+4x Arthur (DD02: Away Game)
+4x Arthur Lv2 (DD02: Away Game)
+
+Total: 8 cards
+`
+	deck, err := ReadDeckList(strings.NewReader(input), repository)
+	if err != nil {
+		t.Fatalf("ReadDeckList() rejected a Speedrobo caster level: %v", err)
+	}
+	if got := deck.QuantityOf("arthur-1"); got != 4 {
+		t.Fatalf("Level 1 quantity = %d, want 4", got)
+	}
+	if got := deck.QuantityOf("arthur-2"); got != 4 {
+		t.Fatalf("Level 2 quantity = %d, want 4", got)
+	}
+
+	var exported bytes.Buffer
+	if err := WriteDeckList(&exported, deck, repository); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(exported.String(), "4x Arthur (DD02: Away Game)") ||
+		!strings.Contains(exported.String(), "4x Arthur Lv2 (DD02: Away Game)") {
+		t.Fatalf("exported caster levels were not distinct:\n%s", exported.String())
+	}
+	roundTripped, err := ReadDeckList(strings.NewReader(exported.String()), repository)
+	if err != nil {
+		t.Fatalf("read exported decklist: %v", err)
+	}
+	if !slices.Equal(roundTripped.MainOrder, deck.MainOrder) {
+		t.Fatalf("round-tripped order = %#v, want %#v", roundTripped.MainOrder, deck.MainOrder)
+	}
+}
+
+// TestBundledCatalogImportsSpeedroboHigherLevelCaster guards the exact Arthur
+// Lv2 failure reported in issue #38 against the production card database.
+func TestBundledCatalogImportsSpeedroboHigherLevelCaster(t *testing.T) {
+	repository, err := cards.LoadFile("../../data/cards.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	input := `Deck: Reported Arthur Import
+Game: The Caster Chronicles
+
+1x Arthur Lv2 (DD02: Away Game)
+
+Total: 1 cards
+`
+	deck, err := ReadDeckList(strings.NewReader(input), repository)
+	if err != nil {
+		t.Fatalf("ReadDeckList() rejected reported Arthur Lv2 line: %v", err)
+	}
+	if got := deck.QuantityOf("71"); got != 1 {
+		t.Fatalf("Arthur Lv2 quantity = %d, want card ID 71 once", got)
+	}
+}
+
+func TestSpeedroboDecklistDoesNotResolveWrongCasterLevel(t *testing.T) {
+	repository, err := cards.NewRepository([]cards.Card{
+		{ID: "arthur-1", Name: "Arthur", Type: "Caster", CostLevel: "1", Expansion: "DD02: Away Game"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	input := `Deck: Missing Level
+Game: The Caster Chronicles
+
+1x Arthur Lv2 (DD02: Away Game)
+
+Total: 1 cards
+`
+	_, err = ReadDeckList(strings.NewReader(input), repository)
+	if err == nil || !strings.Contains(err.Error(), `card "Arthur Lv2"`) {
+		t.Fatalf("ReadDeckList() error = %v, want missing Level 2 card", err)
+	}
+}
+
 // TestReadDeckListSpeedroboMainOnly verifies official preconstructed decks do
 // not need to include an empty side-deck heading or side total.
 func TestReadDeckListSpeedroboMainOnly(t *testing.T) {

@@ -39,18 +39,22 @@ const (
 	MaxSideDeckCards      = 12
 )
 
-// normalizeCardName prepares names for copy-limit comparisons across alternate printings.
-func normalizeCardName(name string) string {
+// normalizeCardName prepares decklist names for copy-limit comparisons across
+// alternate printings while retaining a higher-level caster's level suffix.
+func normalizeCardName(card gamecards.Card) string {
+	name := gamecards.DecklistName(card)
 	return strings.ToLower(strings.TrimSpace(name))
 }
 
-// CopiesOfCard counts a card across both zones, including alternate printings with the same name.
+// CopiesOfCard counts a card across both zones, including alternate printings
+// with the same decklist name. Different caster levels have distinct decklist
+// names and therefore receive independent copy limits.
 func (deck *Deck) CopiesOfCard(
 	target gamecards.Card,
 	repository CardCatalog,
 ) int {
 	total := 0
-	targetName := normalizeCardName(target.Name)
+	targetName := normalizeCardName(target)
 
 	countEntries := func(entries []DeckEntry) {
 		for _, entry := range entries {
@@ -68,7 +72,7 @@ func (deck *Deck) CopiesOfCard(
 				continue
 			}
 
-			if normalizeCardName(entryCard.Name) ==
+			if normalizeCardName(entryCard) ==
 				targetName {
 				total += entry.Quantity
 			}

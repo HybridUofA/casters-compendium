@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 )
 
@@ -20,7 +21,7 @@ func WriteDeckList(writer io.Writer, deck *decks.Deck, repository decks.CardCata
 		if !found {
 			return fmt.Errorf("main deck contains unknown card ID %q", entry.CardID)
 		}
-		if _, err := fmt.Fprintf(writer, "%dx %s (%s)\n", entry.Quantity, card.Name, card.Expansion); err != nil {
+		if _, err := fmt.Fprintf(writer, "%dx %s (%s)\n", entry.Quantity, gamecards.DecklistName(card), card.Expansion); err != nil {
 			return err
 		}
 	}
@@ -35,7 +36,7 @@ func WriteDeckList(writer io.Writer, deck *decks.Deck, repository decks.CardCata
 		if !found {
 			return fmt.Errorf("side deck contains unknown card ID %q", entry.CardID)
 		}
-		if _, err := fmt.Fprintf(writer, "%dx %s (%s)\n", entry.Quantity, card.Name, card.Expansion); err != nil {
+		if _, err := fmt.Fprintf(writer, "%dx %s (%s)\n", entry.Quantity, gamecards.DecklistName(card), card.Expansion); err != nil {
 			return err
 		}
 	}
