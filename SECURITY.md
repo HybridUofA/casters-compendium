@@ -30,6 +30,14 @@ publisher-authorized hosted catalog and verifies published database size and
 SHA-256 metadata before installation. Release binaries are built through GitHub
 Actions.
 
+Player-provided images use a separate custom-assets service and storage bucket.
+Uploads require server-validated Turnstile, are rate limited, decoded and
+re-encoded through Cloudflare Images, stripped of metadata, bounded in size and
+dimensions, and served under immutable content-addressed URLs. A valid bounded
+`Content-Length` is required before multipart parsing, so undeclared or chunked
+uploads are rejected. The service does not expose storage credentials or a
+public object listing.
+
 Deck files and diagnostic information may contain user-selected names or local
 filesystem paths. Review them before posting publicly. The application does not
 need credentials for normal use; never place Cloudflare, GitHub, Discord, or

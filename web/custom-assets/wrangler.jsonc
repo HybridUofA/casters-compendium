@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "casters-compendium-custom-assets",
+  "main": "src/index.mjs",
+  "compatibility_date": "2026-09-15",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "custom-assets.casterscompendium.com",
+      "custom_domain": true
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "CUSTOM_ASSETS",
+      "bucket_name": "casters-compendium-user-assets"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "ratelimits": [
+    {
+      "name": "UPLOAD_RATE_LIMITER",
+      "namespace_id": "73101",
+      "simple": {
+        "limit": 5,
+        "period": 60
+      }
+    }
+  ],
+  "vars": {
+    "PUBLIC_ORIGIN": "https://custom-assets.casterscompendium.com",
+    "TURNSTILE_EXPECTED_HOSTNAME": "custom-assets.casterscompendium.com"
+  }
+}

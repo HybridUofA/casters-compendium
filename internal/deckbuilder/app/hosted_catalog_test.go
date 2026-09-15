@@ -89,6 +89,69 @@ func TestInstallPreferredTTSDeckUsesHostedManifest(t *testing.T) {
 	}
 }
 
+func TestInstallPreferredTTSDeckUsesCustomHostedCardBack(t *testing.T) {
+	client, _ := hostedTestClient(t)
+	restore := hostedCatalogClientFactory
+	hostedCatalogClientFactory = func() (distribution.Client, error) { return client, nil }
+	t.Cleanup(func() { hostedCatalogClientFactory = restore })
+
+	root := t.TempDir()
+	for _, child := range []string{"Mods", "Saves"} {
+		if err := os.MkdirAll(filepath.Join(root, child), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	repository, err := cards.NewRepository([]gamecards.Card{{ID: "1", Name: "One"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	customBack := "https://custom-assets.casterscompendium.com/assets/tts-card-back/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.png"
+	deck := &decks.Deck{
+		SchemaVersion:  1,
+		Name:           "Custom Back",
+		MainDeck:       []decks.DeckEntry{{CardID: "1", Quantity: 1}},
+		TTSCardBackURL: customBack,
+	}
+	paths, hosted, _, err := installPreferredTTSDeck(context.Background(), root, deck, repository)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hosted {
+		t.Fatal("custom card-back deck did not use hosted export")
+	}
+	data, err := os.ReadFile(paths.JSONPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(data), customBack) {
+		t.Fatalf("saved object does not contain custom back URL: %s", data)
+	}
+}
+
+func TestInstallPreferredTTSDeckDoesNotSilentlyDropCustomBack(t *testing.T) {
+	restoreFactory := hostedCatalogClientFactory
+	hostedCatalogClientFactory = func() (distribution.Client, error) {
+		return distribution.Client{}, errors.New("catalog offline")
+	}
+	t.Cleanup(func() { hostedCatalogClientFactory = restoreFactory })
+
+	deck := &decks.Deck{
+		SchemaVersion:  1,
+		Name:           "Custom Back",
+		MainDeck:       []decks.DeckEntry{{CardID: "1", Quantity: 1}},
+		TTSCardBackURL: "https://custom-assets.casterscompendium.com/assets/tts-card-back/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.png",
+	}
+	_, hosted, fallbackReason, err := installPreferredTTSDeck(
+		context.Background(), t.TempDir(), deck, &cards.Repository{},
+	)
+	if err == nil || !strings.Contains(err.Error(), "requires the hosted card catalog") {
+		t.Fatalf("error = %v, want hosted-catalog requirement", err)
+	}
+	if hosted || fallbackReason == nil {
+		t.Fatalf("hosted = %t, fallbackReason = %v", hosted, fallbackReason)
+	}
+}
+
 func TestInstallPreferredTTSDeckFallsBackToLocalAssets(t *testing.T) {
 	restoreFactory := hostedCatalogClientFactory
 	hostedCatalogClientFactory = func() (distribution.Client, error) {

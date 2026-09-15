@@ -1,0 +1,95 @@
+name: Deploy player custom-assets service
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/deploy-custom-assets.yml"
+      - "web/custom-assets/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/deploy-custom-assets.yml"
+      - "web/custom-assets/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: custom-assets-production
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test upload service
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: web/custom-assets
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/custom-assets/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run service tests
+        run: npm test
+
+      - name: Validate Wrangler configuration
+        run: npx wrangler deploy --dry-run
+
+  deploy:
+    name: Deploy upload service
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-24.04
+    environment:
+      name: custom-assets-production
+      url: https://custom-assets.casterscompendium.com
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Validate deployment configuration
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          TURNSTILE_SITE_KEY: ${{ vars.CUSTOM_ASSETS_TURNSTILE_SITE_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.CUSTOM_ASSETS_TURNSTILE_SECRET_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$CLOUDFLARE_ACCOUNT_ID" ]] || { echo "CLOUDFLARE_ACCOUNT_ID is required" >&2; exit 1; }
+          [[ -n "$TURNSTILE_SITE_KEY" ]] || { echo "CUSTOM_ASSETS_TURNSTILE_SITE_KEY is required" >&2; exit 1; }
+          [[ -n "$CLOUDFLARE_API_TOKEN" ]] || { echo "CLOUDFLARE_API_TOKEN is required" >&2; exit 1; }
+          [[ -n "$TURNSTILE_SECRET_KEY" ]] || { echo "CUSTOM_ASSETS_TURNSTILE_SECRET_KEY is required" >&2; exit 1; }
+
+      - name: Deploy Worker and secret
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.R2_ACCOUNT_ID }}
+          workingDirectory: web/custom-assets
+          wranglerVersion: 4.132.0
+          vars: |
+            TURNSTILE_SITE_KEY
+          secrets: |
+            TURNSTILE_SECRET_KEY
+        env:
+          TURNSTILE_SITE_KEY: ${{ vars.CUSTOM_ASSETS_TURNSTILE_SITE_KEY }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.CUSTOM_ASSETS_TURNSTILE_SECRET_KEY }}
+
+      - name: Verify public health endpoint
+        run: |
+          curl --fail --silent --show-error \
+            https://custom-assets.casterscompendium.com/healthz \
+            | jq -e '.status == "ok"' >/dev/null

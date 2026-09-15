@@ -170,6 +170,51 @@ func showTTSInstallDialog(
 	folderDialog.Show()
 }
 
+// showTTSCardBackDialog stores an optional, sanitized custom-back URL on the
+// deck. Uploads happen in the browser so Turnstile and cloud credentials never
+// enter the desktop process.
+func showTTSCardBackDialog(
+	window fyne.Window,
+	deck *decks.Deck,
+	onChanged func(),
+) {
+	backURL := widget.NewEntry()
+	backURL.SetText(deck.TTSCardBackURL)
+	backURL.SetPlaceHolder("Leave blank to use the official card back")
+	backURL.Validator = func(value string) error {
+		return deckexport.ValidateCustomTTSCardBackURL(value)
+	}
+	uploadURL, err := url.Parse(deckexport.CustomAssetUploadURL)
+	if err != nil {
+		dialog.ShowError(err, window)
+		return
+	}
+	uploadLink := widget.NewHyperlink("Upload and copy a custom-back URL", uploadURL)
+	dialog.ShowForm(
+		"Tabletop Simulator Card Back",
+		"Save",
+		"Cancel",
+		[]*widget.FormItem{
+			widget.NewFormItem("Upload", uploadLink),
+			widget.NewFormItem("Custom URL", backURL),
+		},
+		func(confirmed bool) {
+			if !confirmed {
+				return
+			}
+			value := strings.TrimSpace(backURL.Text)
+			if value == deck.TTSCardBackURL {
+				return
+			}
+			deck.TTSCardBackURL = value
+			if onChanged != nil {
+				onChanged()
+			}
+		},
+		window,
+	)
+}
+
 func installDeckToTTSRoot(
 	window fyne.Window,
 	deck *decks.Deck,
@@ -568,6 +613,11 @@ func showApplication(
 		deckDirty = true
 		refreshDeckDisplay()
 	})
+	cardBackButton := widget.NewButton("TTS Card Back", func() {
+		showTTSCardBackDialog(window, deck, func() {
+			deckDirty = true
+		})
+	})
 	installTTSButton := widget.NewButton("Install to TTS", func() {
 		showTTSInstallDialog(window, deck, repository)
 	})
@@ -595,6 +645,7 @@ func showApplication(
 		widget.NewLabel("Actions"),
 		sortButton,
 		exportSelect,
+		cardBackButton,
 		installTTSButton,
 	)
 

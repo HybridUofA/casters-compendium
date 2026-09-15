@@ -32,3 +32,18 @@ updates:
     labels:
       - dependencies
       - github-actions
+
+  - package-ecosystem: npm
+    directory: /web/custom-assets
+    schedule:
+      interval: weekly
+      day: monday
+      time: "10:00"
+      timezone: America/Detroit
+    open-pull-requests-limit: 5
+    groups:
+      custom-assets-dependencies:
+        patterns:
+          - "*"
+    labels:
+      - dependencies
