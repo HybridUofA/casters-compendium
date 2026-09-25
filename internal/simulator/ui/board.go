@@ -392,6 +392,9 @@ func (screen *BoardScreen) updatePhaseButtons() {
 				hint += fmt.Sprintf("  •  Select %s to continue", completionTarget)
 			}
 		}
+		if match.ChaseLinkCount > 0 {
+			hint += "  •  Pass priority to resolve; printed effects are manual in this alpha"
+		}
 		if screen.phaseHint.Text != hint {
 			screen.phaseHint.Text = hint
 			screen.phaseHint.Refresh()
@@ -1256,7 +1259,11 @@ func newCastHandZone(
 			tile.SetSelected(true)
 			kind := strings.TrimSpace(definition.Type)
 			cost := strings.TrimSpace(definition.CostLevel)
-			status.SetText(fmt.Sprintf("%s selected • Cost %s %s", kind, cost, strings.TrimSpace(definition.Element)))
+			selectionText := fmt.Sprintf("%s selected • Cost %s %s", kind, cost, strings.TrimSpace(definition.Element))
+			if strings.EqualFold(kind, "Conjure") || strings.EqualFold(kind, "Barrier") {
+				selectionText += " • Printed effects resolve manually"
+			}
+			status.SetText(selectionText)
 			if strings.EqualFold(kind, "Servant") {
 				orientation.SetSelected(string(model.OrientationRecovered))
 				orientation.Show()
