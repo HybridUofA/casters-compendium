@@ -28,6 +28,7 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	simulatorui "github.com/HybridUofA/casters-compendium/internal/simulator/ui"
+	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
 // checkedValues returns option names whose corresponding checkboxes are selected.
@@ -1535,144 +1536,211 @@ func showApplication(
 		window.SetTitle(applicationName)
 		setWindowContent(window, buildMainMenu(window, mainMenuActions{
 			PlayGame: func() {
-				playerSessions, err := buildSimulatorPrototypeSessions(repository)
-				if err != nil {
-					dialog.ShowError(err, window)
-					return
-				}
-				playerWindows := [2]fyne.Window{
-					window,
-					fyne.CurrentApp().NewWindow(applicationName + " — Player Two"),
-				}
-				playerWindows[0].SetTitle(applicationName + " — Player One")
-				playerWindows[1].Resize(fyne.NewSize(1400, 850))
-				cardDefinitions := repository.All()
-				var playerScreens [2]*simulatorui.BoardScreen
-
-				var renderPlayers func()
-				renderPlayers = func() {
-					for index, playerSession := range playerSessions {
-						matchView, viewErr := playerSession.View()
-						if viewErr != nil {
-							dialog.ShowError(viewErr, playerWindows[index])
-							continue
-						}
-						if playerScreens[index] == nil {
-							playerIndex := index
-							back := func() {
-								if playerIndex == 0 {
-									playerWindows[1].Close()
-									showMainMenu()
-									return
-								}
-								playerWindows[1].Close()
-							}
-							backLabel := "Back to Main Menu"
-							if index == 1 {
-								backLabel = "Close Player Two Window"
-							}
-							playerScreens[index] = simulatorui.NewBoardController(
-								matchView,
-								cardDefinitions,
-								simulatorui.BoardActions{
-									BackLabel: backLabel,
-									UseCasterToken: func(
-										tokenID model.MatchCardID,
-										expectedRevision model.Revision,
-									) {
-										if _, tokenErr := playerSessions[playerIndex].
-											UseCasterToken(tokenID, expectedRevision); tokenErr != nil {
-											dialog.ShowError(tokenErr, playerWindows[playerIndex])
-											return
-										}
-										renderPlayers()
-									},
-									GenerateCasterAether: func(
-										cardID model.MatchCardID,
-										expectedRevision model.Revision,
-									) {
-										if _, aetherErr := playerSessions[playerIndex].
-											GenerateCasterAether(cardID, expectedRevision); aetherErr != nil {
-											dialog.ShowError(aetherErr, playerWindows[playerIndex])
-											return
-										}
-										renderPlayers()
-									},
-									GenerateNonElementalAether: func(
-										cardID model.MatchCardID,
-										expectedRevision model.Revision,
-									) {
-										if _, aetherErr := playerSessions[playerIndex].
-											GenerateNonElementalAether(cardID, expectedRevision); aetherErr != nil {
-											dialog.ShowError(aetherErr, playerWindows[playerIndex])
-											return
-										}
-										renderPlayers()
-									},
-									CallFaceDownLevelOne: func(
-										cardID model.MatchCardID,
-										expectedRevision model.Revision,
-									) {
-										if _, callErr := playerSessions[playerIndex].
-											CallFaceDownLevelOne(cardID, expectedRevision); callErr != nil {
-											dialog.ShowError(callErr, playerWindows[playerIndex])
-											return
-										}
-										renderPlayers()
-									},
-									CallFaceUpLevelOne: func(
-										cardID model.MatchCardID,
-										expectedRevision model.Revision,
-									) {
-										if _, callErr := playerSessions[playerIndex].
-											CallFaceUpLevelOne(cardID, expectedRevision); callErr != nil {
-											dialog.ShowError(callErr, playerWindows[playerIndex])
-											return
-										}
-										renderPlayers()
-									},
-									LevelUpCaster: func(
-										upperCardID model.MatchCardID,
-										targetCasterID model.MatchCardID,
-										expectedRevision model.Revision,
-									) {
-										if _, levelErr := playerSessions[playerIndex].
-											LevelUpCaster(upperCardID, targetCasterID, expectedRevision); levelErr != nil {
-											dialog.ShowError(levelErr, playerWindows[playerIndex])
-											return
-										}
-										renderPlayers()
-									},
-									CompleteCurrentPhase: func(expectedRevision model.Revision) {
-										if _, phaseErr := playerSessions[playerIndex].
-											CompleteCurrentPhase(expectedRevision); phaseErr != nil {
-											dialog.ShowError(phaseErr, playerWindows[playerIndex])
-											return
-										}
-										renderPlayers()
-									},
-									SubmitOpeningHand: func(
-										replace []model.MatchCardID,
-										expectedRevision model.Revision,
-									) {
-										if _, submitErr := playerSessions[playerIndex].
-											SubmitOpeningHandDecision(replace, expectedRevision); submitErr != nil {
-											dialog.ShowError(submitErr, playerWindows[playerIndex])
-											return
-										}
-										renderPlayers()
-									},
-								},
-								back,
-							)
-							setWindowContent(playerWindows[index], playerScreens[index].Content())
-							continue
-						}
-						playerScreens[index].Update(matchView)
+				showSimulatorDeckSelection(window, deckLibraryDirectory, repository, func(playerDecks [2]decks.Deck) {
+					playerSessions, err := buildSimulatorSessions(repository, playerDecks, newSimulatorMatchSeed())
+					if err != nil {
+						dialog.ShowError(err, window)
+						return
 					}
-				}
-				renderPlayers()
-				playerWindows[1].Show()
+					playerWindows := [2]fyne.Window{
+						window,
+						fyne.CurrentApp().NewWindow(applicationName + " — Player Two"),
+					}
+					playerWindows[0].SetTitle(applicationName + " — Player One")
+					playerWindows[1].Resize(fyne.NewSize(1400, 850))
+					cardDefinitions := repository.All()
+					var playerScreens [2]*simulatorui.BoardScreen
+
+					var renderPlayers func()
+					var renderPlayersWithView func(int, simulatorview.MatchView)
+					renderPlayersWithView = func(updatedIndex int, updatedView simulatorview.MatchView) {
+						for index, playerSession := range playerSessions {
+							matchView := updatedView
+							if index != updatedIndex {
+								var viewErr error
+								matchView, viewErr = playerSession.View()
+								if viewErr != nil {
+									dialog.ShowError(viewErr, playerWindows[index])
+									continue
+								}
+							}
+							if playerScreens[index] == nil {
+								playerIndex := index
+								back := func() {
+									if playerIndex == 0 {
+										playerWindows[1].Close()
+										showMainMenu()
+										return
+									}
+									playerWindows[1].Close()
+								}
+								backLabel := "Back to Main Menu"
+								if index == 1 {
+									backLabel = "Close Player Two Window"
+								}
+								playerScreens[index] = simulatorui.NewBoardController(
+									matchView,
+									cardDefinitions,
+									simulatorui.BoardActions{
+										BackLabel: backLabel,
+										UseCasterToken: func(
+											tokenID model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, tokenErr := playerSessions[playerIndex].
+												UseCasterToken(tokenID, expectedRevision)
+											if tokenErr != nil {
+												dialog.ShowError(tokenErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										GenerateCasterAether: func(
+											cardID model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, aetherErr := playerSessions[playerIndex].
+												GenerateCasterAether(cardID, expectedRevision)
+											if aetherErr != nil {
+												dialog.ShowError(aetherErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										GenerateNonElementalAether: func(
+											cardID model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, aetherErr := playerSessions[playerIndex].
+												GenerateNonElementalAether(cardID, expectedRevision)
+											if aetherErr != nil {
+												dialog.ShowError(aetherErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CallFaceDownLevelOne: func(
+											cardID model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, callErr := playerSessions[playerIndex].
+												CallFaceDownLevelOne(cardID, expectedRevision)
+											if callErr != nil {
+												dialog.ShowError(callErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CallFaceUpLevelOne: func(
+											cardID model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, callErr := playerSessions[playerIndex].
+												CallFaceUpLevelOne(cardID, expectedRevision)
+											if callErr != nil {
+												dialog.ShowError(callErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										LevelUpCaster: func(
+											upperCardID model.MatchCardID,
+											targetCasterID model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, levelErr := playerSessions[playerIndex].
+												LevelUpCaster(upperCardID, targetCasterID, expectedRevision)
+											if levelErr != nil {
+												dialog.ShowError(levelErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CastServant: func(
+											cardID model.MatchCardID,
+											payment model.AetherPayment,
+											orientation model.CardOrientation,
+											expectedRevision model.Revision,
+										) {
+											updatedView, castErr := playerSessions[playerIndex].
+												CastServant(cardID, payment, orientation, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CastConjure: func(
+											cardID model.MatchCardID,
+											payment model.AetherPayment,
+											expectedRevision model.Revision,
+										) {
+											updatedView, castErr := playerSessions[playerIndex].
+												CastConjure(cardID, payment, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CastBarrier: func(
+											cardID model.MatchCardID,
+											payment model.AetherPayment,
+											expectedRevision model.Revision,
+										) {
+											updatedView, castErr := playerSessions[playerIndex].
+												CastBarrier(cardID, payment, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										PassPriority: func(expectedRevision model.Revision) {
+											updatedView, priorityErr := playerSessions[playerIndex].
+												PassPriority(expectedRevision)
+											if priorityErr != nil {
+												dialog.ShowError(priorityErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CompleteCurrentPhase: func(expectedRevision model.Revision) {
+											updatedView, phaseErr := playerSessions[playerIndex].
+												CompleteCurrentPhase(expectedRevision)
+											if phaseErr != nil {
+												dialog.ShowError(phaseErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										SubmitOpeningHand: func(
+											replace []model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, submitErr := playerSessions[playerIndex].
+												SubmitOpeningHandDecision(replace, expectedRevision)
+											if submitErr != nil {
+												dialog.ShowError(submitErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+									},
+									back,
+								)
+								setWindowContent(playerWindows[index], playerScreens[index].Content())
+								continue
+							}
+							playerScreens[index].Update(matchView)
+						}
+					}
+					renderPlayers = func() {
+						renderPlayersWithView(-1, simulatorview.MatchView{})
+					}
+					renderPlayers()
+					playerWindows[1].Show()
+				})
 			},
 			OpenDeckEditor:   openDeckEditor,
 			NewDeck:          makeNewDeck,
@@ -1680,6 +1748,7 @@ func showApplication(
 			GenerateImage:    func() { showGenerateImageFromDecklistDialog(window, repository) },
 			GenerateDecklist: func() { showGenerateDecklistDialog(window, repository) },
 			UpdateDatabase:   func() { confirmManualCardDatabaseUpdate(window, paths, repository) },
+			Changelog:        func() { showChangelogDialog(window) },
 			HowToUse:         func() { showHowToUseDialog(window) },
 			Diagnostics:      func() { showDiagnosticInformationDialog(window, paths, repository) },
 			Settings: func() {

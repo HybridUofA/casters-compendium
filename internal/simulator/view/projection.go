@@ -11,10 +11,13 @@ func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, e
 		return MatchView{}, fmt.Errorf("viewer ID %q is not in current player IDs", viewerID)
 	}
 	projection := MatchView{
-		ViewerID:    viewerID,
-		MatchStatus: state.MatchStatus,
-		Revision:    state.Revision,
-		Turn:        state.Turn,
+		ViewerID:       viewerID,
+		MatchStatus:    state.MatchStatus,
+		Revision:       state.Revision,
+		Turn:           state.Turn,
+		PriorityHolder: state.PriorityHolder,
+		PassCount:      state.PassCount,
+		ChaseLinkCount: len(state.ChaseLinks),
 	}
 	for index, player := range state.Players {
 		playerView := PlayerView{

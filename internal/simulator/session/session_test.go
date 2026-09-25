@@ -933,6 +933,183 @@ func TestNewPlayerSessionRejectsInvalidSeat(t *testing.T) {
 	}
 }
 
+func TestPlayerSessionCastsConjureAndBarrier(t *testing.T) {
+	tests := []struct {
+		name     string
+		cardType string
+		cast     func(*PlayerSession, model.MatchCardID, model.Revision) (simulatorview.MatchView, error)
+	}{
+		{
+			name:     "Conjure",
+			cardType: "Conjure",
+			cast: func(session *PlayerSession, cardID model.MatchCardID, revision model.Revision) (simulatorview.MatchView, error) {
+				return session.CastConjure(cardID, model.AetherPayment{}, revision)
+			},
+		},
+		{
+			name:     "Barrier",
+			cardType: "Barrier",
+			cast: func(session *PlayerSession, cardID model.MatchCardID, revision model.Revision) (simulatorview.MatchView, error) {
+				return session.CastBarrier(cardID, model.AetherPayment{}, revision)
+			},
+		},
+	}
+
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			state := sessionStateForTest()
+			state.MatchStatus = model.StatusInProgress
+			state.Revision = 6
+			state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseMain}
+			state.PriorityHolder = "player-one"
+			state.NextLinkID = 1
+			cardID := state.Players[0].Hand[0]
+			instance := state.CardInstances[cardID]
+			instance.CardCategory = model.CategoryPrintedCard
+			state.CardInstances[cardID] = instance
+			catalog := sessionCardCatalog{
+				string(instance.CardID): {
+					ID:        string(instance.CardID),
+					Type:      testCase.cardType,
+					Element:   "Aes",
+					CostLevel: "0",
+				},
+			}
+			localMatch, err := NewLocalMatch(state, matchSeedForTest(), catalog)
+			if err != nil {
+				t.Fatalf("NewLocalMatch() error = %v", err)
+			}
+			playerOne, err := NewPlayerSession(localMatch, "player-one")
+			if err != nil {
+				t.Fatalf("NewPlayerSession() error = %v", err)
+			}
+
+			result, err := testCase.cast(playerOne, cardID, state.Revision)
+			if err != nil {
+				t.Fatalf("Cast%s() error = %v", testCase.name, err)
+			}
+			if result.Revision != state.Revision+1 {
+				t.Fatalf("Revision = %d; want %d", result.Revision, state.Revision+1)
+			}
+			if len(localMatch.state.ChaseLinks) != 1 ||
+				localMatch.state.ChaseLinks[0].SourceCardID != cardID ||
+				localMatch.state.ChaseLinks[0].Kind != model.ChaseLinkCardPlay {
+				t.Fatalf("ChaseLinks = %#v; want one card-play link for %q", localMatch.state.ChaseLinks, cardID)
+			}
+			for _, handCardID := range localMatch.state.Players[0].Hand {
+				if handCardID == cardID {
+					t.Fatalf("cast card %q remained in hand", cardID)
+				}
+			}
+			if localMatch.state.PriorityHolder != "player-two" {
+				t.Fatalf("PriorityHolder = %q; want player-two", localMatch.state.PriorityHolder)
+			}
+		})
+	}
+}
+
+func TestPlayerSessionPassPriorityTransfersPriority(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Revision = 6
+	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseMain}
+	state.PriorityHolder = "player-one"
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), sessionCardCatalog{})
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession() error = %v", err)
+	}
+
+	result, err := playerOne.PassPriority(state.Revision)
+	if err != nil {
+		t.Fatalf("PassPriority() error = %v", err)
+	}
+	if localMatch.state.PriorityHolder != "player-two" || localMatch.state.PassCount != 1 {
+		t.Fatalf("priority state = holder %q, passes %d; want player-two, 1", localMatch.state.PriorityHolder, localMatch.state.PassCount)
+	}
+	if result.Revision != state.Revision+1 {
+		t.Fatalf("Revision = %d; want %d", result.Revision, state.Revision+1)
+	}
+}
+
+func TestPlayerSessionPassPriorityResolvesTopLink(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Revision = 6
+	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseMain}
+	state.PriorityHolder = "player-two"
+	state.PassCount = 1
+	cardID := state.Players[0].Hand[0]
+	state.Players[0].Hand = state.Players[0].Hand[1:]
+	instance := state.CardInstances[cardID]
+	instance.CardCategory = model.CategoryPrintedCard
+	instance.Face = model.CardFaceUp
+	state.CardInstances[cardID] = instance
+	state.ChaseLinks = model.Chase{{
+		ID:               1,
+		Controller:       "player-one",
+		SourceCardID:     cardID,
+		Kind:             model.ChaseLinkCardPlay,
+		EntryOrientation: model.OrientationRecovered,
+	}}
+	catalog := sessionCardCatalog{
+		string(instance.CardID): {ID: string(instance.CardID), Type: "Servant"},
+	}
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), catalog)
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerTwo, err := NewPlayerSession(localMatch, "player-two")
+	if err != nil {
+		t.Fatalf("NewPlayerSession() error = %v", err)
+	}
+
+	result, err := playerTwo.PassPriority(state.Revision)
+	if err != nil {
+		t.Fatalf("PassPriority() error = %v", err)
+	}
+	if len(localMatch.state.ChaseLinks) != 0 {
+		t.Fatalf("ChaseLinks = %#v; want empty Chase", localMatch.state.ChaseLinks)
+	}
+	if !reflect.DeepEqual(localMatch.state.Players[0].ServantZone, []model.MatchCardID{cardID}) {
+		t.Fatalf("ServantZone = %#v; want resolved card %q", localMatch.state.Players[0].ServantZone, cardID)
+	}
+	if localMatch.state.PriorityHolder != "player-one" || localMatch.state.PassCount != 0 {
+		t.Fatalf("priority state = holder %q, passes %d; want player-one, 0", localMatch.state.PriorityHolder, localMatch.state.PassCount)
+	}
+	if result.Revision != state.Revision+1 {
+		t.Fatalf("Revision = %d; want %d", result.Revision, state.Revision+1)
+	}
+}
+
+func TestPlayerSessionPassPriorityRejectsStaleRevisionWithoutMutation(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Revision = 6
+	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseMain}
+	state.PriorityHolder = "player-one"
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), sessionCardCatalog{})
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession() error = %v", err)
+	}
+	before := localMatch.state
+
+	_, err = playerOne.PassPriority(state.Revision - 1)
+	if err == nil || !strings.Contains(err.Error(), "state expected") {
+		t.Fatalf("PassPriority() error = %v; want stale-revision error", err)
+	}
+	if !reflect.DeepEqual(localMatch.state, before) {
+		t.Fatalf("stale PassPriority() mutated shared state:\n got: %#v\nwant: %#v", localMatch.state, before)
+	}
+}
+
 func TestNilPlayerSessionMethodsReturnErrors(t *testing.T) {
 	var playerSession *PlayerSession
 
@@ -967,6 +1144,18 @@ func TestNilPlayerSessionMethodsReturnErrors(t *testing.T) {
 		!strings.Contains(err.Error(), "cannot be nil") {
 		t.Fatalf("nil PlayerSession.UseCasterToken() error = %v; want nil-session error", err)
 	}
+	if _, err := playerSession.CastConjure("card", model.AetherPayment{}, 0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.CastConjure() error = %v; want nil-session error", err)
+	}
+	if _, err := playerSession.CastBarrier("card", model.AetherPayment{}, 0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.CastBarrier() error = %v; want nil-session error", err)
+	}
+	if _, err := playerSession.PassPriority(0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.PassPriority() error = %v; want nil-session error", err)
+	}
 
 	empty := &PlayerSession{}
 	if _, err := empty.View(); err == nil || !strings.Contains(err.Error(), "match cannot be nil") {
@@ -999,6 +1188,18 @@ func TestNilPlayerSessionMethodsReturnErrors(t *testing.T) {
 	if _, err := empty.UseCasterToken("token", 0); err == nil ||
 		!strings.Contains(err.Error(), "match cannot be nil") {
 		t.Fatalf("empty PlayerSession.UseCasterToken() error = %v; want nil-match error", err)
+	}
+	if _, err := empty.CastConjure("card", model.AetherPayment{}, 0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.CastConjure() error = %v; want nil-match error", err)
+	}
+	if _, err := empty.CastBarrier("card", model.AetherPayment{}, 0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.CastBarrier() error = %v; want nil-match error", err)
+	}
+	if _, err := empty.PassPriority(0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.PassPriority() error = %v; want nil-match error", err)
 	}
 }
 

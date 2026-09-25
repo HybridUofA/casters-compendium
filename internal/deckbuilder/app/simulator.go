@@ -2,9 +2,13 @@ package deckbuilder
 
 import (
 	"fmt"
+	"math/rand/v2"
+	"os"
+	"path/filepath"
 	"strings"
 
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	"github.com/HybridUofA/casters-compendium/internal/deckio"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/engine"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/session"
@@ -28,17 +32,27 @@ func buildSimulatorPrototypeSessions(
 	if err != nil {
 		return [2]*session.PlayerSession{}, err
 	}
-	seed := simulatorPrototypeSeed
+	return buildSimulatorSessions(repository, [2]decks.Deck{prototypeDeck, prototypeDeck}, simulatorPrototypeSeed)
+}
+
+func buildSimulatorSessions(
+	repository *cards.Repository,
+	playerDecks [2]decks.Deck,
+	seed engine.MatchSeed,
+) ([2]*session.PlayerSession, error) {
+	if repository == nil {
+		return [2]*session.PlayerSession{}, fmt.Errorf("card repository cannot be nil")
+	}
 	state, err := engine.BeginSetup(engine.SetupInput{
 		Players: [2]engine.PlayerSetup{
-			{ID: "player-one", Deck: prototypeDeck},
-			{ID: "player-two", Deck: prototypeDeck},
+			{ID: "player-one", Deck: playerDecks[0]},
+			{ID: "player-two", Deck: playerDecks[1]},
 		},
 		Random:  engine.NewSeededRandom(seed),
 		Catalog: repository,
 	})
 	if err != nil {
-		return [2]*session.PlayerSession{}, fmt.Errorf("create simulator prototype match: %w", err)
+		return [2]*session.PlayerSession{}, fmt.Errorf("create simulator match: %w", err)
 	}
 
 	localMatch, err := session.NewLocalMatch(state, seed, repository)
@@ -57,6 +71,38 @@ func buildSimulatorPrototypeSessions(
 		}
 	}
 	return playerSessions, nil
+}
+
+func newSimulatorMatchSeed() engine.MatchSeed {
+	return engine.MatchSeed{First: rand.Uint64(), Second: rand.Uint64()}
+}
+
+func loadSimulatorDeck(path string, repository *cards.Repository) (*decks.Deck, error) {
+	if repository == nil {
+		return nil, fmt.Errorf("card repository cannot be nil")
+	}
+	var deck *decks.Deck
+	var err error
+	if strings.EqualFold(filepath.Ext(path), ".txt") {
+		reader, openErr := os.Open(path)
+		if openErr != nil {
+			return nil, fmt.Errorf("open simulator deck: %w", openErr)
+		}
+		deck, err = deckio.ReadDeckList(reader, repository)
+		closeErr := reader.Close()
+		if err == nil && closeErr != nil {
+			err = closeErr
+		}
+	} else {
+		deck, err = deckio.LoadFile(path)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("load simulator deck: %w", err)
+	}
+	if _, err := deck.CanonicalizeCardIDs(repository); err != nil {
+		return nil, fmt.Errorf("canonicalize simulator deck: %w", err)
+	}
+	return deck, nil
 }
 
 func buildPrototypeDeck(repository *cards.Repository) (decks.Deck, error) {

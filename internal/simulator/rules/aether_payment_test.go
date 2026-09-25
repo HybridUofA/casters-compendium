@@ -37,6 +37,15 @@ func TestValidateAetherPaymentAcceptsEveryRequiredElement(t *testing.T) {
 	}
 }
 
+func TestValidateAetherPaymentAcceptsZeroCostWithoutAether(t *testing.T) {
+	pool := model.AetherPool{}
+	payment := model.AetherPayment{}
+
+	if err := ValidateAetherPayment(pool, payment, 0, model.ElementAes); err != nil {
+		t.Fatalf("ValidateAetherPayment() error = %v; want nil", err)
+	}
+}
+
 func TestValidateAetherPaymentRejectsInvalidPayment(t *testing.T) {
 	pool := model.AetherPool{
 		Aes: 2, Aqua: 2, Ignus: 2, Luna: 2,
@@ -51,11 +60,11 @@ func TestValidateAetherPaymentRejectsInvalidPayment(t *testing.T) {
 		wantErrPart string
 	}{
 		{
-			name:        "zero printed cost",
-			payment:     model.AetherPayment{},
+			name:        "payment supplied for zero cost",
+			payment:     model.AetherPayment{Aes: 1},
 			cost:        0,
 			element:     model.ElementAes,
-			wantErrPart: "cost",
+			wantErrPart: "payment total is 1, expected exactly 0",
 		},
 		{
 			name:        "negative printed cost",

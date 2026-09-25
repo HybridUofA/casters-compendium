@@ -19,7 +19,10 @@ func TestProjectMatchProtectsHiddenInformation(t *testing.T) {
 	if result.ViewerID != state.Players[0].ID ||
 		result.Turn != state.Turn ||
 		result.MatchStatus != state.MatchStatus ||
-		result.Revision != state.Revision {
+		result.Revision != state.Revision ||
+		result.PriorityHolder != state.PriorityHolder ||
+		result.PassCount != state.PassCount ||
+		result.ChaseLinkCount != len(state.ChaseLinks) {
 		t.Fatal("ProjectMatch() did not preserve public match metadata")
 	}
 	if result.Players[0].DeckCount != len(state.Players[0].Deck) ||

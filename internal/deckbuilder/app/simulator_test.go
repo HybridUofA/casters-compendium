@@ -2,10 +2,54 @@ package deckbuilder
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
+	"github.com/HybridUofA/casters-compendium/internal/game/decks"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/engine"
 )
+
+func TestBuildSimulatorSessionsUsesEachPlayersSelectedDeck(t *testing.T) {
+	definitions := []cards.Card{{ID: "1100", Name: "Caster Token"}}
+	playerDecks := [2]decks.Deck{}
+	for playerIndex, prefix := range []string{"one", "two"} {
+		deck, err := decks.NewDeck("Player " + prefix)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for cardIndex := 0; cardIndex < 13; cardIndex++ {
+			cardID := fmt.Sprintf("%s-%02d", prefix, cardIndex)
+			definitions = append(definitions, cards.Card{ID: cardID, Name: cardID})
+			quantity := 4
+			if cardIndex == 12 {
+				quantity = 2
+			}
+			deck.MainDeck = append(deck.MainDeck, decks.DeckEntry{CardID: cardID, Quantity: quantity})
+		}
+		playerDecks[playerIndex] = *deck
+	}
+	repository, err := cards.NewRepository(definitions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sessions, err := buildSimulatorSessions(repository, playerDecks, engine.MatchSeed{First: 11, Second: 29})
+	if err != nil {
+		t.Fatalf("buildSimulatorSessions() error = %v", err)
+	}
+	for index, prefix := range []string{"one-", "two-"} {
+		projection, viewErr := sessions[index].View()
+		if viewErr != nil {
+			t.Fatal(viewErr)
+		}
+		for _, card := range projection.Players[index].Hand {
+			if !strings.HasPrefix(string(card.CardID), prefix) {
+				t.Fatalf("Player %d hand contains %q; want selected %q deck", index+1, card.CardID, prefix)
+			}
+		}
+	}
+}
 
 func TestBuildSimulatorPrototypeSessionsUsePrivateProjections(t *testing.T) {
 	definitions := make([]cards.Card, 0, 14)

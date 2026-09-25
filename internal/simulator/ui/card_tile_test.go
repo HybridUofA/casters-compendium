@@ -43,6 +43,24 @@ func TestSetSidewaysRotatesConcealedCardBack(t *testing.T) {
 	}
 }
 
+func TestOrientedCardTileStartsSidewaysWithoutFollowUpMutation(t *testing.T) {
+	tile := newOrientedCardTile(
+		simulatorview.CardView{},
+		cards.Card{},
+		fyne.NewSize(86, 120),
+		nil,
+		nil,
+		true,
+	)
+
+	if tile.MinSize() != fyne.NewSize(120, 86) {
+		t.Fatalf("initial sideways tile size = %v; want 120x86", tile.MinSize())
+	}
+	if tile.image == tile.uprightImage {
+		t.Fatal("initial sideways tile retained upright artwork")
+	}
+}
+
 func TestSetSidewaysPreservesPortraitCardScale(t *testing.T) {
 	tile := NewCardTile(
 		simulatorview.CardView{},

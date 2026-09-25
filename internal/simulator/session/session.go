@@ -359,3 +359,125 @@ func (session *PlayerSession) CompleteCurrentPhase(
 	}
 	return updatedView, nil
 }
+
+func (session *PlayerSession) CastServant(
+	cardID model.MatchCardID,
+	payment model.AetherPayment,
+	orientation model.CardOrientation,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	err := engine.CastServant(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		payment,
+		orientation,
+		expectedRevision,
+	)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("cast servant: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
+func (session *PlayerSession) CastConjure(
+	cardID model.MatchCardID,
+	payment model.AetherPayment,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	err := engine.CastConjure(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		payment,
+		expectedRevision,
+	)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("cast conjure: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
+func (session *PlayerSession) CastBarrier(
+	cardID model.MatchCardID,
+	payment model.AetherPayment,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	err := engine.CastBarrier(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		payment,
+		expectedRevision,
+	)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("cast barrier: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
+func (session *PlayerSession) PassPriority(
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	err := engine.PassPriority(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		expectedRevision,
+	)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("pass priority: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}

@@ -69,6 +69,8 @@ v0.1.8-hotfix.2's card-art recovery fix.
 - Install a complete deck directly into Tabletop Simulator with one click.
   Shared HTTPS sheets load automatically for multiplayer participants. The
   original local-sheet installer remains an automatic offline fallback.
+- Read the reviewed release changelog from inside the application without a
+  network connection.
 
 ### Desktop applications
 

@@ -47,6 +47,20 @@ func TestBuildMainMenuDisplaysDirectDeckEditorAction(t *testing.T) {
 	}
 }
 
+func TestBuildMainMenuDisplaysLocalChangelog(t *testing.T) {
+	window := test.NewWindow(nil)
+	defer window.Close()
+
+	menu := buildMainMenu(window, mainMenuActions{Changelog: func() {}})
+	button := findButtonText(menu, "Changelog")
+	if button == nil {
+		t.Fatal("main menu does not display the local changelog action")
+	}
+	if button.Disabled() {
+		t.Fatal("local changelog action is disabled despite having an action")
+	}
+}
+
 func containsLabelText(object fyne.CanvasObject, text string) bool {
 	if label, ok := object.(*widget.Label); ok && label.Text == text {
 		return true

@@ -33,6 +33,7 @@ type CardTile struct {
 	uprightImage    *canvas.Image
 	sidewaysImage   *canvas.Image
 	selectionBorder *canvas.Rectangle
+	selected        bool
 	OnPreview       func(cards.Card)
 	OnHiddenPreview func()
 	OnActivate      func()
@@ -41,9 +42,10 @@ type CardTile struct {
 var _ desktop.Hoverable = (*CardTile)(nil)
 
 var (
-	sidewaysCardBackOnce sync.Once
-	sidewaysCardBack     image.Image
-	cardImageCache       sync.Map
+	sidewaysCardBackOnce  sync.Once
+	sidewaysCardBack      image.Image
+	cardImageCache        sync.Map
+	rotatedCardImageCache sync.Map
 )
 
 func NewCardTile(
@@ -52,6 +54,21 @@ func NewCardTile(
 	size fyne.Size,
 	onPreview func(cards.Card),
 	onHiddenPreview func(),
+) *CardTile {
+	return newOrientedCardTile(cardView, card, size, onPreview, onHiddenPreview, false)
+}
+
+// newOrientedCardTile establishes the initial orientation before Fyne creates
+// a renderer for the widget. Calling SetSideways while constructing a board
+// would eagerly create and refresh a renderer that is immediately replaced as
+// part of the board update.
+func newOrientedCardTile(
+	cardView simulatorview.CardView,
+	card cards.Card,
+	size fyne.Size,
+	onPreview func(cards.Card),
+	onHiddenPreview func(),
+	sideways bool,
 ) *CardTile {
 	tile := &CardTile{
 		View:            cardView,
@@ -71,12 +88,17 @@ func NewCardTile(
 	tile.selectionBorder.StrokeColor = theme.Color(theme.ColorNamePrimary)
 	tile.selectionBorder.StrokeWidth = 4
 	tile.selectionBorder.Hide()
+	tile.setSidewaysState(sideways)
 	tile.ExtendBaseWidget(tile)
 	return tile
 }
 
 // SetSelected displays whether this card is included in the pending UI choice.
 func (tile *CardTile) SetSelected(selected bool) {
+	if tile.selected == selected {
+		return
+	}
+	tile.selected = selected
 	if selected {
 		tile.selectionBorder.Show()
 	} else {
@@ -90,15 +112,19 @@ func (tile *CardTile) SetSelected(selected bool) {
 // tiles such as Orbs retain their requested dimensions. This is presentation
 // state only and does not change authoritative state.
 func (tile *CardTile) SetSideways(sideways bool) {
+	tile.setSidewaysState(sideways)
+	tile.Refresh()
+}
+
+func (tile *CardTile) setSidewaysState(sideways bool) {
 	tile.size = tile.baseSize
 	tile.image = tile.uprightImage
 	if !sideways {
-		tile.Refresh()
 		return
 	}
 	if tile.sidewaysImage == nil {
 		if tile.View.ShowFace {
-			tile.sidewaysImage = rotatedCanvasImage(tile.uprightImage)
+			tile.sidewaysImage = rotatedSimulatorCardImage(tile.Card, tile.uprightImage)
 		} else {
 			tile.sidewaysImage = sidewaysCardBackImage()
 		}
@@ -107,7 +133,26 @@ func (tile *CardTile) SetSideways(sideways bool) {
 	if tile.baseSize.Height > tile.baseSize.Width {
 		tile.size = fyne.NewSize(tile.baseSize.Height, tile.baseSize.Width)
 	}
-	tile.Refresh()
+}
+
+func rotatedSimulatorCardImage(card cards.Card, fallback *canvas.Image) *canvas.Image {
+	path, found := cardimages.FindThumbnail(card.ID)
+	if !found {
+		path, found = cardimages.Find(card.ID)
+	}
+	if !found {
+		return rotatedCanvasImage(fallback)
+	}
+	if cached, exists := rotatedCardImageCache.Load(path); exists {
+		return newSimulatorCanvasImage(cached.(image.Image))
+	}
+	source, loaded := cachedCardImage(path)
+	if !loaded {
+		return rotatedCanvasImage(fallback)
+	}
+	rotated := rotateImageClockwise(source)
+	actual, _ := rotatedCardImageCache.LoadOrStore(path, rotated)
+	return newSimulatorCanvasImage(actual.(image.Image))
 }
 
 func simulatorCardImage(card cards.Card) *canvas.Image {
@@ -131,6 +176,15 @@ func cachedCardImage(path string) (image.Image, bool) {
 	if cached, exists := cardImageCache.Load(path); exists {
 		return cached.(image.Image), true
 	}
+	decoded, loaded := decodeCardImage(path)
+	if !loaded {
+		return nil, false
+	}
+	actual, _ := cardImageCache.LoadOrStore(path, decoded)
+	return actual.(image.Image), true
+}
+
+func decodeCardImage(path string) (image.Image, bool) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, false
@@ -140,8 +194,7 @@ func cachedCardImage(path string) (image.Image, bool) {
 	if err != nil {
 		return nil, false
 	}
-	actual, _ := cardImageCache.LoadOrStore(path, decoded)
-	return actual.(image.Image), true
+	return decoded, true
 }
 
 func newSimulatorCanvasImage(source image.Image) *canvas.Image {

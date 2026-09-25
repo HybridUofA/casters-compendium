@@ -95,6 +95,25 @@ type AetherPayment struct {
 	NonElemental int
 }
 
+type ChaseLinkID uint64
+type ChaseLinkKind string
+
+const (
+	ChaseLinkCardPlay         ChaseLinkKind = "card_play"
+	ChaseLinkActivatedAbility ChaseLinkKind = "activated_ability"
+	ChaseLinkTriggeredAbility ChaseLinkKind = "triggered_ability"
+)
+
+type ChaseLink struct {
+	ID               ChaseLinkID
+	Controller       PlayerID
+	SourceCardID     MatchCardID
+	Kind             ChaseLinkKind
+	EntryOrientation CardOrientation
+}
+
+type Chase []ChaseLink
+
 type PlayerState struct {
 	ID PlayerID
 	// Index 0 of PlayerState.Deck is the top of the Deck.
@@ -112,12 +131,16 @@ type PlayerState struct {
 }
 
 type MatchState struct {
-	CardInstances map[MatchCardID]CardInstance
-	Players       [2]PlayerState
-	FirstPlayer   PlayerID
-	MatchStatus   Status
-	Revision      Revision
-	Turn          TurnState
+	CardInstances  map[MatchCardID]CardInstance
+	Players        [2]PlayerState
+	FirstPlayer    PlayerID
+	MatchStatus    Status
+	Revision       Revision
+	Turn           TurnState
+	ChaseLinks     Chase
+	PriorityHolder PlayerID
+	PassCount      int
+	NextLinkID     ChaseLinkID
 }
 
 type TurnState struct {

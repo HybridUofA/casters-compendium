@@ -199,7 +199,7 @@ func ValidateAetherPayment(pool model.AetherPool, payment model.AetherPayment, c
 		{name: "Void", amount: payment.Void, available: pool.Void},
 		{name: "NonElemental", amount: payment.NonElemental, available: pool.NonElemental},
 	}
-	if cost < 1 {
+	if cost < 0 {
 		return fmt.Errorf("cost cannot be negative")
 	}
 	for _, entry := range amounts {
@@ -216,35 +216,35 @@ func ValidateAetherPayment(pool model.AetherPool, payment model.AetherPayment, c
 	}
 	switch reqElem {
 	case model.ElementAes:
-		if payment.Aes < 1 {
+		if cost > 0 && payment.Aes < 1 {
 			return fmt.Errorf("payment requires 1 Aes aether, has %d", payment.Aes)
 		}
 	case model.ElementAqua:
-		if payment.Aqua < 1 {
+		if cost > 0 && payment.Aqua < 1 {
 			return fmt.Errorf("payment requires 1 Aqua aether, has %d", payment.Aqua)
 		}
 	case model.ElementIgnus:
-		if payment.Ignus < 1 {
+		if cost > 0 && payment.Ignus < 1 {
 			return fmt.Errorf("payment requires 1 Ignus aether, has %d", payment.Ignus)
 		}
 	case model.ElementLuna:
-		if payment.Luna < 1 {
+		if cost > 0 && payment.Luna < 1 {
 			return fmt.Errorf("payment requires 1 Luna aether, has %d", payment.Luna)
 		}
 	case model.ElementSilva:
-		if payment.Silva < 1 {
+		if cost > 0 && payment.Silva < 1 {
 			return fmt.Errorf("payment requires 1 Silva aether, has %d", payment.Silva)
 		}
 	case model.ElementSolis:
-		if payment.Solis < 1 {
+		if cost > 0 && payment.Solis < 1 {
 			return fmt.Errorf("payment requires 1 Solis aether, has %d", payment.Solis)
 		}
 	case model.ElementTerra:
-		if payment.Terra < 1 {
+		if cost > 0 && payment.Terra < 1 {
 			return fmt.Errorf("payment requires 1 Terra aether, has %d", payment.Terra)
 		}
 	case model.ElementVoid:
-		if payment.Void < 1 {
+		if cost > 0 && payment.Void < 1 {
 			return fmt.Errorf("payment requires 1 Void aether, has %d", payment.Void)
 		}
 	default:

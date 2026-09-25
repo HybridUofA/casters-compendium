@@ -5,6 +5,9 @@ working installation or bypassing operating-system package ownership.
 
 ## Phase 1: version visibility and changelog
 
+Status: implemented. The main menu displays the current version and provides a
+release selector backed by canonical notes compiled into the application.
+
 - Show the public version and build identifier on the main menu and diagnostics.
 - Add an in-app changelog sourced from bundled, reviewed release notes.
 - Keep the changelog available offline.

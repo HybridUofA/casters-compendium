@@ -71,6 +71,30 @@ func TestGenerateNonElementalAetherRejectsNilState(t *testing.T) {
 	}
 }
 
+func TestPayAetherDeductsEveryPaymentAmount(t *testing.T) {
+	pool := model.AetherPool{
+		Aes: 10, Aqua: 11, Ignus: 12, Luna: 13,
+		Silva: 14, Solis: 15, Terra: 16, Void: 17,
+		NonElemental: 18,
+	}
+	payment := model.AetherPayment{
+		Aes: 1, Aqua: 2, Ignus: 3, Luna: 4,
+		Silva: 5, Solis: 6, Terra: 7, Void: 8,
+		NonElemental: 9,
+	}
+
+	payAether(&pool, payment)
+
+	want := model.AetherPool{
+		Aes: 9, Aqua: 9, Ignus: 9, Luna: 9,
+		Silva: 9, Solis: 9, Terra: 9, Void: 9,
+		NonElemental: 9,
+	}
+	if pool != want {
+		t.Fatalf("pool after payAether() = %#v; want %#v", pool, want)
+	}
+}
+
 func aetherEngineStateForTest() model.MatchState {
 	return model.MatchState{
 		CardInstances: map[model.MatchCardID]model.CardInstance{

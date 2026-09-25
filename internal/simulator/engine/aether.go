@@ -144,3 +144,18 @@ func GenerateCasterAether(
 	state.Revision++
 	return nil
 }
+
+func payAether(
+	pool *model.AetherPool,
+	payment model.AetherPayment,
+) {
+	pool.Aes -= payment.Aes
+	pool.Aqua -= payment.Aqua
+	pool.Ignus -= payment.Ignus
+	pool.Luna -= payment.Luna
+	pool.Silva -= payment.Silva
+	pool.Solis -= payment.Solis
+	pool.Terra -= payment.Terra
+	pool.Void -= payment.Void
+	pool.NonElemental -= payment.NonElemental
+}

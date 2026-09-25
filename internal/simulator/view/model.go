@@ -8,11 +8,14 @@ import (
 // It must contain only information the identified viewer is permitted to know;
 // presentation and network code must not receive the unrestricted MatchState.
 type MatchView struct {
-	ViewerID    model.PlayerID
-	Players     [2]PlayerView
-	MatchStatus model.Status
-	Revision    model.Revision
-	Turn        model.TurnState
+	ViewerID       model.PlayerID
+	Players        [2]PlayerView
+	MatchStatus    model.Status
+	Revision       model.Revision
+	Turn           model.TurnState
+	PriorityHolder model.PlayerID
+	PassCount      int
+	ChaseLinkCount int
 }
 
 // PlayerView contains the zones and public counts that may be displayed for

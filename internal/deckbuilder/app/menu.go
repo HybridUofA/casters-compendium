@@ -23,6 +23,7 @@ type mainMenuActions struct {
 	GenerateImage    func()
 	GenerateDecklist func()
 	UpdateDatabase   func()
+	Changelog        func()
 	HowToUse         func()
 	Diagnostics      func()
 	Settings         func()
@@ -58,6 +59,7 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 		widget.NewButton("Generate Deck Image from Decklist", actions.GenerateImage),
 		widget.NewButton("Generate Decklist File", actions.GenerateDecklist),
 		widget.NewButton("Update Card Database", actions.UpdateDatabase),
+		widget.NewButton("Changelog", actions.Changelog),
 		widget.NewButton("How to Use", actions.HowToUse),
 		widget.NewButton("Diagnostic Information", actions.Diagnostics),
 		widget.NewButton("Settings", actions.Settings),

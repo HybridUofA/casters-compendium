@@ -117,6 +117,7 @@ func BeginSetup(setup SetupInput) (model.MatchState, error) {
 	matchState := model.MatchState{
 		CardInstances: make(map[model.MatchCardID]model.CardInstance, rules.StandardDeckSize*2),
 		MatchStatus:   model.StatusSetup,
+		NextLinkID:    1,
 	}
 	for index, player := range setup.Players {
 		playerState, playerInstances, err := expandPlayerDeck(player, index)
@@ -241,6 +242,7 @@ func ApplyOpeningHandDecision(state *model.MatchState, decision OpeningHandDecis
 			return nil
 		}
 	}
+	state.PriorityHolder = state.Turn.ActivePlayer
 	state.MatchStatus = model.StatusInProgress
 	state.Turn.Number = 1
 	state.Turn.Phase = model.PhaseRecovery
