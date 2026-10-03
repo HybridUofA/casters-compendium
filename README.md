@@ -95,6 +95,8 @@ tests, presentation work, and v0.2.0-rc.4 release preparation.
   and manual-move presentation.
 - Refresh hosted catalog v6 so 80 publisher-approved EX02 and related printings
   appear in normal searches instead of only with playtesting cards enabled.
+- Remove the previous app-owned Tabletop Simulator saved object after a renamed
+  deck exports successfully, preventing stale old-name imports.
 - Document the current prototype limits for tokens, Stock, Orbs, hidden Deck
   cards, and face-down Exile.
 

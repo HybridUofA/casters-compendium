@@ -48,6 +48,8 @@ Use `N/A` only with a short explanation.
 - [ ] Export a hosted TTS deck and load it from a separate network connection.
 - [ ] Confirm card faces and the bundled card back load over HTTPS.
 - [ ] Generate and use the local-export fallback.
+- [ ] Rename an exported deck, install it again, and confirm only the renamed
+      saved object remains available for import.
 
 ## Local simulator prototype
 

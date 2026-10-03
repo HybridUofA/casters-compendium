@@ -228,5 +228,12 @@ the release, website, and AI-transparency material. Hybrid remains responsible
 for reviewing the changes, performing hands-on visual and package acceptance,
 and approving publication.
 
+Hybrid also reported that renaming a deck could leave its previous Tabletop
+Simulator saved object available under the old name and explicitly authorized
+OpenAI assistance to implement the rc.4 correction. The assisted fix tracks
+names replaced in the active editor, removes the obsolete app-owned saved
+object only after the renamed export succeeds, preserves colliding sanitized
+paths, updates the editor title, and adds regression tests.
+
 This disclosure does not authorize AI to implement simulator rules, engine,
 session semantics, networking, effects, or replay behavior.
