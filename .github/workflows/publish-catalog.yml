@@ -67,7 +67,8 @@ jobs:
             -base-url "$PUBLIC_ORIGIN" \
             -published-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-      - name: Refuse to replace an existing catalog version
+      - name: Inspect existing catalog version
+        id: existing
         shell: bash
         run: |
           set -euo pipefail
@@ -77,11 +78,38 @@ jobs:
             --bucket "$R2_BUCKET" \
             --key "catalog/${CATALOG_VERSION}/release.json" \
             >/dev/null 2>&1; then
-            echo "catalog/${CATALOG_VERSION} already exists and is immutable" >&2
-            exit 1
+            existing_release="$RUNNER_TEMP/existing-release.json"
+            existing_tts="$RUNNER_TEMP/existing-tts-manifest.json"
+            aws s3 cp \
+              "s3://${R2_BUCKET}/catalog/${CATALOG_VERSION}/release.json" \
+              "$existing_release" \
+              --endpoint-url "$endpoint" \
+              --no-progress
+            aws s3 cp \
+              "s3://${R2_BUCKET}/catalog/${CATALOG_VERSION}/tts/manifest.json" \
+              "$existing_tts" \
+              --endpoint-url "$endpoint" \
+              --no-progress
+            jq -S 'del(.publishedAt)' \
+              "dist/hosted-catalog/catalog/${CATALOG_VERSION}/release.json" \
+              > "$RUNNER_TEMP/built-release-comparable.json"
+            jq -S 'del(.publishedAt)' \
+              "$existing_release" \
+              > "$RUNNER_TEMP/existing-release-comparable.json"
+            cmp \
+              "$RUNNER_TEMP/built-release-comparable.json" \
+              "$RUNNER_TEMP/existing-release-comparable.json"
+            cmp \
+              "dist/hosted-catalog/catalog/${CATALOG_VERSION}/tts/manifest.json" \
+              "$existing_tts"
+            echo "Catalog ${CATALOG_VERSION} already exists with matching immutable manifests; resuming publication."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Upload immutable assets
+        if: steps.existing.outputs.exists != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -104,16 +132,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error \
-            "${PUBLIC_ORIGIN}/catalog/${CATALOG_VERSION}/release.json" \
-            | jq -e --arg version "$CATALOG_VERSION" \
-              '.schemaVersion == 1 and .catalogVersion == $version' \
-              >/dev/null
-          curl --fail --silent --show-error \
-            "${PUBLIC_ORIGIN}/catalog/${CATALOG_VERSION}/tts/manifest.json" \
-            | jq -e --arg version "$CATALOG_VERSION" \
-              '.schemaVersion == 1 and .catalogVersion == $version' \
-              >/dev/null
+          for attempt in {1..12}; do
+            cache_bust="${GITHUB_RUN_ID}-${attempt}"
+            if curl --fail --silent --show-error \
+                "${PUBLIC_ORIGIN}/catalog/${CATALOG_VERSION}/release.json?verify=${cache_bust}" \
+                | jq -e --arg version "$CATALOG_VERSION" \
+                  '.schemaVersion == 1 and .catalogVersion == $version' \
+                  >/dev/null \
+              && curl --fail --silent --show-error \
+                "${PUBLIC_ORIGIN}/catalog/${CATALOG_VERSION}/tts/manifest.json?verify=${cache_bust}" \
+                | jq -e --arg version "$CATALOG_VERSION" \
+                  '.schemaVersion == 1 and .catalogVersion == $version' \
+                  >/dev/null; then
+              exit 0
+            fi
+            if (( attempt < 12 )); then
+              sleep 10
+            fi
+          done
+          echo "catalog ${CATALOG_VERSION} did not become available through the public origin" >&2
+          exit 1
 
       # This is the publication commit: clients cannot discover the release
       # until every immutable object above has uploaded and passed public checks.

@@ -133,6 +133,12 @@ bucket. It does not need account administration permission. The workflow:
 5. Uploads `current.json` with a five-minute cache lifetime.
 6. Verifies the newly active pointer through a cache-busting request.
 
+If a run uploads the immutable tree but stops before updating `current.json`,
+rerun it with the same version. The workflow resumes only when the existing
+release and TTS manifests match the rebuilt catalog after ignoring the
+publication timestamp; a conflicting immutable version still fails closed.
+Public-origin checks retry with cache-busting requests before the pointer moves.
+
 After the workflow succeeds, fetch `catalog/current.json`, its referenced
 `release.json`, and representative card and TTS images through the public
 hostname. Then launch the desktop application against an older local release
