@@ -8,14 +8,18 @@ import (
 // It must contain only information the identified viewer is permitted to know;
 // presentation and network code must not receive the unrestricted MatchState.
 type MatchView struct {
-	ViewerID       model.PlayerID
-	Players        [2]PlayerView
-	MatchStatus    model.Status
-	Revision       model.Revision
-	Turn           model.TurnState
-	PriorityHolder model.PlayerID
-	PassCount      int
-	ChaseLinkCount int
+	ViewerID             model.PlayerID
+	Players              [2]PlayerView
+	MatchStatus          model.Status
+	Revision             model.Revision
+	Turn                 model.TurnState
+	FirstPlayer          model.PlayerID
+	PriorityHolder       model.PlayerID
+	PassCount            int
+	ChaseLinkCount       int
+	PrioritySequenceOpen bool
+	Attack               model.AttackState
+	Result               model.MatchResult
 }
 
 // PlayerView contains the zones and public counts that may be displayed for
@@ -48,4 +52,9 @@ type CardView struct {
 	Face        model.CardFace
 	Orientation model.CardOrientation
 	ShowFace    bool
+	// Owner and HasStock are projected only when the viewer already knows the
+	// card object's identity (MatchID is non-empty). They exist so the UI can
+	// avoid doomed manual-move submissions without receiving MatchState.
+	Owner    model.PlayerID
+	HasStock bool
 }

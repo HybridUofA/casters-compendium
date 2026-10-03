@@ -188,7 +188,7 @@ func AddChaseLink(state *model.MatchState, actingPlayerID model.PlayerID, source
 	}
 	state.ChaseLinks = append(state.ChaseLinks, link)
 	state.PassCount = 0
-	state.PriorityHolder = nextPriorityHolder
+	state.PriorityHolder = actingPlayerID
 	state.NextLinkID++
 	state.Revision++
 	return nil
@@ -231,8 +231,23 @@ func PassPriority(state *model.MatchState, catalog rules.CardCatalog, actingPlay
 			return nil
 		}
 		if len(state.ChaseLinks) == 0 {
-			// close priority window
-			return fmt.Errorf("second pass not currently implemented")
+			if state.Attack.Step == model.BattleStepDeclared {
+				if err := resolveDeclaredAttack(state, catalog); err != nil {
+					return fmt.Errorf("error during attack judgment: %w", err)
+				}
+				if state.MatchStatus == model.StatusFinished {
+					state.Revision++
+					return nil
+				}
+				reopenPriorityForActivePlayer(state)
+				state.Revision++
+				return nil
+			}
+			state.PrioritySequenceOpen = false
+			state.PassCount = 0
+			state.PriorityHolder = ""
+			state.Revision++
+			return nil
 		}
 	}
 	return nil

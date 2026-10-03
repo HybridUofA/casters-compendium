@@ -30,6 +30,9 @@ func ValidateChasePriority(state *model.MatchState, actingPlayerID model.PlayerI
 	if actingPlayerIndex == -1 {
 		return fmt.Errorf("acting player ID not found")
 	}
+	if !state.PrioritySequenceOpen {
+		return fmt.Errorf("priority sequence is closed")
+	}
 	if !priorityExists {
 		return fmt.Errorf("neither player has priority")
 	}

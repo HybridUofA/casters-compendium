@@ -1786,6 +1786,24 @@ func showApplication(
 											}
 											renderPlayersWithView(playerIndex, updatedView)
 										},
+										DeclareAttack: func(
+											attackerID model.MatchCardID,
+											targetKind model.AttackTargetKind,
+											targetCardID model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, attackErr := playerSessions[playerIndex].DeclareAttack(
+												attackerID,
+												targetKind,
+												targetCardID,
+												expectedRevision,
+											)
+											if attackErr != nil {
+												dialog.ShowError(attackErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
 										CompleteCurrentPhase: func(expectedRevision model.Revision) {
 											updatedView, phaseErr := playerSessions[playerIndex].
 												CompleteCurrentPhase(expectedRevision)

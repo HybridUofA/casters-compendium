@@ -52,6 +52,9 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 				if card.MatchID == "" || card.CardID == "" || card.CardID == model.CasterTokenCardID {
 					continue
 				}
+				if card.HasStock {
+					continue
+				}
 				if group.zone == model.ZoneExile && card.Face == model.CardFaceDown {
 					continue
 				}
@@ -149,6 +152,10 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 					destination = player.ID
 				}
 			}
+		}
+		// Non-field destinations must stay on the card owner's side.
+		if !field && source.card.Owner != "" {
+			destination = source.card.Owner
 		}
 		command = model.MoveCardCommand{CardID: source.card.MatchID, DestinationPlayerID: destination, DestinationZone: zone, DestinationFace: face}
 		if field {

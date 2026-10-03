@@ -8,6 +8,16 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 )
 
+func openPrioritySequence(state *model.MatchState) error {
+	if state == nil {
+		return fmt.Errorf("state cannot be nil")
+	}
+	state.PrioritySequenceOpen = true
+	state.PassCount = 0
+	state.PriorityHolder = state.Turn.ActivePlayer
+	return nil
+}
+
 func validatePhaseCompletion(
 	state *model.MatchState,
 	actingPlayerID model.PlayerID,
@@ -30,6 +40,12 @@ func validatePhaseCompletion(
 	}
 	if state.Turn.Number < 1 {
 		return fmt.Errorf("turn count cannot be less than 1: %d", state.Turn.Number)
+	}
+	if state.PrioritySequenceOpen {
+		return fmt.Errorf("priority sequence must be closed")
+	}
+	if state.PriorityHolder != "" || state.PassCount != 0 || len(state.ChaseLinks) != 0 {
+		return fmt.Errorf("closed priority sequence has inconsistent state")
 	}
 	return nil
 }
@@ -68,7 +84,12 @@ func enterDrawPhase(state *model.MatchState) error {
 		return fmt.Errorf("player ID not found")
 	}
 	if len(state.Players[activeIndex].Deck) == 0 {
-		return fmt.Errorf("deck cannot be empty")
+		incomingPlayerID := state.Players[1-activeIndex].ID
+		return finishMatch(state, model.MatchResult{
+			Winner: incomingPlayerID,
+			Loser:  state.Turn.ActivePlayer,
+			Reason: model.EndReasonDeckOut,
+		})
 	}
 	card := state.Players[activeIndex].Deck[0]
 	state.Players[activeIndex].Deck = slices.Delete(state.Players[activeIndex].Deck, 0, 1)
@@ -108,6 +129,11 @@ func completeMainPhase(
 ) error {
 	if err := validatePhaseCompletion(state, actingPlayerID, model.PhaseMain); err != nil {
 		return fmt.Errorf("error validating phase: %w", err)
+	}
+	// First player skips Battle on turn 1.
+	if state.Turn.Number == 1 && state.Turn.ActivePlayer == state.FirstPlayer {
+		state.Turn.Phase = model.PhaseEnd
+		return nil
 	}
 	state.Turn.Phase = model.PhaseBattle
 	return nil
@@ -193,6 +219,14 @@ func CompleteCurrentPhase(state *model.MatchState, actingPlayerID model.PlayerID
 		}
 	default:
 		return fmt.Errorf("unsupported or illegal transition from %q", state.Turn.Phase)
+	}
+	if state.MatchStatus == model.StatusFinished {
+		state.Revision++
+		return nil
+	}
+	err := openPrioritySequence(state)
+	if err != nil {
+		return fmt.Errorf("error opening priority sequence: %w", err)
 	}
 	state.Revision++
 	return nil

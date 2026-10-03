@@ -243,6 +243,7 @@ func ApplyOpeningHandDecision(state *model.MatchState, decision OpeningHandDecis
 		}
 	}
 	state.PriorityHolder = state.Turn.ActivePlayer
+	state.PrioritySequenceOpen = true
 	state.MatchStatus = model.StatusInProgress
 	state.Turn.Number = 1
 	state.Turn.Phase = model.PhaseRecovery

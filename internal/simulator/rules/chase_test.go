@@ -190,6 +190,16 @@ func TestValidatePassPriorityRejectsInvalidPassCounts(t *testing.T) {
 	}
 }
 
+func TestValidatePassPriorityRejectsClosedSequence(t *testing.T) {
+	state := chaseLinkStateForTest()
+	state.PrioritySequenceOpen = false
+
+	err := ValidatePassPriority(&state, "player-one")
+	if err == nil || !strings.Contains(err.Error(), "priority sequence is closed") {
+		t.Fatalf("ValidatePassPriority() error = %v; want closed-sequence error", err)
+	}
+}
+
 func TestValidateResolveTopChaseLinkAcceptsSecondPassWithLink(t *testing.T) {
 	state := chaseLinkStateForTest()
 	state.PassCount = 1
@@ -265,8 +275,9 @@ func chasePriorityStateForTest() model.MatchState {
 			{ID: "player-one"},
 			{ID: "player-two"},
 		},
-		Turn:           model.TurnState{ActivePlayer: "player-one", Number: 1, Phase: model.PhaseMain},
-		PriorityHolder: "player-one",
+		Turn:                 model.TurnState{ActivePlayer: "player-one", Number: 1, Phase: model.PhaseMain},
+		PriorityHolder:       "player-one",
+		PrioritySequenceOpen: true,
 	}
 }
 

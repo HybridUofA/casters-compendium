@@ -80,6 +80,7 @@ type BoardActions struct {
 	CastConjureWithPlan        func(model.MatchCardID, model.CastPaymentPlan, model.Revision)
 	CastBarrierWithPlan        func(model.MatchCardID, model.CastPaymentPlan, model.Revision)
 	PassPriority               func(model.Revision)
+	DeclareAttack              func(model.MatchCardID, model.AttackTargetKind, model.MatchCardID, model.Revision)
 	CompleteCurrentPhase       func(model.Revision)
 	BackLabel                  string
 }
@@ -93,6 +94,7 @@ type BoardScreen struct {
 	phaseHint    *canvas.Text
 	phaseButtons map[model.Phase]*widget.Button
 	passPriority *widget.Button
+	attackPanel  *fyne.Container
 	boards       *fyne.Container
 	playerBoards [2]*playerBoardController
 	boardArea    fyne.CanvasObject
@@ -303,12 +305,28 @@ func (screen *BoardScreen) updateMetadata() {
 		match.PriorityHolder,
 		match.ChaseLinkCount,
 	)
+	if match.MatchStatus == model.StatusFinished {
+		if match.Result.IsDraw {
+			status = fmt.Sprintf("Match finished — draw (%s) • Revision %d", match.Result.Reason, match.Revision)
+		} else {
+			status = fmt.Sprintf(
+				"Match finished — %s defeated %s (%s) • Revision %d",
+				match.Result.Winner,
+				match.Result.Loser,
+				match.Result.Reason,
+				match.Revision,
+			)
+		}
+	} else if match.Attack.Step != model.BattleStepIdle {
+		status += fmt.Sprintf(" • Attack: %s", match.Attack.Step)
+	}
 	if screen.status.Text != status {
 		screen.status.Text = status
 		screen.status.Refresh()
 	}
 	screen.updatePhaseButtons()
 	screen.updatePriorityButton()
+	screen.updateAttackPanel()
 }
 
 func canViewerCallFaceDownLevelOne(match simulatorview.MatchView) bool {
@@ -336,6 +354,18 @@ func canViewerCast(match simulatorview.MatchView) bool {
 		match.Turn.ActivePlayer == match.ViewerID &&
 		match.PriorityHolder == match.ViewerID &&
 		match.ChaseLinkCount == 0
+}
+
+func canViewerDeclareAttack(match simulatorview.MatchView) bool {
+	return match.MatchStatus == model.StatusInProgress &&
+		match.Turn.Phase == model.PhaseBattle &&
+		match.Turn.ActivePlayer == match.ViewerID &&
+		match.PrioritySequenceOpen &&
+		match.PriorityHolder == match.ViewerID &&
+		match.PassCount == 0 &&
+		match.ChaseLinkCount == 0 &&
+		match.Attack.Step == model.BattleStepIdle &&
+		match.Attack.AttackerID == ""
 }
 
 func (screen *BoardScreen) newPhaseBar() fyne.CanvasObject {
@@ -366,11 +396,14 @@ func (screen *BoardScreen) newPhaseBar() fyne.CanvasObject {
 			screen.actions.PassPriority(screen.match.Revision)
 		}
 	})
+	screen.attackPanel = container.NewVBox()
 	screen.updatePriorityButton()
+	screen.updateAttackPanel()
 	return container.NewVBox(
 		container.NewCenter(screen.phaseHint),
 		container.NewGridWithColumns(len(buttons), buttons...),
 		container.NewCenter(screen.passPriority),
+		screen.attackPanel,
 	)
 }
 
@@ -380,11 +413,109 @@ func (screen *BoardScreen) updatePriorityButton() {
 	}
 	if screen.actions.PassPriority != nil &&
 		screen.match.MatchStatus == model.StatusInProgress &&
+		screen.match.PrioritySequenceOpen &&
 		screen.match.PriorityHolder == screen.match.ViewerID {
 		screen.passPriority.Enable()
 		return
 	}
 	screen.passPriority.Disable()
+}
+
+func (screen *BoardScreen) updateAttackPanel() {
+	if screen == nil || screen.attackPanel == nil {
+		return
+	}
+	screen.attackPanel.Objects = nil
+	match := screen.match
+	if screen.actions.DeclareAttack == nil || !canViewerDeclareAttack(match) {
+		refreshContainerStructure(screen.attackPanel)
+		return
+	}
+
+	attackerLabels := make([]string, 0)
+	attackerIDs := make(map[string]model.MatchCardID)
+	targetLabels := []string{"Enemy player"}
+	targetIDs := make(map[string]model.MatchCardID)
+	viewerHasReversedEnemy := false
+	for _, player := range match.Players {
+		for _, card := range player.ServantZone {
+			if card.MatchID == "" {
+				continue
+			}
+			definition := screen.definitions[card.CardID]
+			name := strings.TrimSpace(definition.Name)
+			if name == "" {
+				name = string(card.MatchID)
+			}
+			if player.ID == match.ViewerID {
+				if card.Orientation != model.OrientationRecovered {
+					continue
+				}
+				label := fmt.Sprintf("%s (%s)", name, card.MatchID)
+				attackerLabels = append(attackerLabels, label)
+				attackerIDs[label] = card.MatchID
+				continue
+			}
+			if card.Orientation == model.OrientationReversed {
+				viewerHasReversedEnemy = true
+			}
+			label := fmt.Sprintf("%s (%s)", name, card.MatchID)
+			targetLabels = append(targetLabels, label)
+			targetIDs[label] = card.MatchID
+		}
+	}
+	if viewerHasReversedEnemy {
+		targetLabels = targetLabels[1:] // remove "Enemy player"
+	}
+
+	attackerSelect := widget.NewSelect(attackerLabels, nil)
+	attackerSelect.PlaceHolder = "Choose attacker"
+	targetSelect := widget.NewSelect(targetLabels, nil)
+	targetSelect.PlaceHolder = "Choose target"
+	confirm := widget.NewButton("Declare Attack", func() {
+		attackerID, ok := attackerIDs[attackerSelect.Selected]
+		if !ok {
+			return
+		}
+		if targetSelect.Selected == "Enemy player" {
+			screen.actions.DeclareAttack(
+				attackerID,
+				model.AttackTargetPlayer,
+				"",
+				match.Revision,
+			)
+			return
+		}
+		targetID, ok := targetIDs[targetSelect.Selected]
+		if !ok {
+			return
+		}
+		screen.actions.DeclareAttack(
+			attackerID,
+			model.AttackTargetServant,
+			targetID,
+			match.Revision,
+		)
+	})
+	confirm.Disable()
+	updateConfirm := func(string) {
+		if attackerSelect.Selected == "" || targetSelect.Selected == "" {
+			confirm.Disable()
+			return
+		}
+		confirm.Enable()
+	}
+	attackerSelect.OnChanged = updateConfirm
+	targetSelect.OnChanged = updateConfirm
+	hint := widget.NewLabel("Battle: declare an attack, then both players pass to judge it.")
+	hint.Wrapping = fyne.TextWrapWord
+	screen.attackPanel.Objects = []fyne.CanvasObject{
+		hint,
+		attackerSelect,
+		targetSelect,
+		confirm,
+	}
+	refreshContainerStructure(screen.attackPanel)
 }
 
 func (screen *BoardScreen) updatePhaseButtons() {
@@ -427,6 +558,7 @@ func (screen *BoardScreen) updatePhaseButtons() {
 			screen.actions.CompleteCurrentPhase != nil &&
 				match.MatchStatus == model.StatusInProgress &&
 				match.Turn.ActivePlayer == match.ViewerID &&
+				!match.PrioritySequenceOpen &&
 				hasCompletionTarget &&
 				phase == completionTarget
 		if !legalCompletion {
@@ -450,6 +582,10 @@ func prototypePhaseCompletionTarget(match simulatorview.MatchView) (model.Phase,
 		return model.PhaseCall, true
 	case match.Turn.Phase == model.PhaseCall && match.Turn.Number > 0:
 		return model.PhaseMain, true
+	case match.Turn.Phase == model.PhaseMain &&
+		match.Turn.Number == 1 &&
+		match.Turn.ActivePlayer == match.FirstPlayer:
+		return model.PhaseEnd, true
 	case match.Turn.Phase == model.PhaseMain && match.Turn.Number > 0:
 		return model.PhaseBattle, true
 	case match.Turn.Phase == model.PhaseBattle && match.Turn.Number > 0:

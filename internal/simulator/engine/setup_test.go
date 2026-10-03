@@ -79,6 +79,9 @@ func TestApplyOpeningHandDecisionStartsFirstTurnAfterBothPlayersFinalize(t *test
 	if state.Turn.ActivePlayer != state.FirstPlayer {
 		t.Fatalf("active player = %q; want first player %q", state.Turn.ActivePlayer, state.FirstPlayer)
 	}
+	if !state.PrioritySequenceOpen || state.PriorityHolder != state.FirstPlayer {
+		t.Fatalf("priority sequence = open %t, holder %q; want open for first player", state.PrioritySequenceOpen, state.PriorityHolder)
+	}
 }
 
 func TestApplyOpeningHandDecisionRejectsInvalidRequestWithoutMutation(t *testing.T) {

@@ -560,3 +560,34 @@ func (session *PlayerSession) PassPriority(
 	}
 	return updatedView, nil
 }
+
+func (session *PlayerSession) DeclareAttack(
+	attackerID model.MatchCardID,
+	targetKind model.AttackTargetKind,
+	targetCardID model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.DeclareAttack(
+		&session.match.state,
+		session.playerID,
+		attackerID,
+		targetKind,
+		targetCardID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("declare attack: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}

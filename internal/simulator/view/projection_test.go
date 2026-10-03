@@ -20,9 +20,13 @@ func TestProjectMatchProtectsHiddenInformation(t *testing.T) {
 		result.Turn != state.Turn ||
 		result.MatchStatus != state.MatchStatus ||
 		result.Revision != state.Revision ||
+		result.FirstPlayer != state.FirstPlayer ||
 		result.PriorityHolder != state.PriorityHolder ||
 		result.PassCount != state.PassCount ||
-		result.ChaseLinkCount != len(state.ChaseLinks) {
+		result.ChaseLinkCount != len(state.ChaseLinks) ||
+		result.PrioritySequenceOpen != state.PrioritySequenceOpen ||
+		result.Attack != state.Attack ||
+		result.Result != state.Result {
 		t.Fatal("ProjectMatch() did not preserve public match metadata")
 	}
 	if result.Players[0].DeckCount != len(state.Players[0].Deck) ||
@@ -35,6 +39,9 @@ func TestProjectMatchProtectsHiddenInformation(t *testing.T) {
 	}
 
 	assertVisibleCard(t, result.Players[0].Hand[0], "p1-hand", "card-p1-hand")
+	if result.Players[0].Hand[0].Owner != "player-one" || result.Players[0].Hand[0].HasStock {
+		t.Fatalf("own hand legality metadata = %#v", result.Players[0].Hand[0])
+	}
 	assertConcealedCard(t, result.Players[1].Hand[0])
 	assertConcealedCard(t, result.Players[0].Orbs[0])
 	assertConcealedCard(t, result.Players[1].Orbs[0])
@@ -227,6 +234,7 @@ func projectionStateForTest() model.MatchState {
 				Exile:       []model.MatchCardID{"p2-exile"},
 			},
 		},
+		FirstPlayer: "player-one",
 		MatchStatus: model.StatusSetup,
 		Turn: model.TurnState{
 			ActivePlayer:    "player-one",

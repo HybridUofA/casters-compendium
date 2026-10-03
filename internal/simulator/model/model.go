@@ -144,16 +144,19 @@ type PlayerState struct {
 }
 
 type MatchState struct {
-	CardInstances  map[MatchCardID]CardInstance
-	Players        [2]PlayerState
-	FirstPlayer    PlayerID
-	MatchStatus    Status
-	Revision       Revision
-	Turn           TurnState
-	ChaseLinks     Chase
-	PriorityHolder PlayerID
-	PassCount      int
-	NextLinkID     ChaseLinkID
+	CardInstances        map[MatchCardID]CardInstance
+	Players              [2]PlayerState
+	FirstPlayer          PlayerID
+	MatchStatus          Status
+	Revision             Revision
+	Turn                 TurnState
+	ChaseLinks           Chase
+	PriorityHolder       PlayerID
+	PassCount            int
+	NextLinkID           ChaseLinkID
+	PrioritySequenceOpen bool
+	Result               MatchResult
+	Attack               AttackState
 }
 
 type TurnState struct {
@@ -190,3 +193,40 @@ const (
 	DeckPlacementTop    DeckPlacement = "top"
 	DeckPlacementBottom DeckPlacement = "bottom"
 )
+
+type MatchEndReason string
+
+const (
+	EndReasonDeckOut          MatchEndReason = "Deck Out"
+	EndReasonZeroOrbs         MatchEndReason = "Zero Orbs"
+	EndReasonSimultaneousLoss MatchEndReason = "Simultaneous Loss"
+)
+
+type MatchResult struct {
+	Winner PlayerID
+	Loser  PlayerID
+	IsDraw bool
+	Reason MatchEndReason
+}
+
+type BattleStep string
+
+const (
+	BattleStepIdle             BattleStep = ""
+	BattleStepDeclared         BattleStep = "Declared"
+	BattleStepAwaitingJudgment BattleStep = "Awaiting Judgment"
+)
+
+type AttackTargetKind string
+
+const (
+	AttackTargetPlayer  AttackTargetKind = "Player"
+	AttackTargetServant AttackTargetKind = "Servant"
+)
+
+type AttackState struct {
+	AttackerID   MatchCardID
+	TargetKind   AttackTargetKind
+	TargetCardID MatchCardID
+	Step         BattleStep
+}

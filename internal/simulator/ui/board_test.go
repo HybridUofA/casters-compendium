@@ -41,7 +41,7 @@ func TestNewBoardScreenContainsBothPlayerFieldsAndRequiredZones(t *testing.T) {
 		"Card Information",
 		"Aether Pools",
 		"Card Preview",
-		"Turn 0 • Call • Revision 7 • Active player: player-one • Priority:  • Chase: 0",
+		"Turn 1 • Call • Revision 7 • Active player: player-one • Priority:  • Chase: 0",
 	} {
 		if !containsText(screen, text) {
 			t.Errorf("board screen does not contain %q", text)
@@ -110,7 +110,7 @@ func TestCenteredPhaseGuidanceUpdatesWithMatchState(t *testing.T) {
 	updated.Revision++
 	controller.Update(updated)
 
-	if !containsText(controller.boardArea, "Current phase: Main  •  Select Battle to continue") {
+	if !containsText(controller.boardArea, "Current phase: Main  •  Select End to continue") {
 		t.Fatal("center phase guidance did not update after the phase changed")
 	}
 }
@@ -935,11 +935,79 @@ func TestPhaseBarEnablesInitialCallOnlyForActiveViewer(t *testing.T) {
 	}
 }
 
+func TestDeclareAttackPanelSubmitsSelectedAttackerAndTarget(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 41
+	match.Turn = model.TurnState{Number: 2, ActivePlayer: match.ViewerID, Phase: model.PhaseBattle}
+	match.PriorityHolder = match.ViewerID
+	match.PrioritySequenceOpen = true
+	match.Players[0].ServantZone = []simulatorview.CardView{{
+		MatchID:     "p1-attacker",
+		CardID:      "visible-hand-card",
+		Face:        model.CardFaceUp,
+		Orientation: model.OrientationRecovered,
+		ShowFace:    true,
+	}}
+	match.Players[1].ServantZone = []simulatorview.CardView{{
+		MatchID:     "p2-defender",
+		CardID:      "visible-hand-card",
+		Face:        model.CardFaceUp,
+		Orientation: model.OrientationRecovered,
+		ShowFace:    true,
+	}}
+	var (
+		attackerID   model.MatchCardID
+		targetKind   model.AttackTargetKind
+		targetCardID model.MatchCardID
+		revision     model.Revision
+	)
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{DeclareAttack: func(
+			gotAttacker model.MatchCardID,
+			gotKind model.AttackTargetKind,
+			gotTarget model.MatchCardID,
+			gotRevision model.Revision,
+		) {
+			attackerID = gotAttacker
+			targetKind = gotKind
+			targetCardID = gotTarget
+			revision = gotRevision
+		}},
+		nil,
+	)
+
+	attackerSelect := findSelectWithPlaceholder(controller.Content(), "Choose attacker")
+	targetSelect := findSelectWithPlaceholder(controller.Content(), "Choose target")
+	confirm := findButton(controller.Content(), "Declare Attack")
+	if attackerSelect == nil || targetSelect == nil || confirm == nil {
+		t.Fatal("battle attack controls were not rendered")
+	}
+	attackerSelect.SetSelected(attackerSelect.Options[0])
+	targetSelect.SetSelected(targetSelect.Options[1]) // first enemy servant after "Enemy player"
+	if confirm.Disabled() {
+		t.Fatal("Declare Attack remained disabled after selecting attacker and target")
+	}
+	test.Tap(confirm)
+	if attackerID != "p1-attacker" || targetKind != model.AttackTargetServant || targetCardID != "p2-defender" || revision != 41 {
+		t.Fatalf(
+			"DeclareAttack submitted %#v/%q/%q/%d; want p1-attacker/Servant/p2-defender/41",
+			attackerID,
+			targetKind,
+			targetCardID,
+			revision,
+		)
+	}
+}
+
 func TestPassPriorityButtonRequiresPriorityAndUsesCurrentRevision(t *testing.T) {
 	match := testMatchView()
 	match.MatchStatus = model.StatusInProgress
 	match.Revision = 23
 	match.PriorityHolder = match.ViewerID
+	match.PrioritySequenceOpen = true
 	passedRevision := model.Revision(0)
 	controller := NewBoardController(
 		match,
@@ -1201,20 +1269,22 @@ func TestPhaseBarEnablesMainDuringCall(t *testing.T) {
 func TestPhaseBarEnablesRemainingSkeletonTransitions(t *testing.T) {
 	tests := []struct {
 		name    string
+		number  int
 		current model.Phase
 		target  model.Phase
 		label   string
 	}{
-		{name: "Main to Battle", current: model.PhaseMain, target: model.PhaseBattle, label: "Battle"},
-		{name: "Battle to End", current: model.PhaseBattle, target: model.PhaseEnd, label: "End"},
-		{name: "End turn", current: model.PhaseEnd, target: model.PhaseEnd, label: "End Turn"},
+		{name: "Main to End on first turn", number: 1, current: model.PhaseMain, target: model.PhaseEnd, label: "End"},
+		{name: "Main to Battle later", number: 2, current: model.PhaseMain, target: model.PhaseBattle, label: "Battle"},
+		{name: "Battle to End", number: 2, current: model.PhaseBattle, target: model.PhaseEnd, label: "End"},
+		{name: "End turn", number: 1, current: model.PhaseEnd, target: model.PhaseEnd, label: "End Turn"},
 	}
 
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
 			match := testMatchView()
 			match.MatchStatus = model.StatusInProgress
-			match.Turn.Number = 1
+			match.Turn.Number = testCase.number
 			match.Turn.Phase = testCase.current
 			completionRequested := false
 			screen := NewBoardScreen(
@@ -1272,11 +1342,11 @@ func TestBoardControllerUpdatesMetadataWithoutRebuildingPlayerFields(t *testing.
 	) {
 		t.Fatal("metadata-only update did not refresh status")
 	}
-	battleButton := findButton(controller.Content(), string(model.PhaseBattle))
-	if battleButton == nil || battleButton.Disabled() {
-		t.Fatal("metadata-only update did not enable Battle")
+	endButton := findButton(controller.Content(), string(model.PhaseEnd))
+	if endButton == nil || endButton.Disabled() {
+		t.Fatal("metadata-only update did not enable End after first-turn Main")
 	}
-	test.Tap(battleButton)
+	test.Tap(endButton)
 	if requestedRevision != 3 {
 		t.Fatalf("phase action used revision %d; want updated revision 3", requestedRevision)
 	}
@@ -1563,6 +1633,15 @@ func findSelects(object fyne.CanvasObject) []*widget.Select {
 	return result
 }
 
+func findSelectWithPlaceholder(object fyne.CanvasObject, placeholder string) *widget.Select {
+	for _, selection := range findSelects(object) {
+		if selection.PlaceHolder == placeholder {
+			return selection
+		}
+	}
+	return nil
+}
+
 func findChecks(object fyne.CanvasObject) []*widget.Check {
 	result := make([]*widget.Check, 0)
 	if check, ok := object.(*widget.Check); ok {
@@ -1705,8 +1784,10 @@ func testDefinitions() []cards.Card {
 func testMatchView() simulatorview.MatchView {
 	return simulatorview.MatchView{
 		ViewerID:    "player-one",
+		FirstPlayer: "player-one",
 		MatchStatus: model.StatusSetup,
 		Turn: model.TurnState{
+			Number:       1,
 			ActivePlayer: "player-one",
 			Phase:        model.PhaseCall,
 		},

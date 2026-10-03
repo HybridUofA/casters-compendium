@@ -11,13 +11,17 @@ func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, e
 		return MatchView{}, fmt.Errorf("viewer ID %q is not in current player IDs", viewerID)
 	}
 	projection := MatchView{
-		ViewerID:       viewerID,
-		MatchStatus:    state.MatchStatus,
-		Revision:       state.Revision,
-		Turn:           state.Turn,
-		PriorityHolder: state.PriorityHolder,
-		PassCount:      state.PassCount,
-		ChaseLinkCount: len(state.ChaseLinks),
+		ViewerID:             viewerID,
+		MatchStatus:          state.MatchStatus,
+		Revision:             state.Revision,
+		Turn:                 state.Turn,
+		FirstPlayer:          state.FirstPlayer,
+		PriorityHolder:       state.PriorityHolder,
+		PassCount:            state.PassCount,
+		ChaseLinkCount:       len(state.ChaseLinks),
+		PrioritySequenceOpen: state.PrioritySequenceOpen,
+		Attack:               state.Attack,
+		Result:               state.Result,
 	}
 	for index, player := range state.Players {
 		playerView := PlayerView{
@@ -73,6 +77,8 @@ func projectHand(state model.MatchState, player model.PlayerState, viewerID mode
 				MatchID:  ID,
 				CardID:   instance.CardID,
 				ShowFace: true,
+				Owner:    instance.Owner,
+				HasStock: len(instance.Stock) > 0,
 			}
 			projection = append(projection, cardView)
 			continue
@@ -127,10 +133,14 @@ func projectFieldZone(
 			cardView.MatchID = instance.MatchID
 			cardView.CardID = instance.CardID
 			cardView.ShowFace = true
+			cardView.Owner = instance.Owner
+			cardView.HasStock = len(instance.Stock) > 0
 		case instance.Face == model.CardFaceDown && player.ID == viewerID:
 			cardView.MatchID = instance.MatchID
 			cardView.CardID = instance.CardID
 			cardView.ShowFace = false
+			cardView.Owner = instance.Owner
+			cardView.HasStock = len(instance.Stock) > 0
 		case instance.Face == model.CardFaceDown:
 			cardView.ShowFace = false
 		default:
