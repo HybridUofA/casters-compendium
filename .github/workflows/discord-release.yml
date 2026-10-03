@@ -9,6 +9,12 @@ on:
         description: Existing GitHub release tag to announce
         required: true
         type: string
+  workflow_call:
+    inputs:
+      tag:
+        description: Existing GitHub release tag to announce
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -32,12 +38,20 @@ jobs:
           REQUESTED_TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ -z "${WEBHOOK_URL:-}" ]; then
+            echo "DISCORD_RELEASE_WEBHOOK is not configured" >&2
+            exit 1
+          fi
+
           if [ -z "$ROLE_ID" ]; then
             echo "DISCORD_RELEASE_ROLE_ID is not configured" >&2
             exit 1
           fi
 
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+          # GITHUB_TOKEN release creates do not fire on.release, so packaging
+          # calls this workflow with workflow_call + tag. Manual dispatch uses
+          # the same tag lookup path.
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$EVENT_NAME" = "workflow_call" ]; then
             if [ -z "$REQUESTED_TAG" ]; then
               echo "A release tag is required for a manual announcement" >&2
               exit 1

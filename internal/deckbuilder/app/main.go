@@ -1578,6 +1578,12 @@ func showApplication(
 	showMainMenu = func() {
 		window.SetTitle(applicationName)
 		setWindowContent(window, buildMainMenu(window, mainMenuActions{
+			HostOnlineGame: func() {
+				showHostOnlineGame(window, deckLibraryDirectory, repository, showMainMenu)
+			},
+			JoinOnlineGame: func() {
+				showJoinOnlineGame(window, deckLibraryDirectory, repository, showMainMenu)
+			},
 			PlayGame: func() {
 				showSimulatorDeckSelection(window, deckLibraryDirectory, repository, func(playerDecks [2]decks.Deck) {
 					playerSessions, err := buildSimulatorSessions(repository, playerDecks, newSimulatorMatchSeed())

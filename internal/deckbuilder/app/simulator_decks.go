@@ -56,6 +56,55 @@ func resolveSimulatorDeckChoice(
 	}
 }
 
+func showSimulatorSingleDeckSelection(
+	window fyne.Window,
+	libraryDirectory string,
+	repository *cards.Repository,
+	title string,
+	confirmLabel string,
+	onChosen func(decks.Deck),
+) {
+	choices, err := simulatorDeckChoices(libraryDirectory)
+	if err != nil {
+		dialog.ShowError(fmt.Errorf("discover simulator decks: %w", err), window)
+		return
+	}
+	if len(choices) == 0 {
+		dialog.ShowInformation("No Decks Available", "Save a deck before starting an online match.", window)
+		return
+	}
+	byLabel := make(map[string]simulatorDeckChoice, len(choices))
+	labels := make([]string, 0, len(choices))
+	for _, choice := range choices {
+		labels = append(labels, choice.label)
+		byLabel[choice.label] = choice
+	}
+	selector := widget.NewSelect(labels, nil)
+	selector.PlaceHolder = "Choose your deck"
+	selector.SetSelected(labels[0])
+
+	dialog.ShowForm(
+		title,
+		confirmLabel,
+		"Cancel",
+		[]*widget.FormItem{widget.NewFormItem("Your Deck", selector)},
+		func(confirmed bool) {
+			if !confirmed {
+				return
+			}
+			resolved, resolveErr := resolveSimulatorDeckChoice(byLabel[selector.Selected], repository)
+			if resolveErr != nil {
+				dialog.ShowError(resolveErr, window)
+				return
+			}
+			if onChosen != nil {
+				onChosen(*resolved)
+			}
+		},
+		window,
+	)
+}
+
 func showSimulatorDeckSelection(
 	window fyne.Window,
 	libraryDirectory string,

@@ -13,7 +13,7 @@ for the first implementation exercise.
 Rules are interpreted using the source precedence and traceability policy in
 [`../../docs/simulator/rules-authority.md`](../../docs/simulator/rules-authority.md).
 
-## v0.2.0-rc.4 prototype boundary
+## v0.3.0 prototype boundary
 
 The rc.4 prototype supports manual movement of controlled printed cards between
 the selectable Hand, Deck, Graveyard, Exile, Caster, and Servant zones. Deck

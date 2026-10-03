@@ -214,27 +214,19 @@ simulator's functional rules and networking behavior. Any material change to
 the boundary should be disclosed in the relevant pull request, commit, release
 notes, or a revision to this statement.
 
-## Disclosed v0.2.0-rc.4 assistance
+## Disclosed v0.3.0 assistance
 
-Hybrid authored and selected the functional simulator behavior for planned
-Aether-source casting and manual card movement, including the supported-zone
-boundary and deferred rules cases.
+Hybrid directed the networked playtest product shape (authoritative host,
+WebSocket JSON protocol, room codes, Host/Join UX, AWS deployment) and
+explicitly authorized OpenAI assistance to implement the networking stack and
+online UI so the candidate could ship.
 
-Under the standing test exception and the simulator presentation authorization,
-OpenAI assistance added automated planned-cast and manual-movement coverage,
-refined the manual-move panel's source and limitation presentation, documented
-the prototype boundary, refreshed and prepared hosted catalog v6, added safe
-catalog-publication recovery after a pre-pointer CDN failure, and prepared the
-release, website, and AI-transparency material. Hybrid remains responsible for
-reviewing the changes, performing hands-on visual and package acceptance, and
+Under that authorization, OpenAI assistance implemented protocol messaging,
+lobby/match host packages, deck submission on create/join, netclient, simhost
+packaging, Host/Join Fyne wiring, automated coverage, release-candidate
+metadata, and this disclosure. Hybrid remains responsible for reviewing the
+changes, performing hands-on acceptance, operating the playtest host, and
 approving publication.
 
-Hybrid also reported that renaming a deck could leave its previous Tabletop
-Simulator saved object available under the old name and explicitly authorized
-OpenAI assistance to implement the rc.4 correction. The assisted fix tracks
-names replaced in the active editor, removes the obsolete app-owned saved
-object only after the renamed export succeeds, preserves colliding sanitized
-paths, updates the editor title, and adds regression tests.
-
-This disclosure does not authorize AI to implement simulator rules, engine,
-session semantics, networking, effects, or replay behavior.
+This disclosure does not authorize AI to invent unsupported rules, effects, or
+replay behavior beyond the existing simulator prototype boundary.

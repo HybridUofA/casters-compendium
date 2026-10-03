@@ -24,12 +24,30 @@ func TestBuildMainMenuDisplaysEnabledSimulatorPrototype(t *testing.T) {
 	defer window.Close()
 
 	menu := buildMainMenu(window, mainMenuActions{PlayGame: func() {}})
-	button := findButtonText(menu, "Play a Game (Prototype)")
+	button := findButtonText(menu, "Play a Game (Hotseat)")
 	if button == nil {
-		t.Fatal("main menu does not display the simulator prototype")
+		t.Fatal("main menu does not display the simulator hotseat action")
 	}
 	if button.Disabled() {
 		t.Fatal("simulator prototype is disabled despite having an action")
+	}
+}
+
+func TestBuildMainMenuDisplaysOnlinePlayActions(t *testing.T) {
+	window := test.NewWindow(nil)
+	defer window.Close()
+
+	menu := buildMainMenu(window, mainMenuActions{
+		HostOnlineGame: func() {},
+		JoinOnlineGame: func() {},
+	})
+	host := findButtonText(menu, "Host Online Game")
+	join := findButtonText(menu, "Join Online Game")
+	if host == nil || join == nil {
+		t.Fatal("main menu does not display Host/Join online actions")
+	}
+	if host.Disabled() || join.Disabled() {
+		t.Fatal("online play actions are disabled despite having handlers")
 	}
 }
 

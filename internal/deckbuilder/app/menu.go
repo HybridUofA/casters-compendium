@@ -17,6 +17,8 @@ import (
 
 type mainMenuActions struct {
 	PlayGame         func()
+	HostOnlineGame   func()
+	JoinOnlineGame   func()
 	OpenDeckEditor   func()
 	NewDeck          func()
 	LoadDeck         func()
@@ -39,9 +41,17 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 	description := widget.NewLabel("Build a deck or convert an existing deck file.")
 	description.Alignment = fyne.TextAlignCenter
 
-	playButton := widget.NewButton("Play a Game (Prototype)", actions.PlayGame)
+	playButton := widget.NewButton("Play a Game (Hotseat)", actions.PlayGame)
 	if actions.PlayGame == nil {
 		playButton.Disable()
+	}
+	hostButton := widget.NewButton("Host Online Game", actions.HostOnlineGame)
+	if actions.HostOnlineGame == nil {
+		hostButton.Disable()
+	}
+	joinButton := widget.NewButton("Join Online Game", actions.JoinOnlineGame)
+	if actions.JoinOnlineGame == nil {
+		joinButton.Disable()
 	}
 	editorButton := widget.NewButton("Open Deck Editor", actions.OpenDeckEditor)
 	if actions.OpenDeckEditor == nil {
@@ -53,6 +63,8 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 		description,
 		widget.NewSeparator(),
 		playButton,
+		hostButton,
+		joinButton,
 		editorButton,
 		widget.NewButton("Make a New Deck", actions.NewDeck),
 		widget.NewButton("Load a Deck", actions.LoadDeck),

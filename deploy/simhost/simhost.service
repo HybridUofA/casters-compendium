@@ -1,0 +1,22 @@
+[Unit]
+Description=Casters Compendium simulator WebSocket host
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/casters-simhost
+ExecStart=/opt/casters-simhost/simhost -addr :7474 -catalog /opt/casters-simhost/data/cards.json
+Restart=on-failure
+RestartSec=3
+User=ubuntu
+Group=ubuntu
+# Hardening (safe defaults for a small public playtest host)
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/casters-simhost
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
