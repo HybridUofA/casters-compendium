@@ -223,10 +223,11 @@ boundary and deferred rules cases.
 Under the standing test exception and the simulator presentation authorization,
 OpenAI assistance added automated planned-cast and manual-movement coverage,
 refined the manual-move panel's source and limitation presentation, documented
-the prototype boundary, refreshed and prepared hosted catalog v6, and prepared
-the release, website, and AI-transparency material. Hybrid remains responsible
-for reviewing the changes, performing hands-on visual and package acceptance,
-and approving publication.
+the prototype boundary, refreshed and prepared hosted catalog v6, added safe
+catalog-publication recovery after a pre-pointer CDN failure, and prepared the
+release, website, and AI-transparency material. Hybrid remains responsible for
+reviewing the changes, performing hands-on visual and package acceptance, and
+approving publication.
 
 Hybrid also reported that renaming a deck could leave its previous Tabletop
 Simulator saved object available under the old name and explicitly authorized
