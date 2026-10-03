@@ -214,7 +214,7 @@ simulator's functional rules and networking behavior. Any material change to
 the boundary should be disclosed in the relevant pull request, commit, release
 notes, or a revision to this statement.
 
-## Disclosed v0.3.0 assistance
+## Disclosed v0.3.2 assistance
 
 Hybrid directed the networked playtest product shape (authoritative host,
 WebSocket JSON protocol, room codes, Host/Join UX, AWS deployment) and

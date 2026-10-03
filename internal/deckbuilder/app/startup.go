@@ -28,7 +28,7 @@ import (
 const (
 	applicationID      = localdata.SharedApplicationID
 	applicationName    = "Caster's Compendium"
-	applicationVersion = "0.3.0"
+	applicationVersion = "0.3.2"
 )
 
 const setupDownloadWorkers = 6
