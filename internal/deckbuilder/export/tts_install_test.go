@@ -47,6 +47,51 @@ func TestSafeTTSFileName(t *testing.T) {
 	}
 }
 
+func TestRemoveObsoleteTTSSavedObjectAfterDeckRename(t *testing.T) {
+	root := t.TempDir()
+	obsolete, err := pathPlanner(root, "Old Deck", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(obsolete.SavedObjectDirectory, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(obsolete.JSONPath, []byte(`{"SaveName":"Old Deck"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := RemoveObsoleteTTSSavedObject(root, "Old Deck", "New Deck"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(obsolete.JSONPath); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("obsolete saved object still exists: %v", err)
+	}
+	if err := RemoveObsoleteTTSSavedObject(root, "Missing Deck", "New Deck"); err != nil {
+		t.Fatalf("missing obsolete saved object returned error: %v", err)
+	}
+}
+
+func TestRemoveObsoleteTTSSavedObjectPreservesSameSanitizedPath(t *testing.T) {
+	root := t.TempDir()
+	current, err := pathPlanner(root, "Deck/A", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(current.SavedObjectDirectory, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(current.JSONPath, []byte(`{"SaveName":"Deck:A"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := RemoveObsoleteTTSSavedObject(root, "Deck/A", "Deck:A"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(current.JSONPath); err != nil {
+		t.Fatalf("current saved object was removed: %v", err)
+	}
+}
+
 func TestLocateTTSRootUsesPreferredDirectory(t *testing.T) {
 	preferred := newTestTTSRoot(t)
 	home := t.TempDir()

@@ -58,6 +58,12 @@ type CardInstance struct {
 	Stock        []MatchCardID
 }
 
+type CardLocation struct {
+	PlayerIndex int
+	Zone        Zone
+	CardIndex   int
+}
+
 type Element string
 
 const (
@@ -93,6 +99,13 @@ type AetherPayment struct {
 	Terra        int
 	Void         int
 	NonElemental int
+}
+
+// CastPaymentPlan records the Aether sources a player wants to use as part of
+// one atomic cast. Payment may also spend Aether that was already in the pool.
+type CastPaymentPlan struct {
+	SourceCardIDs []MatchCardID
+	Payment       AetherPayment
 }
 
 type ChaseLinkID uint64
@@ -149,3 +162,31 @@ type TurnState struct {
 	Phase           Phase
 	CallActionTaken bool
 }
+
+type Zone string
+
+const (
+	ZoneHand      Zone = "Hand"
+	ZoneCaster    Zone = "CasterZone"
+	ZoneServant   Zone = "ServantZone"
+	ZoneDeck      Zone = "Deck"
+	ZoneGraveyard Zone = "Graveyard"
+	ZoneExile     Zone = "Exile"
+	ZoneOrbs      Zone = "Orbs"
+)
+
+type MoveCardCommand struct {
+	CardID              MatchCardID
+	DestinationPlayerID PlayerID
+	DestinationZone     Zone
+	DestinationFace     CardFace
+	EntryOrientation    CardOrientation
+	Placement           DeckPlacement
+}
+
+type DeckPlacement string
+
+const (
+	DeckPlacementTop    DeckPlacement = "top"
+	DeckPlacementBottom DeckPlacement = "bottom"
+)

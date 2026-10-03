@@ -28,6 +28,23 @@ type PlayerSession struct {
 	playerID model.PlayerID
 }
 
+// MoveCard binds manual movement to the authenticated local player and returns
+// only that player's projection. Hidden Exile needs explicit viewing grants.
+func (session *PlayerSession) MoveCard(command model.MoveCardCommand, expectedRevision model.Revision) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if command.DestinationZone == model.ZoneExile && command.DestinationFace == model.CardFaceDown {
+		return view.MatchView{}, fmt.Errorf("face-down Exile movement is not yet supported by the player interface")
+	}
+	if err := engine.MoveCard(&session.match.state, session.match.catalog, session.playerID, command, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("move card: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
 func (session *LocalSession) View() (view.MatchView, error) {
 	if session == nil {
 		return view.MatchView{}, fmt.Errorf("session state cannot be nil")
@@ -393,6 +410,30 @@ func (session *PlayerSession) CastServant(
 	return updatedView, nil
 }
 
+func (session *PlayerSession) CastServantWithPlan(
+	cardID model.MatchCardID,
+	plan model.CastPaymentPlan,
+	orientation model.CardOrientation,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.CastServantWithPlan(&session.match.state, session.match.catalog, session.playerID, cardID, plan, orientation, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("cast servant with payment plan: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
 func (session *PlayerSession) CastConjure(
 	cardID model.MatchCardID,
 	payment model.AetherPayment,
@@ -424,6 +465,25 @@ func (session *PlayerSession) CastConjure(
 	return updatedView, nil
 }
 
+func (session *PlayerSession) CastConjureWithPlan(cardID model.MatchCardID, plan model.CastPaymentPlan, expectedRevision model.Revision) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.CastConjureWithPlan(&session.match.state, session.match.catalog, session.playerID, cardID, plan, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("cast conjure with payment plan: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
 func (session *PlayerSession) CastBarrier(
 	cardID model.MatchCardID,
 	payment model.AetherPayment,
@@ -447,6 +507,25 @@ func (session *PlayerSession) CastBarrier(
 	)
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("cast barrier: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
+func (session *PlayerSession) CastBarrierWithPlan(cardID model.MatchCardID, plan model.CastPaymentPlan, expectedRevision model.Revision) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.CastBarrierWithPlan(&session.match.state, session.match.catalog, session.playerID, cardID, plan, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("cast barrier with payment plan: %w", err)
 	}
 	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
 	if err != nil {

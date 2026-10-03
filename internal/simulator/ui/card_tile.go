@@ -9,7 +9,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -17,6 +16,7 @@ import (
 	dataassets "github.com/HybridUofA/casters-compendium/data"
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	"github.com/HybridUofA/casters-compendium/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
@@ -32,6 +32,7 @@ type CardTile struct {
 	image           *canvas.Image
 	uprightImage    *canvas.Image
 	sidewaysImage   *canvas.Image
+	reversedImage   *canvas.Image
 	selectionBorder *canvas.Rectangle
 	selected        bool
 	OnPreview       func(cards.Card)
@@ -120,6 +121,16 @@ func (tile *CardTile) setSidewaysState(sideways bool) {
 	tile.size = tile.baseSize
 	tile.image = tile.uprightImage
 	if !sideways {
+		if tile.View.Orientation == model.OrientationReversed {
+			if tile.reversedImage == nil {
+				if tile.View.ShowFace {
+					tile.reversedImage = rotatedSimulatorCardImageByTurns(tile.Card, tile.uprightImage, 2)
+				} else {
+					tile.reversedImage = rotatedCanvasImage(rotatedCanvasImage(tile.uprightImage))
+				}
+			}
+			tile.image = tile.reversedImage
+		}
 		return
 	}
 	if tile.sidewaysImage == nil {
@@ -136,22 +147,38 @@ func (tile *CardTile) setSidewaysState(sideways bool) {
 }
 
 func rotatedSimulatorCardImage(card cards.Card, fallback *canvas.Image) *canvas.Image {
+	return rotatedSimulatorCardImageByTurns(card, fallback, 1)
+}
+
+func rotatedSimulatorCardImageByTurns(card cards.Card, fallback *canvas.Image, turns int) *canvas.Image {
 	path, found := cardimages.FindThumbnail(card.ID)
 	if !found {
 		path, found = cardimages.Find(card.ID)
 	}
 	if !found {
-		return rotatedCanvasImage(fallback)
+		for range turns {
+			fallback = rotatedCanvasImage(fallback)
+		}
+		return fallback
 	}
-	if cached, exists := rotatedCardImageCache.Load(path); exists {
+	key := struct {
+		path  string
+		turns int
+	}{path, turns}
+	if cached, exists := rotatedCardImageCache.Load(key); exists {
 		return newSimulatorCanvasImage(cached.(image.Image))
 	}
 	source, loaded := cachedCardImage(path)
 	if !loaded {
-		return rotatedCanvasImage(fallback)
+		for range turns {
+			fallback = rotatedCanvasImage(fallback)
+		}
+		return fallback
 	}
-	rotated := rotateImageClockwise(source)
-	actual, _ := rotatedCardImageCache.LoadOrStore(path, rotated)
+	for range turns {
+		source = rotateImageClockwise(source)
+	}
+	actual, _ := rotatedCardImageCache.LoadOrStore(key, source)
 	return newSimulatorCanvasImage(actual.(image.Image))
 }
 
@@ -263,8 +290,44 @@ func rotateImageClockwise(source image.Image) image.Image {
 }
 
 func (tile *CardTile) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(container.NewStack(tile.image, tile.selectionBorder))
+	return &cardTileRenderer{tile: tile}
 }
+
+type cardTileRenderer struct {
+	tile *CardTile
+}
+
+func (r *cardTileRenderer) Layout(size fyne.Size) {
+	r.tile.image.Move(fyne.NewPos(0, 0))
+	r.tile.image.Resize(size)
+
+	// Contained artwork can leave empty space around the card. Outline the
+	// artwork, not that empty space, including when the card is rested.
+	width, height := size.Width, size.Height
+	if aspect := r.tile.image.Aspect(); aspect > 0 {
+		width = min(width, height*aspect)
+		height = width / aspect
+	}
+	border := r.tile.selectionBorder
+	inset := min(border.StrokeWidth/2, min(width, height)/2)
+	border.CornerRadius = min(width, height) * 0.06
+	border.Move(fyne.NewPos((size.Width-width)/2+inset, (size.Height-height)/2+inset))
+	border.Resize(fyne.NewSize(max(0, width-2*inset), max(0, height-2*inset)))
+}
+
+func (r *cardTileRenderer) MinSize() fyne.Size { return r.tile.MinSize() }
+
+func (r *cardTileRenderer) Objects() []fyne.CanvasObject {
+	return []fyne.CanvasObject{r.tile.image, r.tile.selectionBorder}
+}
+
+func (r *cardTileRenderer) Refresh() {
+	r.Layout(r.tile.Size())
+	r.tile.image.Refresh()
+	r.tile.selectionBorder.Refresh()
+}
+
+func (r *cardTileRenderer) Destroy() {}
 
 func (tile *CardTile) MinSize() fyne.Size {
 	return tile.size

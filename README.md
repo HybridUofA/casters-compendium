@@ -25,7 +25,9 @@ maintainer direction and review. The statement also documents the automated
 tests and explicitly authorized production assistance used for v0.1.4's
 Tabletop Simulator integration, the complete v0.1.5 hosted-catalog patch,
 v0.1.6's selectable bundled backgrounds, its first rendering hotfix, and
-v0.1.8-hotfix.2's card-art recovery fix.
+v0.1.8-hotfix.2's card-art recovery fix. Functional simulator behavior remains
+maintainer-authored; the statement separately records authorized simulator
+tests, presentation work, and v0.2.0-rc.4 release preparation.
 
 ## Features
 
@@ -81,21 +83,22 @@ v0.1.8-hotfix.2's card-art recovery fix.
 
 ## Roadmap
 
-### What's new in v0.2.0-rc.3
+### What's new in v0.2.0-rc.4
 
-- Keep higher-level casters distinct during deck construction and preserve
-  `Lv2`, `Lv3`, and later suffixes in Speedrobo-compatible text imports and
-  exports.
-- Refresh the publisher catalog to 379 cards, including the latest Duel Deck
-  and expansion data and artwork.
-- Group gameplay-identical alternate artwork into one search result while
-  retaining exact-printing selection and an expanded artwork view.
-- Preserve historical card IDs across publisher record replacements and
-  migrate saved decks to canonical IDs when opened.
-- Scale hosted Tabletop Simulator catalogs to efficient 70-card sheets and
-  retain portable multiplayer exports as the database grows.
-- Add simulator groundwork for explicit elemental aether payments and ongoing
-  call/level-up behavior.
+- Select recovered Caster-zone cards as Aether sources while planning Servant,
+  Conjure, and Barrier casts.
+- Move controlled printed cards manually between supported simulator zones,
+  including explicit top-or-bottom Deck placement and field control transfers.
+- Preserve atomic state and private projections when planned casts or manual
+  moves are rejected.
+- Refine the two-player battlefield, reversed-card rendering, selection borders,
+  and manual-move presentation.
+- Refresh hosted catalog v6 so 80 publisher-approved EX02 and related printings
+  appear in normal searches instead of only with playtesting cards enabled.
+- Remove the previous app-owned Tabletop Simulator saved object after a renamed
+  deck exports successfully, preventing stale old-name imports.
+- Document the current prototype limits for tokens, Stock, Orbs, hidden Deck
+  cards, and face-down Exile.
 
 ### What's new in v0.1.8
 
@@ -333,13 +336,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.2.0-rc.3_amd64.deb
+sudo apt install ./casters-compendium_0.2.0-rc.4_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.2.0_rc.3-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-0.2.0_rc.4-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

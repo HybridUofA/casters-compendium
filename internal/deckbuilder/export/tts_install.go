@@ -148,6 +148,27 @@ func pathPlanner(
 	return installPaths, nil
 }
 
+// RemoveObsoleteTTSSavedObject removes an app-owned saved object after a deck
+// rename. If both names map to the same sanitized filename, the current export
+// is preserved.
+func RemoveObsoleteTTSSavedObject(root string, obsoleteName string, currentName string) error {
+	obsolete, err := pathPlanner(root, obsoleteName, false)
+	if err != nil {
+		return fmt.Errorf("plan obsolete TTS saved object: %w", err)
+	}
+	current, err := pathPlanner(root, currentName, false)
+	if err != nil {
+		return fmt.Errorf("plan current TTS saved object: %w", err)
+	}
+	if obsolete.JSONPath == current.JSONPath {
+		return nil
+	}
+	if err := os.Remove(obsolete.JSONPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("remove obsolete TTS saved object %q: %w", obsolete.JSONPath, err)
+	}
+	return nil
+}
+
 func prepareTTSDirectories(paths TTSInstallPaths) error {
 	if strings.TrimSpace(paths.Root) == "" {
 		return fmt.Errorf("TTS root cannot be empty")

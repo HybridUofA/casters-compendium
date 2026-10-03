@@ -26,13 +26,13 @@ Every directory below `catalog/vN/` is immutable. Corrected or expanded data
 must be published under a new version. `catalog/current.json` is the only
 mutable object and is uploaded last.
 
-## Current pointer
+## Pointer example
 
 ```json
 {
   "schemaVersion": 1,
-  "catalogVersion": "v1",
-  "releaseURL": "https://tts.casterscompendium.com/catalog/v1/release.json"
+  "catalogVersion": "vN",
+  "releaseURL": "https://tts.casterscompendium.com/catalog/vN/release.json"
 }
 ```
 
@@ -69,18 +69,51 @@ DeckID = DeckKey * 100 + Slot
 Deck keys are unique positive integers no greater than 99. A sheet contains at
 most 70 cards and every mapping must reference an existing populated slot.
 
+## Refreshing source data
+
+Run the refresh from the repository root:
+
+```sh
+go run ./cmd/tools/cardrefresh
+```
+
+Review both `data/cards.raw.json` and `data/cards.json` before continuing.
+Confirm that additions, removals, printing replacements, normalized fields, and
+reported legacy-ID migrations agree with the publisher source. A refresh that
+does not change the normalized database does not require a new hosted release.
+
+Download any missing full-resolution artwork and regenerate the local thumbnail
+cache:
+
+```sh
+go run ./cmd/tools/cache-images
+go run ./cmd/tools/cache-thumbnails
+```
+
+Do not publish until every approved normalized card has its expected image in
+`data/images`.
+
 ## Building
 
 Generate a release locally without uploading:
 
 ```sh
 go run ./cmd/tools/catalogbuild \
-  -version v1 \
+  -version vN \
   -base-url https://tts.casterscompendium.com
 ```
 
 Output is written under the ignored `dist/hosted-catalog/` directory. The tool
-refuses to replace an existing version directory.
+refuses to replace an existing version directory. Use the next unused numeric
+catalog version; published version directories are immutable.
+
+Before publication, run:
+
+```sh
+go test ./cmd/tools/catalogbuild \
+  ./internal/carddata/distribution \
+  ./internal/deckbuilder/export
+```
 
 ## Publishing
 
@@ -99,6 +132,11 @@ bucket. It does not need account administration permission. The workflow:
 4. Verifies the release and TTS manifests through the public hostname.
 5. Uploads `current.json` with a five-minute cache lifetime.
 6. Verifies the newly active pointer through a cache-busting request.
+
+After the workflow succeeds, fetch `catalog/current.json`, its referenced
+`release.json`, and representative card and TTS images through the public
+hostname. Then launch the desktop application against an older local release
+and confirm that its manual database update installs the new digest.
 
 Never place R2 credentials in the repository, desktop application, catalog
 files, saved TTS objects, or support logs.

@@ -191,3 +191,43 @@ func TestInstallHostedTTSDeckWritesOnlySavedObject(t *testing.T) {
 		t.Fatalf("hosted installer unexpectedly created %q", localImages)
 	}
 }
+
+func TestInstallHostedTTSDeckReplacesObsoleteNameAfterRename(t *testing.T) {
+	root := newTestTTSRoot(t)
+	deck := &decks.Deck{
+		SchemaVersion: 1,
+		Name:          "Old Name",
+		MainDeck:      []decks.DeckEntry{{CardID: "1", Quantity: 1}},
+	}
+	oldPaths, err := InstallHostedTTSDeck(root, deck, testHostedManifest(), testHostedRepository(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	deck.Name = "New Name"
+	newPaths, err := InstallHostedTTSDeck(root, deck, testHostedManifest(), testHostedRepository(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := RemoveObsoleteTTSSavedObject(root, "Old Name", deck.Name); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(oldPaths.JSONPath); !os.IsNotExist(err) {
+		t.Fatalf("old saved object still exists: %v", err)
+	}
+
+	data, err := os.ReadFile(newPaths.JSONPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var object SavedObject
+	if err := json.Unmarshal(data, &object); err != nil {
+		t.Fatal(err)
+	}
+	if object.SaveName != "New Name" {
+		t.Fatalf("SaveName = %q; want renamed deck", object.SaveName)
+	}
+	if len(object.ObjectStates) != 1 || object.ObjectStates[0].Nickname != "New Name - Main Deck" {
+		t.Fatalf("renamed object states = %#v", object.ObjectStates)
+	}
+}

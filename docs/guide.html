@@ -33,7 +33,7 @@
         <p class="eyebrow">Application guide</p>
         <h1>From card search to finished deck.</h1>
         <p class="intro">This walkthrough covers the complete deckbuilder workflow: creating or loading a deck, finding cards, organizing both deck zones, saving, and exporting.</p>
-        <a class="button primary" href="downloads.html">Download v0.1.8-hotfix.2</a>
+        <a class="button primary" href="downloads.html">Download v0.2.0-rc.4</a>
       </div>
     </header>
 
@@ -41,6 +41,7 @@
       <aside class="guide-toc" aria-label="Guide contents">
         <p class="toc-title">On this page</p>
         <a href="#start">Getting started</a>
+        <a href="#simulator">Simulator prototype</a>
         <a href="#search">Finding cards</a>
         <a href="#build">Building a deck</a>
         <a href="#organize">Moving and sorting</a>
@@ -80,6 +81,16 @@
             <img src="screenshots/casters-compendium-main-menu.png" alt="Caster's Compendium main menu with deck creation, deck loading, conversion, database update, guide, settings, and quit actions.">
             <figcaption>The main menu keeps creation, conversion, updates, and settings together.</figcaption>
           </figure>
+        </section>
+
+        <section id="simulator">
+          <p class="step-label">Prototype · Play</p>
+          <h2>Try two local decks in the simulator.</h2>
+          <p>Choose <strong>Play a Game (Prototype)</strong> from the main menu, then select one saved or official deck for each player. The application opens a private board for each local player, tracks turn and Chase state, and keeps hidden cards out of the opposing view.</p>
+          <p>During Main, the suggested-cast panel can combine recovered Caster-zone Aether sources with an explicit payment. Use <strong>Move a card…</strong> for card effects that the prototype does not automate.</p>
+          <div class="guide-note warning">
+            <strong>Prototype limits:</strong> Manual movement does not yet support tokens, cards with Stock, Orb insertion, face-down Exile, or selecting hidden Deck and Orb cards. The simulator is a local rules foundation, not a complete enforcement engine or networked game.
+          </div>
         </section>
 
         <section id="search">
@@ -176,6 +187,7 @@
           <div class="guide-note">
             <strong>One-click installation:</strong> Standard Windows, macOS, and Linux TTS locations are detected automatically. If TTS uses a custom data directory, select it once and Caster's Compendium remembers it for later exports. If the shared catalog cannot be reached or does not contain a card, the application clearly reports that it used the original local-image fallback instead.
           </div>
+          <p>When you rename a deck and install it again during the same editor session, the application removes its obsolete old-name saved object only after the renamed export succeeds.</p>
           <p>Custom uploads are stored separately from the official card catalog. Only upload images you own or have permission to share. Uploaded URLs are public to anyone who receives them and are retained so existing multiplayer saves continue to work.</p>
           <p>For file conversion without entering the editor, return to the main menu and use the deck-image or decklist generators.</p>
           <figure class="screenshot-frame guide-screenshot">

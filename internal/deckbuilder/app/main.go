@@ -144,13 +144,14 @@ func showTTSInstallDialog(
 	window fyne.Window,
 	deck *decks.Deck,
 	repository *cards.Repository,
+	onInstalled func(deckexport.TTSInstallPaths) error,
 ) {
 	preferences := fyne.CurrentApp().Preferences()
 	root, locateErr := deckexport.LocateTTSRoot(
 		preferences.String(ttsRootPreferenceKey),
 	)
 	if locateErr == nil {
-		installDeckToTTSRoot(window, deck, repository, root)
+		installDeckToTTSRoot(window, deck, repository, root, onInstalled)
 		return
 	}
 
@@ -164,7 +165,7 @@ func showTTSInstallDialog(
 				return
 			}
 
-			installDeckToTTSRoot(window, deck, repository, root.Path())
+			installDeckToTTSRoot(window, deck, repository, root.Path(), onInstalled)
 		},
 		window,
 	)
@@ -221,6 +222,7 @@ func installDeckToTTSRoot(
 	deck *decks.Deck,
 	repository *cards.Repository,
 	root string,
+	onInstalled func(deckexport.TTSInstallPaths) error,
 ) {
 	progress := dialog.NewCustomWithoutButtons(
 		"Installing Tabletop Simulator Deck",
@@ -246,13 +248,23 @@ func installDeckToTTSRoot(
 				return
 			}
 			fyne.CurrentApp().Preferences().SetString(ttsRootPreferenceKey, paths.Root)
+			var cleanupWarning string
+			if onInstalled != nil {
+				if cleanupErr := onInstalled(paths); cleanupErr != nil {
+					cleanupWarning = fmt.Sprintf(
+						"\n\nThe new export succeeded, but the previous saved object could not be removed: %v",
+						cleanupErr,
+					)
+				}
+			}
 			if hosted {
 				dialog.ShowInformation(
 					"Tabletop Simulator Export Complete",
 					fmt.Sprintf(
-						"%q is ready in Tabletop Simulator with shared online card assets for multiplayer.\n\nSaved object:\n%s",
+						"%q is ready in Tabletop Simulator with shared online card assets for multiplayer.\n\nSaved object:\n%s%s",
 						deck.Name,
 						paths.JSONPath,
+						cleanupWarning,
 					),
 					window,
 				)
@@ -261,10 +273,11 @@ func installDeckToTTSRoot(
 			dialog.ShowInformation(
 				"Local Tabletop Simulator Export Complete",
 				fmt.Sprintf(
-					"%q was installed using local image files because the shared catalog was unavailable.\n\nOther players may need those image files manually.\n\nHosted catalog error: %v\n\nSaved object:\n%s",
+					"%q was installed using local image files because the shared catalog was unavailable.\n\nOther players may need those image files manually.\n\nHosted catalog error: %v\n\nSaved object:\n%s%s",
 					deck.Name,
 					fallbackReason,
 					paths.JSONPath,
+					cleanupWarning,
 				),
 				window,
 			)
@@ -348,6 +361,7 @@ func showApplication(
 	var currentDeckPath string
 	var currentTemplateID string
 	deckDirty := false
+	var obsoleteTTSDeckNames []string
 	var showMainMenu func()
 	var openDeckEditor func()
 	var makeNewDeck func()
@@ -582,8 +596,24 @@ func showApplication(
 				if !confirmed || strings.TrimSpace(nameEntry.Text) == "" {
 					return
 				}
-				deck.Name = strings.TrimSpace(nameEntry.Text)
+				oldName := deck.Name
+				newName := strings.TrimSpace(nameEntry.Text)
+				if oldName == newName {
+					return
+				}
+				alreadyTracked := false
+				for _, name := range obsoleteTTSDeckNames {
+					if name == oldName {
+						alreadyTracked = true
+						break
+					}
+				}
+				if !alreadyTracked {
+					obsoleteTTSDeckNames = append(obsoleteTTSDeckNames, oldName)
+				}
+				deck.Name = newName
 				deckDirty = true
+				window.SetTitle(deck.Name + " — " + applicationName)
 			},
 			window,
 		)
@@ -620,7 +650,16 @@ func showApplication(
 		})
 	})
 	installTTSButton := widget.NewButton("Install to TTS", func() {
-		showTTSInstallDialog(window, deck, repository)
+		installedName := deck.Name
+		showTTSInstallDialog(window, deck, repository, func(paths deckexport.TTSInstallPaths) error {
+			for _, obsoleteName := range obsoleteTTSDeckNames {
+				if err := deckexport.RemoveObsoleteTTSSavedObject(paths.Root, obsoleteName, installedName); err != nil {
+					return err
+				}
+			}
+			obsoleteTTSDeckNames = nil
+			return nil
+		})
 	})
 
 	var exportSelect *widget.Select
@@ -1420,6 +1459,7 @@ func showApplication(
 	makeNewDeck = func() {
 		showNewDeckDialog(window, func(created *decks.Deck) {
 			*deck = *created
+			obsoleteTTSDeckNames = nil
 			currentDeckURI = nil
 			currentDeckPath = ""
 			currentTemplateID = ""
@@ -1455,6 +1495,7 @@ func showApplication(
 			return
 		}
 		*deck = *opened
+		obsoleteTTSDeckNames = nil
 		currentDeckPath = path
 		currentTemplateID = ""
 		currentDeckURI = storage.NewFileURI(path)
@@ -1473,6 +1514,7 @@ func showApplication(
 			return
 		}
 		*deck = *opened
+		obsoleteTTSDeckNames = nil
 		currentDeckURI = nil
 		currentDeckPath = ""
 		currentTemplateID = templateID
@@ -1487,6 +1529,7 @@ func showApplication(
 	loadDeck = func() {
 		showOpenDeckDialog(window, repository, func(opened *decks.Deck, uri fyne.URI, migrated bool) {
 			*deck = *opened
+			obsoleteTTSDeckNames = nil
 			if strings.EqualFold(uri.Extension(), ".json") {
 				currentDeckURI = uri
 			} else {
@@ -1692,6 +1735,44 @@ func showApplication(
 												CastBarrier(cardID, payment, expectedRevision)
 											if castErr != nil {
 												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CastServantWithPlan: func(
+											cardID model.MatchCardID,
+											plan model.CastPaymentPlan,
+											orientation model.CardOrientation,
+											expectedRevision model.Revision,
+										) {
+											updatedView, castErr := playerSessions[playerIndex].
+												CastServantWithPlan(cardID, plan, orientation, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CastConjureWithPlan: func(cardID model.MatchCardID, plan model.CastPaymentPlan, expectedRevision model.Revision) {
+											updatedView, castErr := playerSessions[playerIndex].CastConjureWithPlan(cardID, plan, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CastBarrierWithPlan: func(cardID model.MatchCardID, plan model.CastPaymentPlan, expectedRevision model.Revision) {
+											updatedView, castErr := playerSessions[playerIndex].CastBarrierWithPlan(cardID, plan, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										MoveCard: func(command model.MoveCardCommand, expectedRevision model.Revision) {
+											updatedView, moveErr := playerSessions[playerIndex].MoveCard(command, expectedRevision)
+											if moveErr != nil {
+												dialog.ShowError(moveErr, playerWindows[playerIndex])
 												return
 											}
 											renderPlayersWithView(playerIndex, updatedView)
