@@ -118,6 +118,119 @@ func TestCastConjureAndBarrierUseSharedCastMutation(t *testing.T) {
 	}
 }
 
+func TestCastServantWithPlanProducesAndPaysAetherAtomically(t *testing.T) {
+	state, catalog := castServantEngineStateForTest()
+	state.Players[0].Aether = model.AetherPool{}
+	state.Players[0].CasterZone = []model.MatchCardID{"aes-caster", "facedown-caster"}
+	state.CardInstances["aes-caster"] = model.CardInstance{
+		CardID: "printed-aes-caster", MatchID: "aes-caster", Owner: "player-one", Controller: "player-one",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceUp, Orientation: model.OrientationRecovered,
+	}
+	state.CardInstances["facedown-caster"] = model.CardInstance{
+		CardID: "printed-other", MatchID: "facedown-caster", Owner: "player-one", Controller: "player-one",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown, Orientation: model.OrientationRecovered,
+	}
+	catalog["printed-aes-caster"] = gamecards.Card{ID: "printed-aes-caster", Type: "Caster", Element: "Aes", CostLevel: "2"}
+	plan := model.CastPaymentPlan{
+		SourceCardIDs: []model.MatchCardID{"aes-caster", "facedown-caster"},
+		Payment:       model.AetherPayment{Aes: 2, NonElemental: 1},
+	}
+
+	if err := CastServantWithPlan(&state, catalog, "player-one", "servant-one", plan, model.OrientationRecovered, state.Revision); err != nil {
+		t.Fatalf("CastServantWithPlan() error = %v", err)
+	}
+	if state.CardInstances["aes-caster"].Orientation != model.OrientationRested ||
+		state.CardInstances["facedown-caster"].Orientation != model.OrientationRested {
+		t.Fatal("planned Aether sources were not Rested")
+	}
+	if state.Players[0].Aether != (model.AetherPool{}) {
+		t.Fatalf("Aether = %#v; want produced Aether fully paid", state.Players[0].Aether)
+	}
+	if len(state.ChaseLinks) != 1 || state.ChaseLinks[0].SourceCardID != "servant-one" {
+		t.Fatalf("ChaseLinks = %#v; want planned Servant cast", state.ChaseLinks)
+	}
+	if state.Revision != 10 {
+		t.Fatalf("Revision = %d; want one atomic increment to 10", state.Revision)
+	}
+}
+
+func TestCastConjureAndBarrierWithPlanProduceAndPayAetherAtomically(t *testing.T) {
+	tests := []struct {
+		name string
+		cast func(*model.MatchState, casterAetherCatalogForTest, model.PlayerID, model.MatchCardID, model.CastPaymentPlan, model.Revision) error
+	}{
+		{name: "Conjure", cast: func(state *model.MatchState, catalog casterAetherCatalogForTest, playerID model.PlayerID, cardID model.MatchCardID, plan model.CastPaymentPlan, revision model.Revision) error {
+			return CastConjureWithPlan(state, catalog, playerID, cardID, plan, revision)
+		}},
+		{name: "Barrier", cast: func(state *model.MatchState, catalog casterAetherCatalogForTest, playerID model.PlayerID, cardID model.MatchCardID, plan model.CastPaymentPlan, revision model.Revision) error {
+			return CastBarrierWithPlan(state, catalog, playerID, cardID, plan, revision)
+		}},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			state, catalog := castServantEngineStateForTest()
+			definition := catalog["printed-servant"]
+			definition.Type = testCase.name
+			catalog[definition.ID] = definition
+			state.Players[0].Aether = model.AetherPool{}
+			state.Players[0].CasterZone = []model.MatchCardID{"aes-caster", "facedown-caster"}
+			state.CardInstances["aes-caster"] = model.CardInstance{
+				CardID: "printed-aes-caster", MatchID: "aes-caster", Owner: "player-one", Controller: "player-one",
+				CardCategory: model.CategoryPrintedCard, Face: model.CardFaceUp, Orientation: model.OrientationRecovered,
+			}
+			state.CardInstances["facedown-caster"] = model.CardInstance{
+				CardID: "printed-other", MatchID: "facedown-caster", Owner: "player-one", Controller: "player-one",
+				CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown, Orientation: model.OrientationRecovered,
+			}
+			catalog["printed-aes-caster"] = gamecards.Card{ID: "printed-aes-caster", Type: "Caster", Element: "Aes", CostLevel: "2"}
+			plan := model.CastPaymentPlan{
+				SourceCardIDs: []model.MatchCardID{"aes-caster", "facedown-caster"},
+				Payment:       model.AetherPayment{Aes: 2, NonElemental: 1},
+			}
+
+			if err := testCase.cast(&state, catalog, "player-one", "servant-one", plan, state.Revision); err != nil {
+				t.Fatalf("%sWithPlan() error = %v", testCase.name, err)
+			}
+			if state.CardInstances["aes-caster"].Orientation != model.OrientationRested ||
+				state.CardInstances["facedown-caster"].Orientation != model.OrientationRested {
+				t.Fatal("planned Aether sources were not Rested")
+			}
+			if state.Players[0].Aether != (model.AetherPool{}) {
+				t.Fatalf("Aether = %#v; want produced Aether fully paid", state.Players[0].Aether)
+			}
+			if len(state.ChaseLinks) != 1 || state.ChaseLinks[0].SourceCardID != "servant-one" {
+				t.Fatalf("ChaseLinks = %#v; want planned card play", state.ChaseLinks)
+			}
+			if state.Revision != 10 {
+				t.Fatalf("Revision = %d; want one atomic increment to 10", state.Revision)
+			}
+		})
+	}
+}
+
+func TestCastServantWithPlanRejectsBadPlanWithoutMutation(t *testing.T) {
+	state, catalog := castServantEngineStateForTest()
+	state.Players[0].Aether = model.AetherPool{}
+	state.Players[0].CasterZone = []model.MatchCardID{"facedown-caster"}
+	state.CardInstances["facedown-caster"] = model.CardInstance{
+		CardID: "printed-other", MatchID: "facedown-caster", Owner: "player-one", Controller: "player-one",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown, Orientation: model.OrientationRecovered,
+	}
+	before := cloneCastEngineState(state)
+	plan := model.CastPaymentPlan{
+		SourceCardIDs: []model.MatchCardID{"facedown-caster", "facedown-caster"},
+		Payment:       model.AetherPayment{NonElemental: 2},
+	}
+
+	err := CastServantWithPlan(&state, catalog, "player-one", "servant-one", plan, model.OrientationRecovered, state.Revision)
+	if err == nil || !strings.Contains(err.Error(), "selected more than once") {
+		t.Fatalf("CastServantWithPlan() error = %v; want duplicate-source error", err)
+	}
+	if !reflect.DeepEqual(state, before) {
+		t.Fatalf("rejected planned cast mutated state:\n got: %#v\nwant: %#v", state, before)
+	}
+}
+
 func TestCastServantRejectsInvalidRequestWithoutMutation(t *testing.T) {
 	tests := []struct {
 		name             string
@@ -237,6 +350,7 @@ func cloneCastEngineState(state model.MatchState) model.MatchState {
 	}
 	for index := range state.Players {
 		clone.Players[index].Hand = append([]model.MatchCardID(nil), state.Players[index].Hand...)
+		clone.Players[index].CasterZone = append([]model.MatchCardID(nil), state.Players[index].CasterZone...)
 	}
 	return clone
 }

@@ -213,3 +213,20 @@ This boundary distinguishes presentation and project operations from the
 simulator's functional rules and networking behavior. Any material change to
 the boundary should be disclosed in the relevant pull request, commit, release
 notes, or a revision to this statement.
+
+## Disclosed v0.2.0-rc.4 assistance
+
+Hybrid authored and selected the functional simulator behavior for planned
+Aether-source casting and manual card movement, including the supported-zone
+boundary and deferred rules cases.
+
+Under the standing test exception and the simulator presentation authorization,
+OpenAI assistance added automated planned-cast and manual-movement coverage,
+refined the manual-move panel's source and limitation presentation, documented
+the prototype boundary, refreshed and prepared hosted catalog v6, and prepared
+the release, website, and AI-transparency material. Hybrid remains responsible
+for reviewing the changes, performing hands-on visual and package acceptance,
+and approving publication.
+
+This disclosure does not authorize AI to implement simulator rules, engine,
+session semantics, networking, effects, or replay behavior.

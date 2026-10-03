@@ -1152,6 +1152,18 @@ func TestNilPlayerSessionMethodsReturnErrors(t *testing.T) {
 		!strings.Contains(err.Error(), "cannot be nil") {
 		t.Fatalf("nil PlayerSession.CastBarrier() error = %v; want nil-session error", err)
 	}
+	if _, err := playerSession.CastServantWithPlan("card", model.CastPaymentPlan{}, model.OrientationRecovered, 0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.CastServantWithPlan() error = %v; want nil-session error", err)
+	}
+	if _, err := playerSession.CastConjureWithPlan("card", model.CastPaymentPlan{}, 0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.CastConjureWithPlan() error = %v; want nil-session error", err)
+	}
+	if _, err := playerSession.CastBarrierWithPlan("card", model.CastPaymentPlan{}, 0); err == nil ||
+		!strings.Contains(err.Error(), "cannot be nil") {
+		t.Fatalf("nil PlayerSession.CastBarrierWithPlan() error = %v; want nil-session error", err)
+	}
 	if _, err := playerSession.PassPriority(0); err == nil ||
 		!strings.Contains(err.Error(), "cannot be nil") {
 		t.Fatalf("nil PlayerSession.PassPriority() error = %v; want nil-session error", err)
@@ -1196,6 +1208,18 @@ func TestNilPlayerSessionMethodsReturnErrors(t *testing.T) {
 	if _, err := empty.CastBarrier("card", model.AetherPayment{}, 0); err == nil ||
 		!strings.Contains(err.Error(), "match cannot be nil") {
 		t.Fatalf("empty PlayerSession.CastBarrier() error = %v; want nil-match error", err)
+	}
+	if _, err := empty.CastServantWithPlan("card", model.CastPaymentPlan{}, model.OrientationRecovered, 0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.CastServantWithPlan() error = %v; want nil-match error", err)
+	}
+	if _, err := empty.CastConjureWithPlan("card", model.CastPaymentPlan{}, 0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.CastConjureWithPlan() error = %v; want nil-match error", err)
+	}
+	if _, err := empty.CastBarrierWithPlan("card", model.CastPaymentPlan{}, 0); err == nil ||
+		!strings.Contains(err.Error(), "match cannot be nil") {
+		t.Fatalf("empty PlayerSession.CastBarrierWithPlan() error = %v; want nil-match error", err)
 	}
 	if _, err := empty.PassPriority(0); err == nil ||
 		!strings.Contains(err.Error(), "match cannot be nil") {

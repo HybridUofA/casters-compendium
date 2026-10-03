@@ -28,13 +28,13 @@ const (
 	orbZoneWidth      float32 = 200
 	handZoneHeight    float32 = 82
 	casterZoneHeight  float32 = 82
-	fieldCardWidth    float32 = 52
-	fieldCardHeight   float32 = 72
-	orbCardWidth      float32 = 92
-	orbCardHeight     float32 = 64
+	fieldCardWidth    float32 = 56
+	fieldCardHeight   float32 = 78
+	orbCardWidth      float32 = 98
+	orbCardHeight     float32 = 68
 	orbLayerStep      float32 = 27
-	utilityCardWidth  float32 = 38
-	utilityCardHeight float32 = 53
+	utilityCardWidth  float32 = 41
+	utilityCardHeight float32 = 57
 	utilityZoneHeight float32 = 61
 )
 
@@ -46,12 +46,14 @@ var (
 )
 
 type previewState struct {
-	title       *widget.Label
-	description *widget.Label
-	image       *fyne.Container
-	imageSizer  *canvas.Rectangle
-	shownCardID *model.CardID
-	fullArtwork *previewArtworkCache
+	title         *widget.Label
+	description   *widget.Label
+	actions       *fyne.Container
+	manualActions *fyne.Container
+	image         *fyne.Container
+	imageSizer    *canvas.Rectangle
+	shownCardID   *model.CardID
+	fullArtwork   *previewArtworkCache
 }
 
 type previewArtworkCache struct {
@@ -61,17 +63,9 @@ type previewArtworkCache struct {
 
 type cardLookup map[model.CardID]cards.Card
 
-type aetherActionKind uint8
-
-const (
-	aetherActionNone aetherActionKind = iota
-	aetherActionFaceDownCaster
-	aetherActionFaceUpCaster
-	aetherActionToken
-)
-
 // BoardActions translates presentation choices into session-owned commands.
 type BoardActions struct {
+	MoveCard                   func(model.MoveCardCommand, model.Revision)
 	SubmitOpeningHand          func([]model.MatchCardID, model.Revision)
 	CallFaceDownLevelOne       func(model.MatchCardID, model.Revision)
 	CallFaceUpLevelOne         func(model.MatchCardID, model.Revision)
@@ -82,6 +76,9 @@ type BoardActions struct {
 	CastServant                func(model.MatchCardID, model.AetherPayment, model.CardOrientation, model.Revision)
 	CastConjure                func(model.MatchCardID, model.AetherPayment, model.Revision)
 	CastBarrier                func(model.MatchCardID, model.AetherPayment, model.Revision)
+	CastServantWithPlan        func(model.MatchCardID, model.CastPaymentPlan, model.CardOrientation, model.Revision)
+	CastConjureWithPlan        func(model.MatchCardID, model.CastPaymentPlan, model.Revision)
+	CastBarrierWithPlan        func(model.MatchCardID, model.CastPaymentPlan, model.Revision)
 	PassPriority               func(model.Revision)
 	CompleteCurrentPhase       func(model.Revision)
 	BackLabel                  string
@@ -137,6 +134,7 @@ func NewBoardController(
 	screen.rebuildBoards()
 	screen.aetherPools = container.NewVBox()
 	screen.updateAetherPools()
+	screen.updateManualMoves()
 
 	title := widget.NewLabelWithStyle(
 		"Simulator Prototype",
@@ -202,7 +200,14 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 	}
 	previous := screen.match
 	screen.match = match
+	if previous.Revision != match.Revision || previous.ViewerID != match.ViewerID || previous.MatchStatus != match.MatchStatus {
+		screen.updateManualMoves()
+	}
 	screen.updateMetadata()
+	if previous.Revision != match.Revision && screen.preview.actions != nil && len(screen.preview.actions.Objects) > 0 {
+		screen.preview.actions.Objects = nil
+		refreshContainerStructure(screen.preview.actions)
+	}
 	if previous.ViewerID != match.ViewerID ||
 		previous.Players[0].Aether != match.Players[0].Aether ||
 		previous.Players[1].Aether != match.Players[1].Aether {
@@ -217,7 +222,8 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 	canCall := canViewerCallFaceDownLevelOne(match) &&
 		(screen.actions.CallFaceDownLevelOne != nil || screen.actions.CallFaceUpLevelOne != nil || screen.actions.LevelUpCaster != nil)
 	canCast := canViewerCast(match) &&
-		(screen.actions.CastServant != nil || screen.actions.CastConjure != nil || screen.actions.CastBarrier != nil)
+		(screen.actions.CastServant != nil || screen.actions.CastConjure != nil || screen.actions.CastBarrier != nil ||
+			screen.actions.CastServantWithPlan != nil || screen.actions.CastConjureWithPlan != nil || screen.actions.CastBarrierWithPlan != nil)
 	canNonElemental := canViewerGenerateNonElementalAether(match) && screen.actions.GenerateNonElementalAether != nil
 	canCasterAether := canViewerGenerateCasterAether(match) && screen.actions.GenerateCasterAether != nil
 	canUseToken := canViewerUseCasterToken(match) && screen.actions.UseCasterToken != nil
@@ -278,7 +284,8 @@ func (screen *BoardScreen) newProjectedPlayerBoardController(
 		canViewerCallFaceDownLevelOne(screen.match) &&
 			(screen.actions.CallFaceDownLevelOne != nil || screen.actions.CallFaceUpLevelOne != nil || screen.actions.LevelUpCaster != nil),
 		canViewerCast(screen.match) &&
-			(screen.actions.CastServant != nil || screen.actions.CastConjure != nil || screen.actions.CastBarrier != nil),
+			(screen.actions.CastServant != nil || screen.actions.CastConjure != nil || screen.actions.CastBarrier != nil ||
+				screen.actions.CastServantWithPlan != nil || screen.actions.CastConjureWithPlan != nil || screen.actions.CastBarrierWithPlan != nil),
 		canViewerGenerateNonElementalAether(screen.match) && screen.actions.GenerateNonElementalAether != nil,
 		canViewerGenerateCasterAether(screen.match) && screen.actions.GenerateCasterAether != nil,
 		canViewerUseCasterToken(screen.match) && screen.actions.UseCasterToken != nil,
@@ -488,19 +495,18 @@ func newPreviewPanel() previewState {
 	placeholder.Importance = widget.LowImportance
 
 	return previewState{
-		title:       title,
-		description: description,
-		image:       container.NewStack(imageSizer, container.NewCenter(placeholder)),
-		imageSizer:  imageSizer,
-		shownCardID: new(model.CardID),
-		fullArtwork: &previewArtworkCache{},
+		title:         title,
+		description:   description,
+		actions:       container.NewVBox(),
+		manualActions: container.NewVBox(),
+		image:         container.NewStack(imageSizer, container.NewCenter(placeholder)),
+		imageSizer:    imageSizer,
+		shownCardID:   new(model.CardID),
+		fullArtwork:   &previewArtworkCache{},
 	}
 }
 
 func newPreviewRegion(preview previewState, aetherPools fyne.CanvasObject) fyne.CanvasObject {
-	descriptionScroll := container.NewVScroll(preview.description)
-	descriptionScroll.SetMinSize(fyne.NewSize(0, 145))
-
 	heading := container.NewVBox(
 		widget.NewLabelWithStyle(
 			"Card Information",
@@ -521,7 +527,15 @@ func newPreviewRegion(preview previewState, aetherPools fyne.CanvasObject) fyne.
 		),
 		aetherPools,
 	)
-	content := container.NewBorder(heading, aetherSection, nil, nil, descriptionScroll)
+	context := container.NewVScroll(container.NewVBox(
+		preview.description,
+		widget.NewSeparator(),
+		widget.NewLabelWithStyle("Actions", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		preview.actions,
+		preview.manualActions,
+	))
+	context.SetMinSize(fyne.NewSize(0, 180))
+	content := container.NewBorder(heading, aetherSection, nil, nil, context)
 
 	sizer := canvas.NewRectangle(color.Transparent)
 	sizer.SetMinSize(fyne.NewSize(previewPanelWidth, 0))
@@ -769,9 +783,10 @@ func (board *playerBoardController) update(
 		replaceZone(board.servants, newCardZone(board.playerName, "Servant Zone", "Servants in play occupy this row.", servants, fyne.NewSize(fieldCardWidth, fieldCardHeight), false, false, board.definitions, board.preview))
 		replaceZone(board.barriers, newCardZone(board.playerName, "Barrier Zone", "Barriers in play occupy this row.", barriers, fyne.NewSize(fieldCardWidth, fieldCardHeight), false, false, board.definitions, board.preview))
 	}
+	aetherChangedForCasting := (canCast || board.canCast) && previous.Aether != player.Aether
 	if !reflect.DeepEqual(previous.Hand, player.Hand) ||
 		previous.OpeningHandFinalized != player.OpeningHandFinalized ||
-		previous.Aether != player.Aether ||
+		aetherChangedForCasting ||
 		board.canCall != canCall || board.canCast != canCast {
 		replaceZone(board.hand, newHandZone(board.playerName, player, board.isViewer, board.definitions, board.preview, board.actions, board.currentRevision, canCall, canCast))
 	}
@@ -1111,8 +1126,6 @@ func newCastHandZone(
 	tiles := make([]*CardTile, 0, len(player.Hand))
 	objects := make([]fyne.CanvasObject, 0, len(player.Hand))
 
-	status := widget.NewLabel("Select a Servant, Conjure, or Barrier to cast.")
-	status.Wrapping = fyne.TextWrapWord
 	orientation := widget.NewSelect(
 		[]string{string(model.OrientationRecovered), string(model.OrientationReversed)},
 		nil,
@@ -1188,11 +1201,9 @@ func newCastHandZone(
 		paymentSelectors = append(paymentSelectors, selector)
 		paymentControls = append(paymentControls, container.NewVBox(widget.NewLabel(source.name), selector))
 	}
-	var paymentPanel fyne.CanvasObject
+	var emptyPaymentNotice fyne.CanvasObject
 	if len(paymentControls) == 0 {
-		paymentPanel = widget.NewLabel("No Aether available (0-cost cards remain castable).")
-	} else {
-		paymentPanel = container.NewHScroll(container.NewHBox(paymentControls...))
+		emptyPaymentNotice = widget.NewLabel("No Aether (0-cost only)")
 	}
 
 	actionAvailable := func(definition cards.Card) bool {
@@ -1227,6 +1238,7 @@ func newCastHandZone(
 			selector.SetSelected("0")
 		}
 	}
+	var actionsPanel *container.Scroll
 	for _, projectedCard := range player.Hand {
 		projectedCard := projectedCard
 		definition := definitions[projectedCard.CardID]
@@ -1250,8 +1262,10 @@ func newCastHandZone(
 			resetPayment()
 			orientation.Hide()
 			if wasSelected {
-				status.SetText("Select a Servant, Conjure, or Barrier to cast.")
+				castButton.SetText("Cast Selected")
 				updateAction()
+				preview.actions.Objects = nil
+				refreshContainerStructure(preview.actions)
 				return
 			}
 			selectedID = projectedCard.MatchID
@@ -1259,31 +1273,359 @@ func newCastHandZone(
 			tile.SetSelected(true)
 			kind := strings.TrimSpace(definition.Type)
 			cost := strings.TrimSpace(definition.CostLevel)
-			selectionText := fmt.Sprintf("%s selected • Cost %s %s", kind, cost, strings.TrimSpace(definition.Element))
+			selectionText := fmt.Sprintf("Cast %s (%s %s)", kind, cost, strings.TrimSpace(definition.Element))
 			if strings.EqualFold(kind, "Conjure") || strings.EqualFold(kind, "Barrier") {
-				selectionText += " • Printed effects resolve manually"
+				selectionText += " — manual effect"
 			}
-			status.SetText(selectionText)
+			castButton.SetText(selectionText)
 			if strings.EqualFold(kind, "Servant") {
 				orientation.SetSelected(string(model.OrientationRecovered))
 				orientation.Show()
 			}
 			updateAction()
+			preview.showCard(definition)
+			plannedPanel := newSuggestedCastPanel(projectedCard, definition, player, definitions, actions, currentRevision)
+			if plannedPanel != nil {
+				preview.actions.Objects = []fyne.CanvasObject{plannedPanel}
+				refreshContainerStructure(preview.actions)
+			} else if actionsPanel != nil {
+				preview.actions.Objects = []fyne.CanvasObject{actionsPanel}
+				refreshContainerStructure(preview.actions)
+			}
 		}
 		tiles = append(tiles, tile)
 		objects = append(objects, tile)
 	}
 
 	cardRow := container.NewHScroll(container.NewHBox(objects...))
-	actionsPanel := container.NewVBox(status, paymentPanel, orientation, castButton)
-	content := container.NewBorder(nil, nil, nil, actionsPanel, cardRow)
+	actionObjects := append([]fyne.CanvasObject(nil), paymentControls...)
+	if emptyPaymentNotice != nil {
+		actionObjects = append(actionObjects, emptyPaymentNotice)
+	}
+	actionObjects = append(actionObjects, orientation, castButton)
+	actionsPanel = container.NewHScroll(container.NewHBox(actionObjects...))
+	actionsPanel.SetMinSize(fyne.NewSize(280, fieldCardHeight))
 	return newZone(
 		playerName,
 		"Hand",
 		"Select a spell, allocate its Aether payment, and cast it.",
-		content,
+		cardRow,
 		preview,
 	)
+}
+
+type suggestedAetherSource struct {
+	id         model.MatchCardID
+	label      string
+	production model.AetherPool
+}
+
+func newSuggestedCastPanel(
+	card simulatorview.CardView,
+	definition cards.Card,
+	player simulatorview.PlayerView,
+	definitions cardLookup,
+	actions BoardActions,
+	currentRevision func() model.Revision,
+) fyne.CanvasObject {
+	kind := strings.ToLower(strings.TrimSpace(definition.Type))
+	switch kind {
+	case "servant":
+		if actions.CastServantWithPlan == nil {
+			return nil
+		}
+	case "conjure":
+		if actions.CastConjureWithPlan == nil {
+			return nil
+		}
+	case "barrier":
+		if actions.CastBarrierWithPlan == nil {
+			return nil
+		}
+	default:
+		return nil
+	}
+	cost, err := strconv.Atoi(strings.TrimSpace(definition.CostLevel))
+	if err != nil || cost < 0 {
+		return widget.NewLabel("This card has an invalid casting cost.")
+	}
+	sources := suggestedSources(player.CasterZone, definitions)
+	selected := suggestedSourceSelection(player.Aether, sources, cost, definition.Element)
+	checks := make([]*widget.Check, len(sources))
+	status := widget.NewLabel("")
+	status.Wrapping = fyne.TextWrapWord
+	orientation := widget.NewSelect([]string{string(model.OrientationRecovered), string(model.OrientationReversed)}, nil)
+	orientation.SetSelected(string(model.OrientationRecovered))
+	if kind != "servant" {
+		orientation.Hide()
+	}
+	confirm := widget.NewButton("Confirm Suggested Cast", nil)
+	var plan model.CastPaymentPlan
+	updating := false
+	refresh := func() {
+		pool := player.Aether
+		plan.SourceCardIDs = plan.SourceCardIDs[:0]
+		for index, source := range sources {
+			if checks[index] == nil || !checks[index].Checked {
+				continue
+			}
+			plan.SourceCardIDs = append(plan.SourceCardIDs, source.id)
+			pool = sumAetherPools(pool, source.production)
+		}
+		payment, valid := suggestedPayment(pool, cost, definition.Element)
+		plan.Payment = payment
+		if valid {
+			status.SetText(fmt.Sprintf("Suggested payment: %s", formatAetherPayment(payment)))
+			confirm.Enable()
+		} else {
+			status.SetText(fmt.Sprintf("Selected sources cannot pay %d %s Aether.", cost, strings.TrimSpace(definition.Element)))
+			confirm.Disable()
+		}
+	}
+	for index, source := range sources {
+		index := index
+		check := widget.NewCheck(source.label, func(bool) {
+			if !updating {
+				refresh()
+			}
+		})
+		checks[index] = check
+	}
+	updating = true
+	for index, check := range checks {
+		check.SetChecked(selected[index])
+	}
+	updating = false
+	refresh()
+	confirm.OnTapped = func() {
+		if confirm.Disabled() {
+			return
+		}
+		revision := model.Revision(0)
+		if currentRevision != nil {
+			revision = currentRevision()
+		}
+		switch kind {
+		case "servant":
+			actions.CastServantWithPlan(card.MatchID, plan, model.CardOrientation(orientation.Selected), revision)
+		case "conjure":
+			actions.CastConjureWithPlan(card.MatchID, plan, revision)
+		case "barrier":
+			actions.CastBarrierWithPlan(card.MatchID, plan, revision)
+		}
+	}
+	sourceObjects := make([]fyne.CanvasObject, 0, len(checks)+1)
+	sourceObjects = append(sourceObjects, widget.NewLabel("Suggested sources — adjust as desired:"))
+	for _, check := range checks {
+		sourceObjects = append(sourceObjects, check)
+	}
+	if len(checks) == 0 {
+		sourceObjects = append(sourceObjects, widget.NewLabel("No recovered Caster sources available."))
+	}
+	sourceObjects = append(sourceObjects, status, orientation, confirm)
+	return container.NewVBox(sourceObjects...)
+}
+
+func suggestedSources(casterZone []simulatorview.CardView, definitions cardLookup) []suggestedAetherSource {
+	result := make([]suggestedAetherSource, 0, len(casterZone))
+	for _, card := range casterZone {
+		if card.MatchID == "" || card.Orientation != model.OrientationRecovered {
+			continue
+		}
+		source := suggestedAetherSource{id: card.MatchID}
+		switch {
+		case card.CardID == model.CasterTokenCardID:
+			source.label = "Caster Token — 1 non-elemental"
+			source.production.NonElemental = 1
+		case card.Face == model.CardFaceDown:
+			source.label = fmt.Sprintf("Face-down Caster %s — 1 non-elemental", card.MatchID)
+			source.production.NonElemental = 1
+		case card.Face == model.CardFaceUp:
+			definition, found := definitions[card.CardID]
+			amount, err := strconv.Atoi(strings.TrimSpace(definition.CostLevel))
+			if !found || err != nil || amount < 1 || !strings.EqualFold(strings.TrimSpace(definition.Type), "Caster") {
+				continue
+			}
+			if !setPoolElement(&source.production, definition.Element, amount) {
+				continue
+			}
+			source.label = fmt.Sprintf("%s — %d %s", strings.TrimSpace(definition.Name), amount, strings.TrimSpace(definition.Element))
+		default:
+			continue
+		}
+		result = append(result, source)
+	}
+	return result
+}
+
+func suggestedSourceSelection(pool model.AetherPool, sources []suggestedAetherSource, cost int, element string) []bool {
+	selected := make([]bool, len(sources))
+	if cost <= 0 {
+		return selected
+	}
+	if poolElement(pool, element) < 1 {
+		for index, source := range sources {
+			if poolElement(source.production, element) > 0 {
+				selected[index] = true
+				pool = sumAetherPools(pool, source.production)
+				break
+			}
+		}
+	}
+	for aetherPoolTotal(pool) < cost {
+		best := -1
+		bestAmount := 0
+		for index, source := range sources {
+			amount := aetherPoolTotal(source.production)
+			if !selected[index] && amount > bestAmount {
+				best, bestAmount = index, amount
+			}
+		}
+		if best == -1 {
+			break
+		}
+		selected[best] = true
+		pool = sumAetherPools(pool, sources[best].production)
+	}
+	return selected
+}
+
+func suggestedPayment(pool model.AetherPool, cost int, element string) (model.AetherPayment, bool) {
+	if cost < 0 || aetherPoolTotal(pool) < cost || (cost > 0 && poolElement(pool, element) < 1) {
+		return model.AetherPayment{}, false
+	}
+	payment := model.AetherPayment{}
+	remaining := cost
+	if cost > 0 {
+		if !setPaymentElement(&payment, element, 1) {
+			return model.AetherPayment{}, false
+		}
+		setPoolElement(&pool, element, poolElement(pool, element)-1)
+		remaining--
+	}
+	spend := func(available int, destination *int) {
+		amount := min(available, remaining)
+		*destination += amount
+		remaining -= amount
+	}
+	spend(pool.NonElemental, &payment.NonElemental)
+	spend(pool.Aes, &payment.Aes)
+	spend(pool.Aqua, &payment.Aqua)
+	spend(pool.Ignus, &payment.Ignus)
+	spend(pool.Luna, &payment.Luna)
+	spend(pool.Silva, &payment.Silva)
+	spend(pool.Solis, &payment.Solis)
+	spend(pool.Terra, &payment.Terra)
+	spend(pool.Void, &payment.Void)
+	return payment, remaining == 0
+}
+
+func aetherPoolTotal(pool model.AetherPool) int {
+	return pool.Aes + pool.Aqua + pool.Ignus + pool.Luna + pool.Silva + pool.Solis + pool.Terra + pool.Void + pool.NonElemental
+}
+
+func sumAetherPools(left, right model.AetherPool) model.AetherPool {
+	left.Aes += right.Aes
+	left.Aqua += right.Aqua
+	left.Ignus += right.Ignus
+	left.Luna += right.Luna
+	left.Silva += right.Silva
+	left.Solis += right.Solis
+	left.Terra += right.Terra
+	left.Void += right.Void
+	left.NonElemental += right.NonElemental
+	return left
+}
+
+func poolElement(pool model.AetherPool, element string) int {
+	switch strings.ToLower(strings.TrimSpace(element)) {
+	case "aes":
+		return pool.Aes
+	case "aqua":
+		return pool.Aqua
+	case "ignus":
+		return pool.Ignus
+	case "luna":
+		return pool.Luna
+	case "silva":
+		return pool.Silva
+	case "solis":
+		return pool.Solis
+	case "terra":
+		return pool.Terra
+	case "void":
+		return pool.Void
+	default:
+		return 0
+	}
+}
+
+func setPoolElement(pool *model.AetherPool, element string, amount int) bool {
+	switch strings.ToLower(strings.TrimSpace(element)) {
+	case "aes":
+		pool.Aes = amount
+	case "aqua":
+		pool.Aqua = amount
+	case "ignus":
+		pool.Ignus = amount
+	case "luna":
+		pool.Luna = amount
+	case "silva":
+		pool.Silva = amount
+	case "solis":
+		pool.Solis = amount
+	case "terra":
+		pool.Terra = amount
+	case "void":
+		pool.Void = amount
+	default:
+		return false
+	}
+	return true
+}
+
+func setPaymentElement(payment *model.AetherPayment, element string, amount int) bool {
+	switch strings.ToLower(strings.TrimSpace(element)) {
+	case "aes":
+		payment.Aes = amount
+	case "aqua":
+		payment.Aqua = amount
+	case "ignus":
+		payment.Ignus = amount
+	case "luna":
+		payment.Luna = amount
+	case "silva":
+		payment.Silva = amount
+	case "solis":
+		payment.Solis = amount
+	case "terra":
+		payment.Terra = amount
+	case "void":
+		payment.Void = amount
+	default:
+		return false
+	}
+	return true
+}
+
+func formatAetherPayment(payment model.AetherPayment) string {
+	parts := make([]string, 0, 9)
+	for _, entry := range []struct {
+		name   string
+		amount int
+	}{
+		{"Aes", payment.Aes}, {"Aqua", payment.Aqua}, {"Ignus", payment.Ignus}, {"Luna", payment.Luna},
+		{"Silva", payment.Silva}, {"Solis", payment.Solis}, {"Terra", payment.Terra}, {"Void", payment.Void},
+		{"non-elemental", payment.NonElemental},
+	} {
+		if entry.amount > 0 {
+			parts = append(parts, fmt.Sprintf("%d %s", entry.amount, entry.name))
+		}
+	}
+	if len(parts) == 0 {
+		return "0 Aether"
+	}
+	return strings.Join(parts, ", ")
 }
 
 func paymentMatchesCastDefinition(payment model.AetherPayment, cost int, element string) bool {
@@ -1603,35 +1945,8 @@ func newAetherCasterZone(
 			card.Orientation == model.OrientationRecovered &&
 			strings.EqualFold(strings.TrimSpace(definition.Type), "Caster")
 	}
-	eligible := func(card simulatorview.CardView) bool {
-		return eligibleFaceDownCaster(card) || eligibleFaceUpCaster(card) || eligibleToken(card)
-	}
-	hasEligibleCard := false
-	for _, card := range player.CasterZone {
-		if eligible(card) {
-			hasEligibleCard = true
-			break
-		}
-	}
-	if !hasEligibleCard {
-		return newCardZone(
-			playerName,
-			"Caster Zone",
-			"Casters and the starting Caster Token occupy this zone.",
-			player.CasterZone,
-			fyne.NewSize(fieldCardWidth, fieldCardHeight),
-			false,
-			false,
-			definitions,
-			preview,
-		)
-	}
-
-	selectedID := model.MatchCardID("")
-	selectedAction := aetherActionNone
-	tiles := make([]*CardTile, 0, len(player.CasterZone))
 	objects := make([]fyne.CanvasObject, 0, len(player.CasterZone))
-	var actionButton *widget.Button
+	hasEligibleCard := false
 	for _, projectedCard := range player.CasterZone {
 		projectedCard := projectedCard
 		definition := definitions[projectedCard.CardID]
@@ -1643,74 +1958,39 @@ func newAetherCasterZone(
 			func() { preview.showHiddenCard(playerName, "Caster Zone") },
 			projectedCard.Orientation == model.OrientationRested,
 		)
-		if eligible(projectedCard) {
+		if eligibleToken(projectedCard) || eligibleFaceUpCaster(projectedCard) || eligibleFaceDownCaster(projectedCard) {
+			hasEligibleCard = true
 			tile.OnActivate = func() {
-				wasSelected := selectedID == projectedCard.MatchID
-				for _, candidate := range tiles {
-					candidate.SetSelected(false)
+				revision := model.Revision(0)
+				if currentRevision != nil {
+					revision = currentRevision()
 				}
-				if wasSelected {
-					selectedID = ""
-					selectedAction = aetherActionNone
-					actionButton.Disable()
-					actionButton.Hide()
-					return
-				}
-				selectedID = projectedCard.MatchID
-				tile.SetSelected(true)
 				switch {
 				case eligibleToken(projectedCard):
-					selectedAction = aetherActionToken
-					actionButton.SetText("Remove Token for 1 Aether")
+					if actions.UseCasterToken != nil {
+						actions.UseCasterToken(projectedCard.MatchID, revision)
+					}
 				case eligibleFaceUpCaster(projectedCard):
-					selectedAction = aetherActionFaceUpCaster
-					actionButton.SetText("Rest Selected for Elemental Aether")
+					if actions.GenerateCasterAether != nil {
+						actions.GenerateCasterAether(projectedCard.MatchID, revision)
+					}
 				default:
-					selectedAction = aetherActionFaceDownCaster
-					actionButton.SetText("Rest Selected for 1 Aether")
+					if actions.GenerateNonElementalAether != nil {
+						actions.GenerateNonElementalAether(projectedCard.MatchID, revision)
+					}
 				}
-				actionButton.Enable()
-				actionButton.Show()
 			}
 		}
-		tiles = append(tiles, tile)
 		objects = append(objects, tile)
 	}
 
-	actionButton = widget.NewButton("Produce Aether", func() {
-		if selectedID == "" {
-			return
-		}
-		revision := model.Revision(0)
-		if currentRevision != nil {
-			revision = currentRevision()
-		}
-		switch selectedAction {
-		case aetherActionToken:
-			if actions.UseCasterToken != nil {
-				actions.UseCasterToken(selectedID, revision)
-			}
-		case aetherActionFaceUpCaster:
-			if actions.GenerateCasterAether != nil {
-				actions.GenerateCasterAether(selectedID, revision)
-			}
-		case aetherActionFaceDownCaster:
-			if actions.GenerateNonElementalAether != nil {
-				actions.GenerateNonElementalAether(selectedID, revision)
-			}
-		}
-	})
-	actionButton.Disable()
-	actionButton.Hide()
-
-	cardRow := container.NewHScroll(container.NewHBox(objects...))
-	content := container.NewBorder(
-		nil,
-		nil,
-		nil,
-		actionButton,
-		cardRow,
-	)
+	cardRow := fyne.CanvasObject(container.NewHBox(objects...))
+	content := cardRow
+	if hasEligibleCard {
+		instruction := widget.NewLabel("Tap a recovered Caster to produce Aether")
+		instruction.Wrapping = fyne.TextWrapWord
+		content = container.NewBorder(nil, nil, nil, instruction, cardRow)
+	}
 	return newZone(
 		playerName,
 		"Caster Zone",
@@ -1782,19 +2062,13 @@ func newZone(
 }
 
 func newZoneWithMinimum(
-	playerName string,
-	zoneName string,
-	description string,
+	_ string,
+	_ string,
+	_ string,
 	content fyne.CanvasObject,
-	preview previewState,
+	_ previewState,
 	minimum fyne.Size,
 ) fyne.CanvasObject {
-	button := widget.NewButton(zoneName, func() {
-		preview.title.SetText(playerName + " — " + zoneName)
-		preview.description.SetText(description)
-	})
-	button.Importance = widget.LowImportance
-
 	background := canvas.NewRectangle(zoneBackground)
 	background.StrokeColor = zoneBorder
 	background.StrokeWidth = 1
@@ -1802,7 +2076,7 @@ func newZoneWithMinimum(
 	return withMinimumSize(
 		container.NewStack(
 			background,
-			container.NewBorder(nil, nil, button, nil, container.NewPadded(content)),
+			container.New(layout.NewCustomPaddedLayout(3, 3, 4, 4), content),
 		),
 		minimum,
 	)

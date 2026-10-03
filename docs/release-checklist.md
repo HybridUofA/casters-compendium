@@ -49,6 +49,22 @@ Use `N/A` only with a short explanation.
 - [ ] Confirm card faces and the bundled card back load over HTTPS.
 - [ ] Generate and use the local-export fallback.
 
+## Local simulator prototype
+
+- [ ] Select two saved or official decks and open both private player windows.
+- [ ] Complete setup and advance through the current turn-phase skeleton.
+- [ ] Cast a Servant, Conjure, and Barrier using selected Caster-zone Aether
+      sources; confirm payment, Chase, priority, and both views update together.
+- [ ] Move a controlled printed card to each supported destination and test Deck
+      top/bottom placement plus a field control transfer.
+- [ ] Confirm unsupported tokens, Stock, Orbs, hidden Deck/Orb cards, and
+      face-down Exile remain unavailable without changing match state.
+- [ ] Confirm opposing Hand identities and other hidden information are not
+      exposed.
+- [ ] At 1400×850, verify both player orientations, reversed/rested cards,
+      selection borders, Aether pools, and manual-action controls remain
+      readable.
+
 ## Platform acceptance
 
 - [ ] Windows x64 package launches and completes the applicable checks.

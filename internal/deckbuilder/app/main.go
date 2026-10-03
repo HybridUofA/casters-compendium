@@ -1696,6 +1696,44 @@ func showApplication(
 											}
 											renderPlayersWithView(playerIndex, updatedView)
 										},
+										CastServantWithPlan: func(
+											cardID model.MatchCardID,
+											plan model.CastPaymentPlan,
+											orientation model.CardOrientation,
+											expectedRevision model.Revision,
+										) {
+											updatedView, castErr := playerSessions[playerIndex].
+												CastServantWithPlan(cardID, plan, orientation, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CastConjureWithPlan: func(cardID model.MatchCardID, plan model.CastPaymentPlan, expectedRevision model.Revision) {
+											updatedView, castErr := playerSessions[playerIndex].CastConjureWithPlan(cardID, plan, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CastBarrierWithPlan: func(cardID model.MatchCardID, plan model.CastPaymentPlan, expectedRevision model.Revision) {
+											updatedView, castErr := playerSessions[playerIndex].CastBarrierWithPlan(cardID, plan, expectedRevision)
+											if castErr != nil {
+												dialog.ShowError(castErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										MoveCard: func(command model.MoveCardCommand, expectedRevision model.Revision) {
+											updatedView, moveErr := playerSessions[playerIndex].MoveCard(command, expectedRevision)
+											if moveErr != nil {
+												dialog.ShowError(moveErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
 										PassPriority: func(expectedRevision model.Revision) {
 											updatedView, priorityErr := playerSessions[playerIndex].
 												PassPriority(expectedRevision)

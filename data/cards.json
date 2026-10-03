@@ -63,7 +63,7 @@
   "card_number": "EX02-Alt02",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Afternoon-Ramie-Alternate-Art.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -152,7 +152,7 @@
   "card_number": "EX02-Alt04",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Airi-Alternate-Art.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -170,7 +170,7 @@
   "card_number": "DD04-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Airi-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -226,7 +226,7 @@
   "card_number": "DD04-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Almeria-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -263,7 +263,7 @@
   "card_number": "EX02-020",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Arrogant-Murasaki.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -419,7 +419,7 @@
   "card_number": "EX02-007",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Asura-the-Three-Sided.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -497,7 +497,7 @@
   "card_number": "EX01-032",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bamanon-Source-of-Greed-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -555,7 +555,7 @@
   "card_number": "EX02-036",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Be-Born-Again-As-A-Caster.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -573,7 +573,7 @@
   "card_number": "EX02-036",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Be-Born-Again-As-A-Caster-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -649,7 +649,7 @@
   "card_number": "EX02-002",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Bitter-Chocolate.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -846,7 +846,7 @@
   "card_number": "EX02-009",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Carella-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -864,7 +864,7 @@
   "card_number": "EX02-009",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Carella-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -972,7 +972,7 @@
   "card_number": "EX02-031",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cestria.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -990,7 +990,7 @@
   "card_number": "EX02-031",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cestria-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -1008,7 +1008,7 @@
   "card_number": "EX02-011",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Chain-of-Hearts.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -1026,7 +1026,7 @@
   "card_number": "EX02-011",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Chain-of-Hearts-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -1120,7 +1120,7 @@
   "card_number": "EX02-032",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Citra-Cayce-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -1138,7 +1138,7 @@
   "card_number": "EX02-032",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Citra-Cayce-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -1210,7 +1210,7 @@
   "card_number": "DD04-004",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Clara-Shurei-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -1247,7 +1247,7 @@
   "card_number": "DD01-005",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Clarisse-Marida-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -1379,7 +1379,7 @@
   "card_number": "EX02-035",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Cosmetic-Doctor-Sakasu.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -1566,7 +1566,7 @@
   "card_number": "EX02-008",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Demonic-Hellfire.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -1603,7 +1603,7 @@
   "card_number": "DD02-002",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Deshi-Lion-Hyper-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -2279,7 +2279,7 @@
   "card_number": "DD01-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Flame-Rouge-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -2408,7 +2408,7 @@
   "card_number": "EX02-010",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Furious-Collision.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -2467,7 +2467,7 @@
   "card_number": "EX02-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gadfly-Wasp.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -2528,7 +2528,7 @@
   "card_number": "EX02-039",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -2546,7 +2546,7 @@
   "card_number": "EX02-039",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -2564,7 +2564,7 @@
   "card_number": "DD02-023",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gawain-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -2584,7 +2584,7 @@
   "card_number": "EX02-023",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Gem-Pouch.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -2786,6 +2786,23 @@
   }
  },
  {
+  "id": "76",
+  "name": "Grace",
+  "subname": "Suzu Tachibana",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Whenever an allied Jewelry enters the field : Recover me.",
+  "flavor": "\"Fufufu, she's such an airhead, it's fun to tease her!\"",
+  "artist": "sakura moyon",
+  "card_number": "DD03-005",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Grace.png",
+  "expansion": "DD03: Forgotten in the Moonlight",
+  "is_playtesting": false,
+  "extra_fields": null
+ },
+ {
   "id": "1267",
   "name": "Grace",
   "subname": "Suzu Tachibana",
@@ -2803,23 +2820,6 @@
   "extra_fields": {
    "Notes": ""
   }
- },
- {
-  "id": "76",
-  "name": "Grace",
-  "subname": "Suzu Tachibana",
-  "type": "Caster",
-  "element": "Luna",
-  "cost_level": "1",
-  "ability": "• Whenever an allied Jewelry enters the field : Recover me.",
-  "flavor": "\"Fufufu, she's such an airhead, it's fun to tease her!\"",
-  "artist": "sakura moyon",
-  "card_number": "DD03-005",
-  "count": "2",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Grace.png",
-  "expansion": "DD03: Forgotten in the Moonlight",
-  "is_playtesting": false,
-  "extra_fields": null
  },
  {
   "id": "1110",
@@ -3036,7 +3036,7 @@
   "card_number": "EX02-Alt05",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Harpy-Alternate-Art.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -3116,7 +3116,7 @@
   "card_number": "DD02-027",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hastur-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -3136,7 +3136,7 @@
   "card_number": "EX02-034",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Haunted-Nightwear.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -3250,7 +3250,7 @@
   "card_number": "EX02-030",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hit-the-Weak-Point.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -3288,7 +3288,7 @@
   "card_number": "EX02-037",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Hound-of-Tindalos.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -3361,7 +3361,7 @@
   "card_number": "EX02-028",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Increased-Exposure.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -3438,7 +3438,7 @@
   "card_number": "DD01-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Iroha-Maltz-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -3532,7 +3532,7 @@
   "card_number": "EX02-027",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -3553,7 +3553,7 @@
   "card_number": "EX02-026",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -3571,7 +3571,7 @@
   "card_number": "EX02-026",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -3589,7 +3589,7 @@
   "card_number": "EX02-027",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Karen-Urania-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -3793,7 +3793,7 @@
   "card_number": "DD02-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lablarite-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -3907,7 +3907,7 @@
   "card_number": "EX02-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lilia-Chocolate.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -3925,7 +3925,7 @@
   "card_number": "EX02-001",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lilia-Chocolate-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -4078,7 +4078,7 @@
   "card_number": "EX02-018",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Louise-Bayli.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -4096,7 +4096,7 @@
   "card_number": "EX02-018",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Louise-Bayli-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -4151,7 +4151,7 @@
   "card_number": "DD04-019",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lufue-Yuni-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -4186,7 +4186,7 @@
   "card_number": "DD03-003",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Lumielle-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -4470,7 +4470,7 @@
   "card_number": "EX02-033",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Messy-Compact.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -4566,7 +4566,7 @@
   "card_number": "EX02-016",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -4584,7 +4584,7 @@
   "card_number": "EX02-016",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -4602,7 +4602,7 @@
   "card_number": "DD01-025",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Miu-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -4849,7 +4849,7 @@
   "card_number": "EX02-005",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Paper-Eating-Virus.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -4870,6 +4870,25 @@
   "is_playtesting": false,
   "extra_fields": {
    "Rarity": "Normal"
+  }
+ },
+ {
+  "id": "1247",
+  "name": "Passion Wing",
+  "subname": "Tsubasa Koga",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Target allied servant gains +500 ATK until end of turn.",
+  "flavor": "Miss Manami, thanks for always being so kind.",
+  "artist": "sakura moyon",
+  "card_number": "DD05-002",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing.png",
+  "expansion": "DD05: Saaya's Adventure",
+  "is_playtesting": true,
+  "extra_fields": {
+   "Notes": ""
   }
  },
  {
@@ -4895,25 +4914,6 @@
   }
  },
  {
-  "id": "1247",
-  "name": "Passion Wing",
-  "subname": "Tsubasa Koga",
-  "type": "Caster",
-  "element": "Ignus",
-  "cost_level": "1",
-  "ability": "• Rest: Target allied servant gains +500 ATK until end of turn.",
-  "flavor": "Miss Manami, thanks for always being so kind.",
-  "artist": "sakura moyon",
-  "card_number": "DD05-002",
-  "count": "2",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing.png",
-  "expansion": "DD05: Saaya's Adventure",
-  "is_playtesting": true,
-  "extra_fields": {
-   "Notes": ""
-  }
- },
- {
   "id": "1222",
   "name": "Passion Wing",
   "subname": "Tsubasa Koga",
@@ -4926,7 +4926,7 @@
   "card_number": "EX02-Alt07",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Passion-Wing-Alternate-Art.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -5194,7 +5194,7 @@
   "card_number": "EX02-Alt03",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pentachi-Alternate-Art.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -5231,7 +5231,7 @@
   "card_number": "EX02-Alt01",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival-Alternate-Art.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -5252,7 +5252,7 @@
   "card_number": "EX02-038",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -5270,7 +5270,7 @@
   "card_number": "EX02-038",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Percival-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -5364,7 +5364,7 @@
   "card_number": "EX02-019",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Pompous-Delphinium.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -5401,7 +5401,7 @@
   "card_number": "EX02-017",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Praying-to-Deaf-Ears.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -5532,7 +5532,7 @@
   "card_number": "EX02-014",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Procrastination.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -5701,7 +5701,7 @@
   "card_number": "EX02-015",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -5719,7 +5719,7 @@
   "card_number": "EX02-015",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -5737,7 +5737,7 @@
   "card_number": "DD03-021",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Ran-Berfield-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -5796,7 +5796,7 @@
   "card_number": "EX02-029",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Rocket-Pencil-Hedgehog.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -6141,6 +6141,24 @@
   }
  },
  {
+  "id": "232",
+  "name": "Shera Angellica",
+  "subname": "Riko Kohashi",
+  "type": "Caster",
+  "element": "Ignus",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if an allied servant corrupted an enemy orb this turn.",
+  "flavor": "Hitori, let me copy your homework!",
+  "artist": "Takamiya Ren",
+  "card_number": "EX02-006",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Shera-Angellica.png",
+  "expansion": "EX02: Gifted Program",
+  "is_playtesting": false,
+  "extra_fields": {
+   "Notes": ""
+  }
+ },
+ {
   "id": "1251",
   "name": "Shera Angellica",
   "subname": "Riko Kohashi",
@@ -6160,24 +6178,6 @@
   }
  },
  {
-  "id": "232",
-  "name": "Shera Angellica",
-  "subname": "Riko Kohashi",
-  "type": "Caster",
-  "element": "Ignus",
-  "cost_level": "1",
-  "ability": "• Rest: Draw a card if an allied servant corrupted an enemy orb this turn.",
-  "flavor": "Hitori, let me copy your homework!",
-  "artist": "Takamiya Ren",
-  "card_number": "EX02-006",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Shera-Angellica.png",
-  "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
-  "extra_fields": {
-   "Notes": ""
-  }
- },
- {
   "id": "1186",
   "name": "Shera Angellica",
   "subname": "Riko Kohashi",
@@ -6190,7 +6190,7 @@
   "card_number": "EX02-006",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Shera-Angellica-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -6226,7 +6226,7 @@
   "card_number": "EX02-040",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Silver-Key.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -6344,7 +6344,7 @@
   "card_number": "EX02-021",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Split-Eagle.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -6362,7 +6362,7 @@
   "card_number": "EX02-024",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Starting-Anew.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -6536,7 +6536,7 @@
   "card_number": "EX02-003",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunny-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -6554,7 +6554,7 @@
   "card_number": "EX02-003",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sunny-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -6608,7 +6608,7 @@
   "card_number": "DD03-022",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Sweet-Pea-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -6817,7 +6817,7 @@
   "card_number": "EX02-Alt06",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Toxic-Turkey-Alternate-Art.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -6842,23 +6842,6 @@
   }
  },
  {
-  "id": "77",
-  "name": "Twinkle Charm",
-  "subname": "Runa Tsukinaga",
-  "type": "Caster",
-  "element": "Luna",
-  "cost_level": "1",
-  "ability": "• Rest: Draw a card if you drew a card by the effect of a conjure this turn.",
-  "flavor": "\"I want tea time with Mahiro-san~.\"",
-  "artist": "Tam-U",
-  "card_number": "DD03-006",
-  "count": "2",
-  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm.png",
-  "expansion": "DD03: Forgotten in the Moonlight",
-  "is_playtesting": false,
-  "extra_fields": null
- },
- {
   "id": "1151",
   "name": "Twinkle Charm",
   "subname": "Runa Tsukinaga",
@@ -6878,6 +6861,23 @@
   }
  },
  {
+  "id": "77",
+  "name": "Twinkle Charm",
+  "subname": "Runa Tsukinaga",
+  "type": "Caster",
+  "element": "Luna",
+  "cost_level": "1",
+  "ability": "• Rest: Draw a card if you drew a card by the effect of a conjure this turn.",
+  "flavor": "\"I want tea time with Mahiro-san~.\"",
+  "artist": "Tam-U",
+  "card_number": "DD03-006",
+  "count": "2",
+  "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm.png",
+  "expansion": "DD03: Forgotten in the Moonlight",
+  "is_playtesting": false,
+  "extra_fields": null
+ },
+ {
   "id": "1228",
   "legacy_ids": [
    "251"
@@ -6893,7 +6893,7 @@
   "card_number": "EX02-025",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm-lv2.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -6911,7 +6911,7 @@
   "card_number": "EX02-025",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Twinkle-Charm-lv2-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }
@@ -6969,7 +6969,7 @@
   "card_number": "EX02-012",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Venus-Flytrap.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -7087,7 +7087,7 @@
   "card_number": "EX02-013",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Wooden-Bear.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -7146,7 +7146,7 @@
   "card_number": "EX02-004",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Zhu-Bajie.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": ""
   }
@@ -7183,7 +7183,7 @@
   "card_number": "DD02-004",
   "image_url": "https://speedrobogames.com/wp-content/uploads/speedrobo-cards/Zoi-Russel-Rare.png",
   "expansion": "EX02: Gifted Program",
-  "is_playtesting": true,
+  "is_playtesting": false,
   "extra_fields": {
    "Notes": "Rare"
   }

@@ -38,14 +38,6 @@ func TestNewBoardScreenContainsBothPlayerFieldsAndRequiredZones(t *testing.T) {
 	for _, text := range []string{
 		"Opponent Field — player-two",
 		"Player Field — player-one",
-		"Orb Zone",
-		"Deck Zone",
-		"Graveyard",
-		"Exile",
-		"Servant Zone",
-		"Barrier Zone",
-		"Caster Zone",
-		"Hand",
 		"Card Information",
 		"Aether Pools",
 		"Card Preview",
@@ -123,20 +115,15 @@ func TestCenteredPhaseGuidanceUpdatesWithMatchState(t *testing.T) {
 	}
 }
 
-func TestSelectingZoneUpdatesCardInformationPanel(t *testing.T) {
+func TestZonesDoNotRenderDistractingHeadingButtons(t *testing.T) {
 	screen := NewBoardScreen(testMatchView(), testDefinitions(), BoardActions{}, nil)
-	servantButton := findButton(screen, "Servant Zone")
-	if servantButton == nil {
-		t.Fatal("board screen does not contain a Servant Zone button")
-	}
-
-	test.Tap(servantButton)
-
-	if !containsText(screen, "Opponent — Servant Zone") {
-		t.Fatal("selecting opponent Servant Zone did not update preview title")
-	}
-	if !containsText(screen, "Servants in play occupy this row.") {
-		t.Fatal("selecting Servant Zone did not update preview description")
+	for _, label := range []string{
+		"Orb Zone", "Deck Zone", "Graveyard", "Exile",
+		"Servant Zone", "Barrier Zone", "Caster Zone", "Hand",
+	} {
+		if findButton(screen, label) != nil {
+			t.Fatalf("zone heading button %q should not be rendered", label)
+		}
 	}
 }
 
@@ -227,15 +214,15 @@ func TestPlayerUtilityZonesMirrorAcrossTheBattlefield(t *testing.T) {
 	controller.Content().Resize(fyne.NewSize(1400, 850))
 
 	opponent := controller.boards.Objects[0]
-	opponentDeck, foundDeck := findButtonPosition(opponent, "Deck Zone", fyne.Position{})
-	opponentOrbs, foundOrbs := findButtonPosition(opponent, "Orb Zone", fyne.Position{})
+	opponentDeck, foundDeck := findObjectPosition(opponent, controller.playerBoards[0].deck, fyne.Position{})
+	opponentOrbs, foundOrbs := findObjectPosition(opponent, controller.playerBoards[0].orbs, fyne.Position{})
 	if !foundDeck || !foundOrbs || opponentDeck.X >= opponentOrbs.X {
 		t.Fatalf("opponent Deck/Orb positions = %v/%v; want Deck on the left and Orbs on the right", opponentDeck, opponentOrbs)
 	}
 
 	player := controller.boards.Objects[1]
-	playerDeck, foundDeck := findButtonPosition(player, "Deck Zone", fyne.Position{})
-	playerOrbs, foundOrbs := findButtonPosition(player, "Orb Zone", fyne.Position{})
+	playerDeck, foundDeck := findObjectPosition(player, controller.playerBoards[1].deck, fyne.Position{})
+	playerOrbs, foundOrbs := findObjectPosition(player, controller.playerBoards[1].orbs, fyne.Position{})
 	if !foundDeck || !foundOrbs || playerOrbs.X >= playerDeck.X {
 		t.Fatalf("player Orb/Deck positions = %v/%v; want Orbs on the left and Deck on the right", playerOrbs, playerDeck)
 	}
@@ -350,7 +337,7 @@ func TestCardDescriptionUsesRemainingPreviewHeight(t *testing.T) {
 	}
 }
 
-func TestGenerateNonElementalAetherSubmitsOwnCasterAndCurrentRevision(t *testing.T) {
+func TestTappingFaceDownCasterGeneratesAetherAtCurrentRevision(t *testing.T) {
 	match := testMatchView()
 	match.ViewerID = "player-two"
 	match.MatchStatus = model.StatusInProgress
@@ -375,36 +362,19 @@ func TestGenerateNonElementalAetherSubmitsOwnCasterAndCurrentRevision(t *testing
 		},
 		nil,
 	)
-	generateButton := findButton(screen, "Produce Aether")
-	if generateButton == nil {
-		t.Fatal("Aether control was not rendered for the non-active player's eligible Caster")
-	}
-	if generateButton.Visible() {
-		t.Fatal("Aether control is visible before selecting a Caster")
-	}
 	caster := findCardTile(screen, "face-down-caster-card")
 	if caster == nil {
 		t.Fatal("viewer's known face-down Caster was not rendered")
 	}
 
 	test.Tap(caster)
-	generateButton = findButton(screen, "Rest Selected for 1 Aether")
-	if !generateButton.Visible() || generateButton.Disabled() {
-		t.Fatal("Aether control did not appear and enable after selecting an eligible Caster")
-	}
-	test.Tap(caster)
-	if generateButton.Visible() {
-		t.Fatal("Aether control remained visible after deselecting the Caster")
-	}
-	test.Tap(caster)
-	test.Tap(generateButton)
 
 	if generatedBy != "player-two-facedown-caster" || generatedRevision != 15 {
 		t.Fatalf("Aether action submitted Caster/revision %q/%d; want player-two-facedown-caster/15", generatedBy, generatedRevision)
 	}
 }
 
-func TestGenerateNonElementalAetherControlRequiresEligibleCaster(t *testing.T) {
+func TestTappingIneligibleCasterDoesNotGenerateAether(t *testing.T) {
 	tests := []struct {
 		name   string
 		mutate func(*simulatorview.MatchView)
@@ -435,20 +405,26 @@ func TestGenerateNonElementalAetherControlRequiresEligibleCaster(t *testing.T) {
 			match := testMatchView()
 			match.MatchStatus = model.StatusInProgress
 			testCase.mutate(&match)
+			called := false
 			screen := NewBoardScreen(
 				match,
 				testDefinitions(),
-				BoardActions{GenerateNonElementalAether: func(model.MatchCardID, model.Revision) {}},
+				BoardActions{GenerateNonElementalAether: func(model.MatchCardID, model.Revision) { called = true }},
 				nil,
 			)
-			if findButton(screen, "Rest Selected for 1 Aether") != nil {
-				t.Fatal("Aether control was rendered without an eligible Caster")
+			caster := findCardTile(screen, "face-down-caster-card")
+			if caster == nil {
+				t.Fatal("Caster was not rendered")
+			}
+			test.Tap(caster)
+			if called {
+				t.Fatal("ineligible Caster generated Aether when tapped")
 			}
 		})
 	}
 }
 
-func TestUseCasterTokenControlAppearsAfterSelectionAndSubmitsCurrentRevision(t *testing.T) {
+func TestTappingCasterTokenUsesItAtCurrentRevision(t *testing.T) {
 	match := testMatchView()
 	match.ViewerID = "player-two"
 	match.MatchStatus = model.StatusInProgress
@@ -469,31 +445,19 @@ func TestUseCasterTokenControlAppearsAfterSelectionAndSubmitsCurrentRevision(t *
 		},
 		nil,
 	)
-	actionButton := findButton(screen, "Produce Aether")
-	if actionButton == nil {
-		t.Fatal("hidden Caster Token action was not constructed")
-	}
-	if actionButton.Visible() {
-		t.Fatal("Caster Token action is visible before selecting the token")
-	}
 	token := findCardTileByMatchID(screen, "player-two-token")
 	if token == nil {
 		t.Fatal("viewer's Caster Token was not rendered")
 	}
 
 	test.Tap(token)
-	actionButton = findButton(screen, "Remove Token for 1 Aether")
-	if actionButton == nil || !actionButton.Visible() || actionButton.Disabled() {
-		t.Fatal("Caster Token action did not appear and enable after selection")
-	}
-	test.Tap(actionButton)
 
 	if usedToken != "player-two-token" || usedRevision != 16 {
 		t.Fatalf("token action submitted token/revision %q/%d; want player-two-token/16", usedToken, usedRevision)
 	}
 }
 
-func TestGenerateCasterAetherControlAppearsAfterSelectionAndSubmitsCurrentRevision(t *testing.T) {
+func TestTappingFaceUpCasterGeneratesAetherAtCurrentRevision(t *testing.T) {
 	match := testMatchView()
 	match.ViewerID = "player-two"
 	match.MatchStatus = model.StatusInProgress
@@ -521,24 +485,29 @@ func TestGenerateCasterAetherControlAppearsAfterSelectionAndSubmitsCurrentRevisi
 		},
 		nil,
 	)
-	actionButton := findButton(screen, "Produce Aether")
-	if actionButton == nil || actionButton.Visible() {
-		t.Fatal("face-up Caster action should exist but remain hidden before selection")
-	}
 	caster := findCardTileByMatchID(screen, "player-two-faceup-caster")
 	if caster == nil {
 		t.Fatal("viewer's face-up Caster was not rendered")
 	}
 
 	test.Tap(caster)
-	actionButton = findButton(screen, "Rest Selected for Elemental Aether")
-	if actionButton == nil || !actionButton.Visible() || actionButton.Disabled() {
-		t.Fatal("face-up Caster action did not appear and enable after selection")
-	}
-	test.Tap(actionButton)
 
 	if generatedBy != "player-two-faceup-caster" || generatedRevision != 18 {
 		t.Fatalf("Caster action submitted card/revision %q/%d; want player-two-faceup-caster/18", generatedBy, generatedRevision)
+	}
+}
+
+func TestCasterZoneDoesNotUseNestedScrolling(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{GenerateNonElementalAether: func(model.MatchCardID, model.Revision) {}},
+		nil,
+	)
+	if scroll := findScroll(controller.playerBoards[1].caster.Objects[0]); scroll != nil {
+		t.Fatal("Caster zone contains a nested scroll container")
 	}
 }
 
@@ -1029,34 +998,31 @@ func TestCastControlsSubmitSelectedCardPaymentAndOrientation(t *testing.T) {
 				CostLevel: "1",
 			})
 			var submittedID model.MatchCardID
-			var submittedPayment model.AetherPayment
+			var submittedPlan model.CastPaymentPlan
 			var submittedOrientation model.CardOrientation
 			var submittedRevision model.Revision
 			actions := BoardActions{
-				CastServant: func(id model.MatchCardID, payment model.AetherPayment, orientation model.CardOrientation, revision model.Revision) {
-					submittedID, submittedPayment, submittedOrientation, submittedRevision = id, payment, orientation, revision
+				CastServantWithPlan: func(id model.MatchCardID, plan model.CastPaymentPlan, orientation model.CardOrientation, revision model.Revision) {
+					submittedID, submittedPlan, submittedOrientation, submittedRevision = id, plan, orientation, revision
 				},
-				CastConjure: func(id model.MatchCardID, payment model.AetherPayment, revision model.Revision) {
-					submittedID, submittedPayment, submittedRevision = id, payment, revision
+				CastConjureWithPlan: func(id model.MatchCardID, plan model.CastPaymentPlan, revision model.Revision) {
+					submittedID, submittedPlan, submittedRevision = id, plan, revision
 				},
-				CastBarrier: func(id model.MatchCardID, payment model.AetherPayment, revision model.Revision) {
-					submittedID, submittedPayment, submittedRevision = id, payment, revision
+				CastBarrierWithPlan: func(id model.MatchCardID, plan model.CastPaymentPlan, revision model.Revision) {
+					submittedID, submittedPlan, submittedRevision = id, plan, revision
 				},
 			}
 			controller := NewBoardController(match, definitions, actions, nil)
-			castButton := findButton(controller.Content(), "Cast Selected")
-			if castButton == nil || !castButton.Disabled() {
-				t.Fatal("Cast Selected must begin disabled")
-			}
 			card := findCardTileByMatchID(controller.Content(), "cast-card")
 			if card == nil {
 				t.Fatal("castable hand card was not rendered")
 			}
 			test.Tap(card)
+			castButton := findButton(controller.Content(), "Confirm Suggested Cast")
+			if castButton == nil {
+				t.Fatal("suggested cast controls did not appear in the side panel")
+			}
 			for _, selection := range findSelects(controller.Content()) {
-				if reflect.DeepEqual(selection.Options, []string{"0", "1"}) {
-					selection.SetSelected("1")
-				}
 				if testCase.cardType == "Servant" && reflect.DeepEqual(selection.Options, []string{"Recovered", "Reversed"}) {
 					selection.SetSelected("Reversed")
 				}
@@ -1065,8 +1031,8 @@ func TestCastControlsSubmitSelectedCardPaymentAndOrientation(t *testing.T) {
 				t.Fatal("Cast Selected did not enable after a legal Aether allocation")
 			}
 			test.Tap(castButton)
-			if submittedID != "cast-card" || submittedPayment.Aes != 1 || submittedRevision != match.Revision {
-				t.Fatalf("cast submitted ID/payment/revision %q/%#v/%d", submittedID, submittedPayment, submittedRevision)
+			if submittedID != "cast-card" || submittedPlan.Payment.Aes != 1 || submittedRevision != match.Revision {
+				t.Fatalf("cast submitted ID/plan/revision %q/%#v/%d", submittedID, submittedPlan, submittedRevision)
 			}
 			if testCase.cardType == "Servant" && submittedOrientation != model.OrientationReversed {
 				t.Fatalf("Servant orientation = %q; want Reversed", submittedOrientation)
@@ -1075,35 +1041,72 @@ func TestCastControlsSubmitSelectedCardPaymentAndOrientation(t *testing.T) {
 	}
 }
 
-func TestCastPaymentControlsRefreshWhenAetherPoolChanges(t *testing.T) {
+func TestSuggestedCastSourcesCanBeChangedBeforeConfirmation(t *testing.T) {
 	match := testMatchView()
 	match.MatchStatus = model.StatusInProgress
 	match.Turn = model.TurnState{Number: 2, ActivePlayer: match.ViewerID, Phase: model.PhaseMain}
 	match.PriorityHolder = match.ViewerID
 	match.Players[0].OpeningHandFinalized = true
+	match.Players[0].CasterZone = []simulatorview.CardView{{
+		MatchID: "aes-source", CardID: "aes-source-definition", Face: model.CardFaceUp,
+		Orientation: model.OrientationRecovered, ShowFace: true,
+	}}
+	definitions := append(testDefinitions(),
+		cards.Card{ID: "visible-hand-card", Name: "Aes Servant", Type: "Servant", Element: "Aes", CostLevel: "1"},
+		cards.Card{ID: "aes-source-definition", Name: "Aes Source", Type: "Caster", Element: "Aes", CostLevel: "1"},
+	)
+	var submitted model.CastPaymentPlan
+	controller := NewBoardController(
+		match,
+		definitions,
+		BoardActions{CastServantWithPlan: func(_ model.MatchCardID, plan model.CastPaymentPlan, _ model.CardOrientation, _ model.Revision) {
+			submitted = plan
+		}},
+		nil,
+	)
+	card := findCardTileByMatchID(controller.Content(), "player-one-hand")
+	if card == nil {
+		t.Fatal("castable card was not rendered")
+	}
+	test.Tap(card)
+	checks := findChecks(controller.Content())
+	if len(checks) != 1 || !checks[0].Checked {
+		t.Fatalf("suggested source checks = %#v; want selected Aes source", checks)
+	}
+	confirm := findButton(controller.Content(), "Confirm Suggested Cast")
+	checks[0].SetChecked(false)
+	if confirm == nil || !confirm.Disabled() {
+		t.Fatal("confirmation remained enabled after removing the required source")
+	}
+	checks[0].SetChecked(true)
+	if confirm.Disabled() {
+		t.Fatal("confirmation did not re-enable after restoring the source")
+	}
+	test.Tap(confirm)
+	if !reflect.DeepEqual(submitted.SourceCardIDs, []model.MatchCardID{"aes-source"}) || submitted.Payment.Aes != 1 {
+		t.Fatalf("submitted editable suggestion = %#v", submitted)
+	}
+}
+
+func TestCastingControlsFitSupportedSimulatorWindow(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Turn = model.TurnState{Number: 2, ActivePlayer: match.ViewerID, Phase: model.PhaseMain}
+	match.PriorityHolder = match.ViewerID
+	match.Players[0].OpeningHandFinalized = true
+	match.Players[0].Aether = model.AetherPool{
+		Aes: 3, Aqua: 3, Ignus: 3, Luna: 3, Silva: 3,
+		Solis: 3, Terra: 3, Void: 3, NonElemental: 3,
+	}
 	controller := NewBoardController(
 		match,
 		testDefinitions(),
-		BoardActions{CastServant: func(model.MatchCardID, model.AetherPayment, model.CardOrientation, model.Revision) {}},
+		BoardActions{CastServantWithPlan: func(model.MatchCardID, model.CastPaymentPlan, model.CardOrientation, model.Revision) {}},
 		nil,
 	)
-	for _, selection := range findSelects(controller.Content()) {
-		if reflect.DeepEqual(selection.Options, []string{"0", "1"}) {
-			t.Fatal("payment selector exists before Aether is available")
-		}
-	}
-
-	updated := match
-	updated.Players[0].Aether.Aes = 1
-	controller.Update(updated)
-	foundPayment := false
-	for _, selection := range findSelects(controller.Content()) {
-		if reflect.DeepEqual(selection.Options, []string{"0", "1"}) {
-			foundPayment = true
-		}
-	}
-	if !foundPayment {
-		t.Fatal("payment selectors did not refresh after the Aether pool changed")
+	minimum := controller.Content().MinSize()
+	if minimum.Width > 1400 || minimum.Height > 850 {
+		t.Fatalf("casting board minimum size = %v; must fit within 1400x850", minimum)
 	}
 }
 
@@ -1505,24 +1508,24 @@ func findButton(object fyne.CanvasObject, text string) *widget.Button {
 	return nil
 }
 
-func findButtonPosition(
+func findObjectPosition(
 	object fyne.CanvasObject,
-	text string,
+	target fyne.CanvasObject,
 	origin fyne.Position,
 ) (fyne.Position, bool) {
 	position := fyne.NewPos(origin.X+object.Position().X, origin.Y+object.Position().Y)
-	if button, ok := object.(*widget.Button); ok && button.Text == text {
+	if object == target {
 		return position, true
 	}
 	if fyneContainer, ok := object.(*fyne.Container); ok {
 		for _, child := range fyneContainer.Objects {
-			if result, found := findButtonPosition(child, text, position); found {
+			if result, found := findObjectPosition(child, target, position); found {
 				return result, true
 			}
 		}
 	}
 	if scroll, ok := object.(*container.Scroll); ok {
-		return findButtonPosition(scroll.Content, text, position)
+		return findObjectPosition(scroll.Content, target, position)
 	}
 	return fyne.Position{}, false
 }
@@ -1556,6 +1559,22 @@ func findSelects(object fyne.CanvasObject) []*widget.Select {
 	}
 	if scroll, ok := object.(*container.Scroll); ok {
 		result = append(result, findSelects(scroll.Content)...)
+	}
+	return result
+}
+
+func findChecks(object fyne.CanvasObject) []*widget.Check {
+	result := make([]*widget.Check, 0)
+	if check, ok := object.(*widget.Check); ok {
+		result = append(result, check)
+	}
+	if fyneContainer, ok := object.(*fyne.Container); ok {
+		for _, child := range fyneContainer.Objects {
+			result = append(result, findChecks(child)...)
+		}
+	}
+	if scroll, ok := object.(*container.Scroll); ok {
+		result = append(result, findChecks(scroll.Content)...)
 	}
 	return result
 }
