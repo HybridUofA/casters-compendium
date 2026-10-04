@@ -230,3 +230,33 @@ approving publication.
 
 This disclosure does not authorize AI to invent unsupported rules, effects, or
 replay behavior beyond the existing simulator prototype boundary.
+
+## Disclosed lobby, spectator, and priority-UX assistance
+
+Hybrid directed the online lobby product shape (open-room list, optional room
+passwords, spectators, saved display names, and Arena-style full-control versus
+stop-phase auto-pass priority) and explicitly authorized OpenAI assistance to
+implement that networking and Fyne UX under Hybrid's review.
+
+Under that authorization, OpenAI assistance implemented protocol v3 room-list
+messaging, optional password-gated create/join, spectator seats with
+view-only projections and command rejection, display-name propagation on match
+views, the Online Lobby browser, stop-phase preference wiring, automated
+coverage, and this disclosure. Hybrid remains responsible for acceptance,
+operating the playtest host, and release approval.
+
+This disclosure does not authorize AI to invent unsupported rules, effects, or
+replay behavior beyond the existing simulator prototype boundary.
+
+## Disclosed v1.0.0 assistance
+
+Hybrid directed the v1.0.0 stable scope (manual-playable networked skeleton,
+lobby UX, Double Corrupt / mandatory attacks, grant marker, and release
+framing) and remains responsible for acceptance and publication.
+
+Under that authorization, OpenAI assistance implemented and wired lobby and
+protocol v3 surfaces, board UX (including click targeting, dialog scaling, and
+DC badges), Break / Sage Advice / Double Corrupt / mandatory-attack
+presentation and tests, release metadata, and this disclosure. Hybrid owns
+future simulator engine rules work; assistance defaults to tests, UI, bug
+fixes, and mentorship unless Hybrid explicitly requests engine implementation.

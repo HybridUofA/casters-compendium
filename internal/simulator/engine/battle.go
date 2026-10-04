@@ -185,8 +185,12 @@ func resolveDeclaredAttack(state *model.MatchState, catalog rules.CardCatalog) e
 			return err
 		}
 	case model.AttackTargetPlayer:
-		if err := resolvePlayerJudgment(state, opponentIndex); err != nil {
+		awaitingOrb, err := resolvePlayerJudgment(state, catalog, opponentIndex, attack.AttackerID)
+		if err != nil {
 			return err
+		}
+		if awaitingOrb {
+			return nil
 		}
 	default:
 		return fmt.Errorf("invalid attack target kind %q", attack.TargetKind)
@@ -252,23 +256,173 @@ func resolveServantJudgment(
 	return nil
 }
 
-func resolvePlayerJudgment(state *model.MatchState, opponentIndex int) error {
+// resolvePlayerJudgment finishes a zero-Orb win or pauses for Orb choice.
+// When Orbs remain, Attack.Step becomes AwaitingJudgment and awaitingOrb is true.
+func resolvePlayerJudgment(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	opponentIndex int,
+	attackerID model.MatchCardID,
+) (awaitingOrb bool, err error) {
 	opponent := &state.Players[opponentIndex]
 	if len(opponent.Orbs) == 0 {
 		actingIndex := 1 - opponentIndex
-		return finishMatch(state, model.MatchResult{
+		return false, finishMatch(state, model.MatchResult{
 			Winner: state.Players[actingIndex].ID,
 			Loser:  opponent.ID,
 			Reason: model.EndReasonZeroOrbs,
 		})
 	}
-	orbID := opponent.Orbs[0]
-	opponent.Orbs = slices.Delete(opponent.Orbs, 0, 1)
-	opponent.Hand = append(opponent.Hand, orbID)
-	if instance, ok := state.CardInstances[orbID]; ok {
-		instance.Face = model.CardFaceDown
-		state.CardInstances[orbID] = instance
+	corruptCount := attackerCorruptCount(state, catalog, attackerID)
+	if corruptCount > len(opponent.Orbs) {
+		corruptCount = len(opponent.Orbs)
 	}
+	state.Attack.Step = model.BattleStepAwaitingJudgment
+	state.Attack.CorruptCount = corruptCount
+	return true, nil
+}
+
+func attackerCorruptCount(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	attackerID model.MatchCardID,
+) int {
+	if hasDoubleCorrupt(state, catalog, attackerID) {
+		return 2
+	}
+	return 1
+}
+
+func hasDoubleCorrupt(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	cardID model.MatchCardID,
+) bool {
+	instance, ok := state.CardInstances[cardID]
+	if !ok {
+		return false
+	}
+	if instance.GrantedDoubleCorrupt {
+		return true
+	}
+	if catalog == nil {
+		return false
+	}
+	definition, found := catalog.FindByID(string(instance.CardID))
+	if !found {
+		return false
+	}
+	return cardDeclaresDoubleCorrupt(definition.Ability)
+}
+
+// CorruptOrb corrupts one enemy Orb. Prefer CorruptOrbs when Double Corrupt
+// requires choosing multiple indexes at once.
+func CorruptOrb(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	actingPlayerID model.PlayerID,
+	orbIndex int,
+	expectedRevision model.Revision,
+) error {
+	return CorruptOrbs(state, catalog, actingPlayerID, []int{orbIndex}, expectedRevision)
+}
+
+// CorruptOrbs lets the active player choose which enemy Orbs to corrupt after a
+// player-attack judgment. Indexes are 0-based into the defender's Orbs zone and
+// must match Attack.CorruptCount exactly. Chosen Orbs move to hand simultaneously;
+// Break offers are queued in selection order.
+func CorruptOrbs(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	actingPlayerID model.PlayerID,
+	orbIndexes []int,
+	expectedRevision model.Revision,
+) error {
+	if state == nil {
+		return fmt.Errorf("state cannot be nil")
+	}
+	if expectedRevision != state.Revision {
+		return fmt.Errorf("expected revision %d does not match current revision %d", expectedRevision, state.Revision)
+	}
+	if strings.TrimSpace(string(actingPlayerID)) == "" {
+		return fmt.Errorf("player ID cannot be empty")
+	}
+	if state.MatchStatus != model.StatusInProgress {
+		return fmt.Errorf("game in state %q, must be in %q", state.MatchStatus, model.StatusInProgress)
+	}
+	if state.Turn.Phase != model.PhaseBattle {
+		return fmt.Errorf("must be in battle phase to corrupt an orb")
+	}
+	if actingPlayerID != state.Turn.ActivePlayer {
+		return fmt.Errorf("must be active player to corrupt an orb")
+	}
+	if state.Attack.Step != model.BattleStepAwaitingJudgment {
+		return fmt.Errorf("no player-attack judgment awaiting orb choice")
+	}
+	if state.Attack.TargetKind != model.AttackTargetPlayer {
+		return fmt.Errorf("orb corruption requires a player-targeted attack")
+	}
+	if state.PrioritySequenceOpen || state.PriorityHolder != "" || state.PassCount != 0 {
+		return fmt.Errorf("orb choice requires a closed priority sequence")
+	}
+	if len(state.ChaseLinks) != 0 {
+		return fmt.Errorf("chase must be empty to corrupt an orb")
+	}
+	if state.PendingBreak.PlayerID != "" || len(state.PendingBreak.CardIDs) > 0 {
+		return fmt.Errorf("a break decision is already pending")
+	}
+	wantCount := state.Attack.CorruptCount
+	if wantCount < 1 {
+		wantCount = 1
+	}
+	if len(orbIndexes) != wantCount {
+		return fmt.Errorf("must choose exactly %d orb(s); got %d", wantCount, len(orbIndexes))
+	}
+
+	_, opponentIndex, err := battlePlayerIndexes(state, actingPlayerID)
+	if err != nil {
+		return err
+	}
+	opponent := &state.Players[opponentIndex]
+	seen := make(map[int]struct{}, len(orbIndexes))
+	for _, orbIndex := range orbIndexes {
+		if orbIndex < 0 || orbIndex >= len(opponent.Orbs) {
+			return fmt.Errorf("orb index %d is out of range for %d orbs", orbIndex, len(opponent.Orbs))
+		}
+		if _, dup := seen[orbIndex]; dup {
+			return fmt.Errorf("orb index %d selected more than once", orbIndex)
+		}
+		seen[orbIndex] = struct{}{}
+	}
+
+	// Remove highest indexes first so lower indexes stay valid, but corrupt
+	// into hand in the attacker's selection order.
+	sortedDescending := append([]int(nil), orbIndexes...)
+	slices.Sort(sortedDescending)
+	slices.Reverse(sortedDescending)
+	removedByIndex := make(map[int]model.MatchCardID, len(orbIndexes))
+	for _, orbIndex := range sortedDescending {
+		orbID := opponent.Orbs[orbIndex]
+		opponent.Orbs = slices.Delete(opponent.Orbs, orbIndex, orbIndex+1)
+		removedByIndex[orbIndex] = orbID
+	}
+	corrupted := make([]model.MatchCardID, 0, len(orbIndexes))
+	for _, orbIndex := range orbIndexes {
+		orbID := removedByIndex[orbIndex]
+		opponent.Hand = append(opponent.Hand, orbID)
+		if instance, ok := state.CardInstances[orbID]; ok {
+			instance.Face = model.CardFaceDown
+			state.CardInstances[orbID] = instance
+		}
+		model.MarkCardKnown(state, opponent.ID, orbID)
+		corrupted = append(corrupted, orbID)
+	}
+	clearAttack(state)
+	queueBreakIfPresent(state, catalog, opponent.ID, corrupted...)
+	if state.PendingBreak.PlayerID == "" {
+		reopenPriorityForActivePlayer(state)
+	}
+	state.Revision++
 	return nil
 }
 
@@ -300,6 +454,7 @@ func destroyServant(state *model.MatchState, cardID model.MatchCardID) error {
 	instance.Controller = instance.Owner
 	instance.Face = model.CardFaceUp
 	instance.Orientation = model.OrientationRecovered
+	instance.GrantedDoubleCorrupt = false
 	state.Players[ownerIndex].Graveyard = append(state.Players[ownerIndex].Graveyard, cardID)
 	state.CardInstances[cardID] = instance
 	return nil

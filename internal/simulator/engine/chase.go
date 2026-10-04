@@ -227,6 +227,12 @@ func PassPriority(state *model.MatchState, catalog rules.CardCatalog, actingPlay
 			if err != nil {
 				return fmt.Errorf("error during resolution: %w", err)
 			}
+			// After a Break play resolves, pause again if more Breaks remain.
+			if len(state.ChaseLinks) == 0 && len(state.PendingBreak.CardIDs) > 0 {
+				state.PrioritySequenceOpen = false
+				state.PassCount = 0
+				state.PriorityHolder = ""
+			}
 			state.Revision++
 			return nil
 		}
@@ -239,7 +245,29 @@ func PassPriority(state *model.MatchState, catalog rules.CardCatalog, actingPlay
 					state.Revision++
 					return nil
 				}
+				if state.Attack.Step == model.BattleStepAwaitingJudgment {
+					// Wait for CorruptOrb; do not reopen priority yet.
+					state.PrioritySequenceOpen = false
+					state.PassCount = 0
+					state.PriorityHolder = ""
+					state.Revision++
+					return nil
+				}
+				if len(state.PendingBreak.CardIDs) > 0 {
+					state.PrioritySequenceOpen = false
+					state.PassCount = 0
+					state.PriorityHolder = ""
+					state.Revision++
+					return nil
+				}
 				reopenPriorityForActivePlayer(state)
+				state.Revision++
+				return nil
+			}
+			if len(state.PendingBreak.CardIDs) > 0 {
+				state.PrioritySequenceOpen = false
+				state.PassCount = 0
+				state.PriorityHolder = ""
 				state.Revision++
 				return nil
 			}

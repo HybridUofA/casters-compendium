@@ -78,6 +78,48 @@ func TestHandleMessageHelloCreateAndJoin(t *testing.T) {
 	}
 }
 
+func TestHandleMessageListRooms(t *testing.T) {
+	host := NewHost(NewLobby())
+	createReq, err := protocol.Encode(protocol.KindCreateRoom, protocol.CreateRoomPayload{
+		PlayerName: "Host",
+		RoomName:   "Secret Match",
+		Password:   "secret",
+		Deck:       decks.Deck{SchemaVersion: 1, Name: "Host Deck"},
+	})
+	if err != nil {
+		t.Fatalf("encode create: %v", err)
+	}
+	if _, err := host.HandleMessage(createReq); err != nil {
+		t.Fatalf("HandleMessage(create) error = %v", err)
+	}
+
+	listReq, err := protocol.Encode(protocol.KindListRooms, protocol.ListRoomsPayload{})
+	if err != nil {
+		t.Fatalf("encode list: %v", err)
+	}
+	listRaw, err := host.HandleMessage(listReq)
+	if err != nil {
+		t.Fatalf("HandleMessage(list) error = %v", err)
+	}
+	listEnv, err := protocol.Decode(listRaw)
+	if err != nil {
+		t.Fatalf("decode list: %v", err)
+	}
+	if listEnv.Kind != protocol.KindRoomList {
+		t.Fatalf("kind = %q; want room_list", listEnv.Kind)
+	}
+	var payload protocol.RoomListPayload
+	if err := json.Unmarshal(listEnv.Payload, &payload); err != nil {
+		t.Fatalf("unmarshal list: %v", err)
+	}
+	if len(payload.Rooms) != 1 ||
+		!payload.Rooms[0].HasPassword ||
+		payload.Rooms[0].HostName != "Host" ||
+		payload.Rooms[0].RoomName != "Secret Match" {
+		t.Fatalf("rooms = %#v", payload.Rooms)
+	}
+}
+
 func TestHandleMessageUnknownKindReturnsErrorEnvelope(t *testing.T) {
 	host := NewHost(NewLobby())
 	req, err := protocol.Encode(protocol.Kind("nope"), map[string]string{})

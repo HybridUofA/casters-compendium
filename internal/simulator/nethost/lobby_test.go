@@ -14,7 +14,7 @@ import (
 func TestCreateRoomAssignsHostSeatAndStoresRoom(t *testing.T) {
 	lobby := NewLobby()
 
-	code, playerID, err := lobby.CreateRoom("Hybrid", validTestDeck("Host Deck"))
+	code, playerID, _, err := lobby.CreateRoom("Hybrid", "Friday Night", validTestDeck("Host Deck"), "")
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
@@ -39,16 +39,33 @@ func TestCreateRoomAssignsHostSeatAndStoresRoom(t *testing.T) {
 	if room.Players["player-one"] != "Hybrid" {
 		t.Fatalf("Players = %#v", room.Players)
 	}
+	if room.Name != "Friday Night" {
+		t.Fatalf("room.Name = %q; want Friday Night", room.Name)
+	}
+	rooms := lobby.ListRooms()
+	if len(rooms) != 1 || rooms[0].RoomName != "Friday Night" || rooms[0].HostName != "Hybrid" {
+		t.Fatalf("ListRooms() = %#v", rooms)
+	}
+}
+
+func TestNormalizeRoomNameDefaultsAndTruncates(t *testing.T) {
+	if got := normalizeRoomName("  ", "Hybrid"); got != "Hybrid's Room" {
+		t.Fatalf("default name = %q", got)
+	}
+	long := strings.Repeat("a", 80)
+	if got := normalizeRoomName(long, "Hybrid"); len([]rune(got)) != maxRoomNameRunes {
+		t.Fatalf("truncated length = %d; want %d", len([]rune(got)), maxRoomNameRunes)
+	}
 }
 
 func TestJoinRoomAssignsGuestSeat(t *testing.T) {
 	lobby := NewLobby()
-	code, _, err := lobby.CreateRoom("Host", validTestDeck("Host Deck"))
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
 
-	playerID, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"))
+	playerID, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "")
 	if err != nil {
 		t.Fatalf("JoinRoom() error = %v", err)
 	}
@@ -66,11 +83,11 @@ func TestJoinRoomAssignsGuestSeat(t *testing.T) {
 
 func TestJoinRoomRejectsMissingFullAndBlankNames(t *testing.T) {
 	lobby := NewLobby()
-	code, _, err := lobby.CreateRoom("Host", validTestDeck("Host Deck"))
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck")); err != nil {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), ""); err != nil {
 		t.Fatalf("first JoinRoom() error = %v", err)
 	}
 
@@ -86,25 +103,68 @@ func TestJoinRoomRejectsMissingFullAndBlankNames(t *testing.T) {
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
-			_, err := lobby.JoinRoom(testCase.roomCode, testCase.playerName, validTestDeck("Other Deck"))
+			_, err := lobby.JoinRoom(testCase.roomCode, testCase.playerName, validTestDeck("Other Deck"), "")
 			if err == nil || !strings.Contains(err.Error(), testCase.wantErr) {
 				t.Fatalf("JoinRoom() error = %v; want containing %q", err, testCase.wantErr)
 			}
 		})
 	}
 
-	if _, _, err := lobby.CreateRoom("", validTestDeck("Blank")); err == nil || !strings.Contains(err.Error(), "player name is required") {
+	if _, _, _, err := lobby.CreateRoom("", "", validTestDeck("Blank"), ""); err == nil || !strings.Contains(err.Error(), "player name is required") {
 		t.Fatalf("CreateRoom(\"\") error = %v; want blank-name error", err)
+	}
+}
+
+func TestRoomPasswordAndSpectatorLobby(t *testing.T) {
+	lobby := NewLobby()
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "secret")
+	if err != nil {
+		t.Fatalf("CreateRoom() error = %v", err)
+	}
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "wrong"); err == nil || !strings.Contains(err.Error(), "incorrect password") {
+		t.Fatalf("JoinRoom(wrong password) error = %v", err)
+	}
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "secret"); err != nil {
+		t.Fatalf("JoinRoom(correct password) error = %v", err)
+	}
+
+	spectatorID, err := lobby.JoinSpectator(code, "Watcher", "secret")
+	if err != nil {
+		t.Fatalf("JoinSpectator() error = %v", err)
+	}
+	if !strings.HasPrefix(spectatorID, "spectator-") {
+		t.Fatalf("spectatorID = %q", spectatorID)
+	}
+
+	rooms := lobby.ListRooms()
+	if len(rooms) != 1 || rooms[0].RoomCode != code || !rooms[0].HasPassword || rooms[0].SpectatorCount != 1 {
+		t.Fatalf("ListRooms() = %#v", rooms)
+	}
+
+	match := localMatchForTest(t)
+	if err := lobby.AttachMatch(code, match); err != nil {
+		t.Fatalf("AttachMatch() error = %v", err)
+	}
+	specSession, err := lobby.Session(code, spectatorID)
+	if err != nil {
+		t.Fatalf("Session(spectator) error = %v", err)
+	}
+	view, err := specSession.View()
+	if err != nil {
+		t.Fatalf("spectator View() error = %v", err)
+	}
+	if !view.Spectator {
+		t.Fatalf("expected spectator view, got %#v", view)
 	}
 }
 
 func TestAttachMatchStoresSessionsForBothSeats(t *testing.T) {
 	lobby := NewLobby()
-	code, _, err := lobby.CreateRoom("Host", validTestDeck("Host Deck"))
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck")); err != nil {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), ""); err != nil {
 		t.Fatalf("JoinRoom() error = %v", err)
 	}
 
@@ -136,7 +196,7 @@ func TestAttachMatchStoresSessionsForBothSeats(t *testing.T) {
 
 func TestAttachMatchAndSessionRejectInvalidStates(t *testing.T) {
 	lobby := NewLobby()
-	code, _, err := lobby.CreateRoom("Host", validTestDeck("Host Deck"))
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
@@ -145,7 +205,7 @@ func TestAttachMatchAndSessionRejectInvalidStates(t *testing.T) {
 	if err := lobby.AttachMatch(code, match); err == nil || !strings.Contains(err.Error(), "room must contain 2 players") {
 		t.Fatalf("AttachMatch(one player) error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck")); err != nil {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), ""); err != nil {
 		t.Fatalf("JoinRoom() error = %v", err)
 	}
 	if err := lobby.AttachMatch("ZZZZ", match); err == nil || !strings.Contains(err.Error(), "room not found") {

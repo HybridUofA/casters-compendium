@@ -41,7 +41,7 @@ func showHostOnlineGame(
 		"Host Online Game — Choose Deck",
 		"Continue",
 		func(deck decks.Deck) {
-			showNetworkConnectForm(window, "Host Online Game", false, func(serverURL, playerName, _ string) {
+			showNetworkConnectForm(window, "Host Online Game", false, true, true, func(serverURL, playerName, _, password, roomName string) {
 				go func() {
 					ctx, cancel := context.WithTimeout(context.Background(), networkCommandTimeout)
 					defer cancel()
@@ -56,7 +56,7 @@ func showHostOnlineGame(
 						fyne.Do(func() { dialog.ShowError(fmt.Errorf("hello: %w", err), window) })
 						return
 					}
-					created, err := client.CreateRoom(ctx, playerName, deck)
+					created, err := client.CreateRoom(ctx, playerName, roomName, deck, password)
 					if err != nil {
 						_ = client.Close()
 						fyne.Do(func() { dialog.ShowError(fmt.Errorf("create room: %w", err), window) })
@@ -70,7 +70,9 @@ func showHostOnlineGame(
 							client,
 							created.PlayerID,
 							created.RoomCode,
+							created.RoomName,
 							playerName,
+							false,
 							onBackToMenu,
 						)
 					})
@@ -93,7 +95,7 @@ func showJoinOnlineGame(
 		"Join Online Game — Choose Deck",
 		"Continue",
 		func(deck decks.Deck) {
-			showNetworkConnectForm(window, "Join Online Game", true, func(serverURL, playerName, roomCode string) {
+			showNetworkConnectForm(window, "Join Online Game", true, true, false, func(serverURL, playerName, roomCode, password, _ string) {
 				go func() {
 					ctx, cancel := context.WithTimeout(context.Background(), networkCommandTimeout)
 					defer cancel()
@@ -108,7 +110,7 @@ func showJoinOnlineGame(
 						fyne.Do(func() { dialog.ShowError(fmt.Errorf("hello: %w", err), window) })
 						return
 					}
-					joined, err := client.JoinRoom(ctx, roomCode, playerName, deck)
+					joined, err := client.JoinRoom(ctx, roomCode, playerName, deck, password)
 					if err != nil {
 						_ = client.Close()
 						fyne.Do(func() { dialog.ShowError(fmt.Errorf("join room: %w", err), window) })
@@ -129,6 +131,7 @@ func showJoinOnlineGame(
 							joined.PlayerID,
 							joined.RoomCode,
 							matchView,
+							false,
 							onBackToMenu,
 						)
 					})
@@ -142,7 +145,9 @@ func showNetworkConnectForm(
 	window fyne.Window,
 	title string,
 	requireRoomCode bool,
-	onSubmit func(serverURL, playerName, roomCode string),
+	allowPassword bool,
+	allowRoomName bool,
+	onSubmit func(serverURL, playerName, roomCode, password, roomName string),
 ) {
 	prefs := fyne.CurrentApp().Preferences()
 	serverEntry := widget.NewEntry()
@@ -151,16 +156,26 @@ func showNetworkConnectForm(
 	nameEntry.SetText(prefs.StringWithFallback(networkPlayerNamePreferenceKey, "Player"))
 	roomEntry := widget.NewEntry()
 	roomEntry.SetPlaceHolder("ABCD")
+	roomNameEntry := widget.NewEntry()
+	roomNameEntry.SetPlaceHolder("e.g. Friday Night Casters")
+	passwordEntry := widget.NewPasswordEntry()
+	passwordEntry.SetPlaceHolder("optional")
 
 	items := []*widget.FormItem{
 		widget.NewFormItem("Server URL", serverEntry),
 		widget.NewFormItem("Display Name", nameEntry),
 	}
+	if allowRoomName {
+		items = append(items, widget.NewFormItem("Room Name", roomNameEntry))
+	}
 	if requireRoomCode {
 		items = append(items, widget.NewFormItem("Room Code", roomEntry))
 	}
+	if allowPassword {
+		items = append(items, widget.NewFormItem("Password", passwordEntry))
+	}
 
-	dialog.ShowForm(title, "Connect", "Cancel", items, func(confirmed bool) {
+	showScaledForm(title, "Connect", "Cancel", items, func(confirmed bool) {
 		if !confirmed {
 			return
 		}
@@ -181,8 +196,8 @@ func showNetworkConnectForm(
 		}
 		prefs.SetString(networkServerPreferenceKey, serverURL)
 		prefs.SetString(networkPlayerNamePreferenceKey, playerName)
-		onSubmit(serverURL, playerName, roomCode)
-	}, window)
+		onSubmit(serverURL, playerName, roomCode, passwordEntry.Text, strings.TrimSpace(roomNameEntry.Text))
+	}, window, 0.5, 0.55, 560, 360, 960, 720)
 }
 
 func showNetworkWaitingRoom(
@@ -191,13 +206,25 @@ func showNetworkWaitingRoom(
 	client *netclient.Client,
 	playerID string,
 	roomCode string,
+	roomName string,
 	playerName string,
+	spectator bool,
 	onBackToMenu func(),
 ) {
-	status := widget.NewLabel(fmt.Sprintf(
-		"Room %s\nWaiting for opponent to join…\n\nShare the room code with your opponent.",
+	if strings.TrimSpace(roomName) == "" {
+		roomName = roomCode
+	}
+	waitText := fmt.Sprintf(
+		"%s\nCode %s\nWaiting for opponent to join…\n\nShare the room code with your opponent.",
+		roomName,
 		roomCode,
-	))
+	)
+	title := "Hosting Online Match"
+	if spectator {
+		waitText = fmt.Sprintf("%s\nCode %s\nWaiting for the match to start…", roomName, roomCode)
+		title = "Spectating Online Match"
+	}
+	status := widget.NewLabel(waitText)
 	status.Alignment = fyne.TextAlignCenter
 	status.Wrapping = fyne.TextWrapWord
 
@@ -214,11 +241,11 @@ func showNetworkWaitingRoom(
 		}
 		opened = true
 		close(stop)
-		openNetworkBoard(window, repository, client, playerID, roomCode, matchView, onBackToMenu)
+		openNetworkBoard(window, repository, client, playerID, roomCode, matchView, spectator, onBackToMenu)
 	}
 
 	setWindowContent(window, container.NewCenter(container.NewVBox(
-		widget.NewLabelWithStyle("Hosting Online Match", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(title, fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		status,
 		widget.NewLabel("You: "+playerName),
 		widget.NewButton("Cancel", func() {
@@ -232,7 +259,7 @@ func showNetworkWaitingRoom(
 			onBackToMenu()
 		}),
 	)))
-	window.SetTitle(applicationName + " — Room " + roomCode)
+	window.SetTitle(applicationName + " — " + roomName)
 
 	client.OnView = func(matchView simulatorview.MatchView) {
 		fyne.Do(func() { openOnce(matchView) })
@@ -272,6 +299,7 @@ func openNetworkBoard(
 	playerID string,
 	roomCode string,
 	initialView simulatorview.MatchView,
+	spectator bool,
 	onBackToMenu func(),
 ) {
 	var screen *simulatorui.BoardScreen
@@ -306,23 +334,77 @@ func openNetworkBoard(
 			})
 		}()
 	}
+	runCommandWithPrivate := func(
+		name string,
+		revision model.Revision,
+		args any,
+		done func(*protocol.PrivateView, error),
+	) {
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), networkCommandTimeout)
+			defer cancel()
+			matchView, private, err := client.CommandWithPrivate(ctx, playerID, uint64(revision), name, args)
+			fyne.Do(func() {
+				if err != nil {
+					if done != nil {
+						done(nil, err)
+					} else {
+						dialog.ShowError(err, window)
+					}
+					return
+				}
+				applyView(matchView)
+				if done != nil {
+					done(private, nil)
+				}
+			})
+		}()
+	}
+
+	actions := simulatorui.BoardActions{BackLabel: "Leave Match"}
+	if !spectator {
+		actions = networkBoardActions(runCommand, runCommandWithPrivate)
+		actions.ShouldAutoPassPriority = func(match simulatorview.MatchView) bool {
+			if match.Spectator ||
+				match.MatchStatus != model.StatusInProgress ||
+				!match.PrioritySequenceOpen ||
+				match.PriorityHolder != match.ViewerID ||
+				match.ChaseLinkCount > 0 ||
+				match.Attack.Step != model.BattleStepIdle ||
+				match.PendingDraw.Step != "" ||
+				match.PendingBreak.PlayerID != "" {
+				return false
+			}
+			return shouldAutoPassPriority(string(match.Turn.Phase))
+		}
+	}
 
 	screen = simulatorui.NewBoardController(
 		initialView,
 		repository.All(),
-		networkBoardActions(runCommand),
+		actions,
 		func() {
 			_ = client.Close()
 			window.SetTitle(applicationName)
 			onBackToMenu()
 		},
 	)
-	window.SetTitle(fmt.Sprintf("%s — Online (%s) Room %s", applicationName, playerID, roomCode))
+	role := playerID
+	if spectator {
+		role = "spectator"
+	}
+	window.SetTitle(fmt.Sprintf("%s — Online (%s) Room %s", applicationName, role, roomCode))
 	setWindowContent(window, screen.Content())
 }
 
 func networkBoardActions(
 	runCommand func(name string, revision model.Revision, args any),
+	runCommandWithPrivate func(
+		name string,
+		revision model.Revision,
+		args any,
+		done func(*protocol.PrivateView, error),
+	),
 ) simulatorui.BoardActions {
 	return simulatorui.BoardActions{
 		BackLabel: "Leave Match",
@@ -398,6 +480,50 @@ func networkBoardActions(
 		MoveCard: func(command model.MoveCardCommand, expectedRevision model.Revision) {
 			runCommand("move_card", expectedRevision, command)
 		},
+		DrawCards: func(count int, expectedRevision model.Revision) {
+			runCommand("draw_cards", expectedRevision, map[string]any{"count": count})
+		},
+		ShuffleDeck: func(expectedRevision model.Revision) {
+			runCommand("shuffle_deck", expectedRevision, nil)
+		},
+		PeekDeckTops: func(
+			ownerID model.PlayerID,
+			count int,
+			done func([]simulatorview.CardView, error),
+		) {
+			runCommandWithPrivate(
+				"peek_deck_tops",
+				0,
+				map[string]any{"owner_id": ownerID, "count": count},
+				func(private *protocol.PrivateView, err error) {
+					if done == nil {
+						return
+					}
+					if err != nil {
+						done(nil, err)
+						return
+					}
+					if private == nil {
+						done(nil, fmt.Errorf("peek returned no cards"))
+						return
+					}
+					done(private.DeckPeek, nil)
+				},
+			)
+		},
+		MoveDeckTopToBottom: func(ownerID model.PlayerID, expectedRevision model.Revision) {
+			runCommand("move_deck_top_to_bottom", expectedRevision, map[string]any{"owner_id": ownerID})
+		},
+		ResolveDeckDig: func(
+			keep model.MatchCardID,
+			bottomOrder []model.MatchCardID,
+			expectedRevision model.Revision,
+		) {
+			runCommand("resolve_deck_dig", expectedRevision, map[string]any{
+				"keep":         keep,
+				"bottom_order": bottomOrder,
+			})
+		},
 		PassPriority: func(expectedRevision model.Revision) {
 			runCommand("pass_priority", expectedRevision, nil)
 		},
@@ -412,6 +538,59 @@ func networkBoardActions(
 				"target_kind":    targetKind,
 				"target_card_id": targetCardID,
 			})
+		},
+		CorruptOrbs: func(orbIndexes []int, expectedRevision model.Revision) {
+			runCommand("corrupt_orb", expectedRevision, map[string]any{"orb_indexes": orbIndexes})
+		},
+		SetGrantedDoubleCorrupt: func(cardID model.MatchCardID, enabled bool, expectedRevision model.Revision) {
+			runCommand("set_granted_double_corrupt", expectedRevision, map[string]any{
+				"card_id": cardID,
+				"enabled": enabled,
+			})
+		},
+		PlayBreak: func(cardID model.MatchCardID, orientation model.CardOrientation, expectedRevision model.Revision) {
+			runCommand("play_break", expectedRevision, map[string]any{
+				"card_id":     cardID,
+				"orientation": orientation,
+			})
+		},
+		DeclineBreak: func(expectedRevision model.Revision) {
+			runCommand("decline_break", expectedRevision, nil)
+		},
+		AcceptSageAdvice: func(expectedRevision model.Revision) {
+			runCommand("accept_sage_advice", expectedRevision, nil)
+		},
+		DeclineDrawReplacement: func(expectedRevision model.Revision) {
+			runCommand("decline_draw_replacement", expectedRevision, nil)
+		},
+		PeekOrb: func(
+			ownerID model.PlayerID,
+			orbIndex int,
+			expectedRevision model.Revision,
+			done func(simulatorview.CardView, error),
+		) {
+			runCommandWithPrivate(
+				"peek_orb",
+				expectedRevision,
+				map[string]any{"owner_id": ownerID, "orb_index": orbIndex},
+				func(private *protocol.PrivateView, err error) {
+					if done == nil {
+						return
+					}
+					if err != nil {
+						done(simulatorview.CardView{}, err)
+						return
+					}
+					if private == nil || private.OrbPeek == nil {
+						done(simulatorview.CardView{}, fmt.Errorf("peek returned no orb"))
+						return
+					}
+					done(*private.OrbPeek, nil)
+				},
+			)
+		},
+		RevealOrb: func(orbIndex int, expectedRevision model.Revision) {
+			runCommand("reveal_orb", expectedRevision, map[string]any{"orb_index": orbIndex})
 		},
 		CompleteCurrentPhase: func(expectedRevision model.Revision) {
 			runCommand("complete_current_phase", expectedRevision, nil)

@@ -1,12 +1,25 @@
 # Simulator host (AWS / VPS)
 
 Authoritative WebSocket match host. Clients connect with room codes; the host
-starts a prototype-deck match when the second player joins.
+starts a match from the decks each player submits on create/join.
 
 Default port: **7474**  
 Connect URL: `ws://YOUR_PUBLIC_IP:7474/`
 
-## Option A — binary (simplest on EC2)
+## One-command deploy (recommended)
+
+`scripts/deploy-simhost.sh` is gitignored so personal host/key paths stay local.
+Copy the example once, edit defaults if you want, then run it:
+
+```bash
+cp scripts/deploy-simhost.example.sh scripts/deploy-simhost.sh
+chmod +x scripts/deploy-simhost.sh
+SIMHOST_HOST=YOUR_EC2_IP SIMHOST_KEY=~/path/to/key.pem ./scripts/deploy-simhost.sh
+```
+
+Optional: `SIMHOST_USER`, `SIMHOST_SKIP_BUILD=1`, `SIMHOST_SKIP_SMOKE=1`.
+
+## Option A — binary (manual)
 
 ### 1. Build the release tarball (on your laptop)
 
@@ -80,5 +93,5 @@ Same security-group rule: TCP **7474**.
 - Hotseat in the desktop app is unchanged; networked Fyne Host/Join UI is separate.
 - TLS (`wss://`) is not included yet — put nginx/Caddy in front later if you need it.
 - Each filled room starts from the two decks players submit on create/join
-  (protocol version 2). Redeploy `simhost` whenever the desktop app protocol
+  (protocol version 3). Redeploy `simhost` whenever the desktop app protocol
   version advances.

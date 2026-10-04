@@ -23,10 +23,11 @@ type Host struct {
 }
 
 type wsClient struct {
-	conn     *websocket.Conn
-	roomCode string
-	playerID string
-	name     string
+	conn       *websocket.Conn
+	roomCode   string
+	playerID   string
+	name       string
+	spectator  bool
 }
 
 func NewHost(lobby *Lobby) *Host {
@@ -62,6 +63,8 @@ func (host *Host) dispatch(client *wsClient, data []byte) ([]byte, error) {
 		return host.handleCreateRoom(client, envelope.Payload)
 	case protocol.KindJoinRoom:
 		return host.handleJoinRoom(client, envelope.Payload)
+	case protocol.KindListRooms:
+		return host.handleListRooms(client, envelope.Payload)
 	case protocol.KindCommand:
 		return host.handleCommand(client, envelope.Payload)
 	default:
@@ -91,19 +94,21 @@ func (host *Host) handleCreateRoom(client *wsClient, raw json.RawMessage) ([]byt
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return encodeError("bad_request", err.Error())
 	}
-	roomCode, playerID, err := host.Lobby.CreateRoom(payload.PlayerName, payload.Deck)
+	roomCode, playerID, roomName, err := host.Lobby.CreateRoom(payload.PlayerName, payload.RoomName, payload.Deck, payload.Password)
 	if err != nil {
 		return encodeError("create_room_failed", err.Error())
 	}
 	if client != nil {
 		client.roomCode = roomCode
 		client.playerID = playerID
+		client.spectator = false
 		if client.name == "" {
 			client.name = payload.PlayerName
 		}
 	}
 	return protocol.Encode(protocol.KindCreateRoom, protocol.CreateRoomPayload{
 		RoomCode:   roomCode,
+		RoomName:   roomName,
 		PlayerID:   playerID,
 		PlayerName: payload.PlayerName,
 	})
@@ -114,35 +119,56 @@ func (host *Host) handleJoinRoom(client *wsClient, raw json.RawMessage) ([]byte,
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return encodeError("bad_request", err.Error())
 	}
-	playerID, err := host.Lobby.JoinRoom(payload.RoomCode, payload.PlayerName, payload.Deck)
+
+	var playerID string
+	var err error
+	if payload.Spectator {
+		playerID, err = host.Lobby.JoinSpectator(payload.RoomCode, payload.PlayerName, payload.Password)
+	} else {
+		playerID, err = host.Lobby.JoinRoom(payload.RoomCode, payload.PlayerName, payload.Deck, payload.Password)
+	}
 	if err != nil {
 		return encodeError("join_room_failed", err.Error())
 	}
 	if client != nil {
 		client.roomCode = payload.RoomCode
 		client.playerID = playerID
+		client.spectator = payload.Spectator
 		if client.name == "" {
 			client.name = payload.PlayerName
 		}
 	}
 
-	if err := host.maybeStartMatch(payload.RoomCode); err != nil {
-		return encodeError("start_match_failed", err.Error())
+	if !payload.Spectator {
+		if err := host.maybeStartMatch(payload.RoomCode); err != nil {
+			return encodeError("start_match_failed", err.Error())
+		}
 	}
 
 	reply, err := protocol.Encode(protocol.KindJoinRoom, protocol.JoinRoomPayload{
 		RoomCode:   payload.RoomCode,
 		PlayerID:   playerID,
 		PlayerName: payload.PlayerName,
+		Spectator:  payload.Spectator,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	// Notify the host seat if a match was started; the joiner gets the join reply
-	// first, then can request_view or wait for later pushes.
 	host.pushViews(payload.RoomCode, playerID)
 	return reply, nil
+}
+
+func (host *Host) handleListRooms(_ *wsClient, raw json.RawMessage) ([]byte, error) {
+	if len(raw) > 0 && string(raw) != "null" {
+		var payload protocol.ListRoomsPayload
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			return encodeError("bad_request", err.Error())
+		}
+	}
+	return protocol.Encode(protocol.KindRoomList, protocol.RoomListPayload{
+		Rooms: host.Lobby.ListRooms(),
+	})
 }
 
 func (host *Host) maybeStartMatch(roomCode string) error {

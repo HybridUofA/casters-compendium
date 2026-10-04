@@ -118,6 +118,48 @@ func TestCardImageURL(t *testing.T) {
 	}
 }
 
+func TestClientRetriesNotFoundWithCacheBust(t *testing.T) {
+	pointer := CatalogPointer{
+		SchemaVersion:  SchemaVersion,
+		CatalogVersion: "v6",
+		ReleaseURL:     "https://assets.test/catalog/v6/release.json",
+	}
+	release := validReleaseManifest()
+	release.CatalogVersion = "v6"
+	release.Database.URL = "https://assets.test/catalog/v6/cards.json"
+	release.Images.BaseURL = "https://assets.test/catalog/v6/images/"
+	release.TabletopSimulator.ManifestURL = "https://assets.test/catalog/v6/tts/manifest.json"
+	requests := make([]string, 0, 3)
+	client := Client{
+		PointerURL: "https://assets.test/catalog/current.json",
+		HTTP: &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+			requests = append(requests, request.URL.String())
+			switch request.URL.String() {
+			case "https://assets.test/catalog/current.json":
+				return testResponse(request, http.StatusOK, marshalTestJSON(t, pointer)), nil
+			case "https://assets.test/catalog/v6/release.json":
+				return testResponse(request, http.StatusNotFound, []byte("cached miss")), nil
+			case "https://assets.test/catalog/v6/release.json?cacheBust=1":
+				return testResponse(request, http.StatusOK, marshalTestJSON(t, release)), nil
+			default:
+				return testResponse(request, http.StatusNotFound, []byte("missing")), nil
+			}
+		})},
+	}
+	gotPointer, gotRelease, err := client.FetchCurrent(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gotPointer.CatalogVersion != "v6" || gotRelease.CatalogVersion != "v6" {
+		t.Fatalf("unexpected versions: %#v %#v", gotPointer, gotRelease)
+	}
+	if len(requests) != 3 ||
+		requests[1] != "https://assets.test/catalog/v6/release.json" ||
+		requests[2] != "https://assets.test/catalog/v6/release.json?cacheBust=1" {
+		t.Fatalf("requests = %#v", requests)
+	}
+}
+
 func marshalTestJSON(t *testing.T, value any) []byte {
 	t.Helper()
 	data, err := json.Marshal(value)

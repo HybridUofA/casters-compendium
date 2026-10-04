@@ -1578,6 +1578,9 @@ func showApplication(
 	showMainMenu = func() {
 		window.SetTitle(applicationName)
 		setWindowContent(window, buildMainMenu(window, mainMenuActions{
+			OnlineLobby: func() {
+				showOnlineLobby(window, deckLibraryDirectory, repository, showMainMenu)
+			},
 			HostOnlineGame: func() {
 				showHostOnlineGame(window, deckLibraryDirectory, repository, showMainMenu)
 			},
@@ -1783,6 +1786,63 @@ func showApplication(
 											}
 											renderPlayersWithView(playerIndex, updatedView)
 										},
+										DrawCards: func(count int, expectedRevision model.Revision) {
+											updatedView, drawErr := playerSessions[playerIndex].DrawCards(count, expectedRevision)
+											if drawErr != nil {
+												dialog.ShowError(drawErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										ShuffleDeck: func(expectedRevision model.Revision) {
+											updatedView, shuffleErr := playerSessions[playerIndex].ShuffleDeck(expectedRevision)
+											if shuffleErr != nil {
+												dialog.ShowError(shuffleErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										PeekDeckTops: func(
+											ownerID model.PlayerID,
+											count int,
+											done func([]simulatorview.CardView, error),
+										) {
+											peeked, updatedView, peekErr := playerSessions[playerIndex].PeekDeckTops(ownerID, count)
+											if peekErr != nil {
+												if done != nil {
+													done(nil, peekErr)
+												}
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+											if done != nil {
+												done(peeked, nil)
+											}
+										},
+										MoveDeckTopToBottom: func(ownerID model.PlayerID, expectedRevision model.Revision) {
+											updatedView, moveErr := playerSessions[playerIndex].MoveDeckTopToBottom(ownerID, expectedRevision)
+											if moveErr != nil {
+												dialog.ShowError(moveErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										ResolveDeckDig: func(
+											keep model.MatchCardID,
+											bottomOrder []model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, digErr := playerSessions[playerIndex].ResolveDeckDig(
+												keep,
+												bottomOrder,
+												expectedRevision,
+											)
+											if digErr != nil {
+												dialog.ShowError(digErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
 										PassPriority: func(expectedRevision model.Revision) {
 											updatedView, priorityErr := playerSessions[playerIndex].
 												PassPriority(expectedRevision)
@@ -1806,6 +1866,112 @@ func showApplication(
 											)
 											if attackErr != nil {
 												dialog.ShowError(attackErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										CorruptOrbs: func(orbIndexes []int, expectedRevision model.Revision) {
+											updatedView, corruptErr := playerSessions[playerIndex].CorruptOrbs(
+												orbIndexes,
+												expectedRevision,
+											)
+											if corruptErr != nil {
+												dialog.ShowError(corruptErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										SetGrantedDoubleCorrupt: func(
+											cardID model.MatchCardID,
+											enabled bool,
+											expectedRevision model.Revision,
+										) {
+											updatedView, grantErr := playerSessions[playerIndex].SetGrantedDoubleCorrupt(
+												cardID,
+												enabled,
+												expectedRevision,
+											)
+											if grantErr != nil {
+												dialog.ShowError(grantErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										PlayBreak: func(
+											cardID model.MatchCardID,
+											orientation model.CardOrientation,
+											expectedRevision model.Revision,
+										) {
+											updatedView, playErr := playerSessions[playerIndex].PlayBreak(
+												cardID,
+												orientation,
+												expectedRevision,
+											)
+											if playErr != nil {
+												dialog.ShowError(playErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										DeclineBreak: func(expectedRevision model.Revision) {
+											updatedView, declineErr := playerSessions[playerIndex].DeclineBreak(
+												expectedRevision,
+											)
+											if declineErr != nil {
+												dialog.ShowError(declineErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										AcceptSageAdvice: func(expectedRevision model.Revision) {
+											updatedView, acceptErr := playerSessions[playerIndex].AcceptSageAdvice(
+												expectedRevision,
+											)
+											if acceptErr != nil {
+												dialog.ShowError(acceptErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										DeclineDrawReplacement: func(expectedRevision model.Revision) {
+											updatedView, declineErr := playerSessions[playerIndex].DeclineDrawReplacement(
+												expectedRevision,
+											)
+											if declineErr != nil {
+												dialog.ShowError(declineErr, playerWindows[playerIndex])
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+										},
+										PeekOrb: func(
+											ownerID model.PlayerID,
+											orbIndex int,
+											expectedRevision model.Revision,
+											done func(simulatorview.CardView, error),
+										) {
+											peeked, updatedView, peekErr := playerSessions[playerIndex].PeekOrb(
+												ownerID,
+												orbIndex,
+												expectedRevision,
+											)
+											if peekErr != nil {
+												if done != nil {
+													done(simulatorview.CardView{}, peekErr)
+												}
+												return
+											}
+											renderPlayersWithView(playerIndex, updatedView)
+											if done != nil {
+												done(peeked, nil)
+											}
+										},
+										RevealOrb: func(orbIndex int, expectedRevision model.Revision) {
+											updatedView, revealErr := playerSessions[playerIndex].RevealOrb(
+												orbIndex,
+												expectedRevision,
+											)
+											if revealErr != nil {
+												dialog.ShowError(revealErr, playerWindows[playerIndex])
 												return
 											}
 											renderPlayersWithView(playerIndex, updatedView)

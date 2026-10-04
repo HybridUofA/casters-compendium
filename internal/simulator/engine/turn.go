@@ -2,10 +2,10 @@ package engine
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
 
 func openPrioritySequence(state *model.MatchState) error {
@@ -47,10 +47,23 @@ func validatePhaseCompletion(
 	if state.PriorityHolder != "" || state.PassCount != 0 || len(state.ChaseLinks) != 0 {
 		return fmt.Errorf("closed priority sequence has inconsistent state")
 	}
+	if state.Attack.Step != model.BattleStepIdle || state.Attack.AttackerID != "" {
+		return fmt.Errorf("cannot complete phase while an attack is in progress")
+	}
+	if state.PendingDraw.Step != model.PendingDrawIdle {
+		return fmt.Errorf("cannot complete phase while a draw replacement is pending")
+	}
+	if state.PendingBreak.PlayerID != "" || len(state.PendingBreak.CardIDs) > 0 {
+		return fmt.Errorf("cannot complete phase while a break decision is pending")
+	}
 	return nil
 }
 
-func completeRecoveryPhase(state *model.MatchState, actingPlayerID model.PlayerID) error {
+func completeRecoveryPhase(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	actingPlayerID model.PlayerID,
+) error {
 	if err := validatePhaseCompletion(state, actingPlayerID, model.PhaseRecovery); err != nil {
 		return fmt.Errorf("error validating phase: %w", err)
 	}
@@ -60,17 +73,14 @@ func completeRecoveryPhase(state *model.MatchState, actingPlayerID model.PlayerI
 		}
 		state.Turn.Phase = model.PhaseCall
 	} else {
-		if err := enterDrawPhase(state); err != nil {
+		if err := enterDrawPhase(state, catalog); err != nil {
 			return fmt.Errorf("error transitioning to draw phase: %w", err)
 		}
 	}
 	return nil
 }
 
-func enterDrawPhase(state *model.MatchState) error {
-	if err := validatePhaseCompletion(state, state.Turn.ActivePlayer, model.PhaseRecovery); err != nil {
-		return fmt.Errorf("error validating phase: %w", err)
-	}
+func enterDrawPhase(state *model.MatchState, catalog rules.CardCatalog) error {
 	if state.Turn.Number == 1 {
 		return fmt.Errorf("draw phase cannot be entered during first turn")
 	}
@@ -91,9 +101,9 @@ func enterDrawPhase(state *model.MatchState) error {
 			Reason: model.EndReasonDeckOut,
 		})
 	}
-	card := state.Players[activeIndex].Deck[0]
-	state.Players[activeIndex].Deck = slices.Delete(state.Players[activeIndex].Deck, 0, 1)
-	state.Players[activeIndex].Hand = append(state.Players[activeIndex].Hand, card)
+	if err := beginDrawOrOfferReplacement(state, catalog, state.Turn.ActivePlayer, 1); err != nil {
+		return fmt.Errorf("error drawing cards: %w", err)
+	}
 	state.Turn.Phase = model.PhaseDraw
 	return nil
 }
@@ -146,8 +156,38 @@ func completeBattlePhase(
 	if err := validatePhaseCompletion(state, actingPlayerID, model.PhaseBattle); err != nil {
 		return fmt.Errorf("error validating phase: %w", err)
 	}
+	if hasMandatoryEligibleAttacker(state, actingPlayerID) {
+		return fmt.Errorf("cannot finish battle while a servant is able to attack")
+	}
 	state.Turn.Phase = model.PhaseEnd
 	return nil
+}
+
+// hasMandatoryEligibleAttacker reports whether the active player still controls
+// a Recovered Servant that has at least one legal attack target. Attack costs
+// and Slow Start are not auto-enforced yet; those remain manual.
+func hasMandatoryEligibleAttacker(state *model.MatchState, actingPlayerID model.PlayerID) bool {
+	if state == nil {
+		return false
+	}
+	actingIndex, opponentIndex, err := battlePlayerIndexes(state, actingPlayerID)
+	if err != nil {
+		return false
+	}
+	for _, cardID := range state.Players[actingIndex].ServantZone {
+		if err := validateAttacker(state, actingIndex, cardID); err != nil {
+			continue
+		}
+		if validateAttackTarget(state, opponentIndex, model.AttackTargetPlayer, "") == nil {
+			return true
+		}
+		for _, targetID := range state.Players[opponentIndex].ServantZone {
+			if validateAttackTarget(state, opponentIndex, model.AttackTargetServant, targetID) == nil {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func completeEndPhase(
@@ -182,7 +222,12 @@ func completeEndPhase(
 	return nil
 }
 
-func CompleteCurrentPhase(state *model.MatchState, actingPlayerID model.PlayerID, expectedRevision model.Revision) error {
+func CompleteCurrentPhase(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	actingPlayerID model.PlayerID,
+	expectedRevision model.Revision,
+) error {
 	if state == nil {
 		return fmt.Errorf("state cannot be nil")
 	}
@@ -194,7 +239,7 @@ func CompleteCurrentPhase(state *model.MatchState, actingPlayerID model.PlayerID
 	}
 	switch state.Turn.Phase {
 	case model.PhaseRecovery:
-		if err := completeRecoveryPhase(state, actingPlayerID); err != nil {
+		if err := completeRecoveryPhase(state, catalog, actingPlayerID); err != nil {
 			return fmt.Errorf("transition from %q: %w", state.Turn.Phase, err)
 		}
 	case model.PhaseDraw:
@@ -221,6 +266,11 @@ func CompleteCurrentPhase(state *model.MatchState, actingPlayerID model.PlayerID
 		return fmt.Errorf("unsupported or illegal transition from %q", state.Turn.Phase)
 	}
 	if state.MatchStatus == model.StatusFinished {
+		state.Revision++
+		return nil
+	}
+	if state.PendingDraw.Step != model.PendingDrawIdle {
+		// Wait for Sage Advice / normal draw resolution before priority opens.
 		state.Revision++
 		return nil
 	}

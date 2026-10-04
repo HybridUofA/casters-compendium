@@ -8,8 +8,8 @@ import (
 	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
-// ProtocolVersion 2 requires each create/join to include a validated deck list.
-const ProtocolVersion = 2
+// ProtocolVersion 3 adds lobby listing, optional passwords, and spectators.
+const ProtocolVersion = 3
 
 type Kind string
 
@@ -17,6 +17,8 @@ const (
 	KindHello      Kind = "hello"
 	KindCreateRoom Kind = "create_room"
 	KindJoinRoom   Kind = "join_room"
+	KindListRooms  Kind = "list_rooms"
+	KindRoomList   Kind = "room_list"
 	KindCommand    Kind = "command"
 	KindView       Kind = "view"
 	KindError      Kind = "error"
@@ -35,8 +37,10 @@ type HelloPayload struct {
 
 type CreateRoomPayload struct {
 	RoomCode   string     `json:"room_code,omitempty"`
+	RoomName   string     `json:"room_name,omitempty"`
 	PlayerID   string     `json:"player_id,omitempty"`
 	PlayerName string     `json:"player_name"`
+	Password   string     `json:"password,omitempty"`
 	Deck       decks.Deck `json:"deck"`
 }
 
@@ -44,7 +48,26 @@ type JoinRoomPayload struct {
 	RoomCode   string     `json:"room_code"`
 	PlayerID   string     `json:"player_id,omitempty"`
 	PlayerName string     `json:"player_name"`
-	Deck       decks.Deck `json:"deck"`
+	Password   string     `json:"password,omitempty"`
+	Spectator  bool       `json:"spectator,omitempty"`
+	Deck       decks.Deck `json:"deck,omitempty"`
+}
+
+type ListRoomsPayload struct{}
+
+type RoomSummary struct {
+	RoomCode       string `json:"room_code"`
+	RoomName       string `json:"room_name"`
+	HostName       string `json:"host_name"` // display name of the player who created the room
+	PlayerCount    int    `json:"player_count"`
+	SpectatorCount int    `json:"spectator_count"`
+	HasPassword    bool   `json:"has_password"`
+	MatchStarted   bool   `json:"match_started"`
+	OpenSeats      int    `json:"open_seats"`
+}
+
+type RoomListPayload struct {
+	Rooms []RoomSummary `json:"rooms"`
 }
 
 type CommandPayload struct {
@@ -55,7 +78,16 @@ type CommandPayload struct {
 }
 
 type ViewPayload struct {
-	Match simulatorview.MatchView `json:"match"`
+	Match        simulatorview.MatchView `json:"match"`
+	Private      *PrivateView            `json:"private,omitempty"`
+	DisplayNames map[string]string       `json:"display_names,omitempty"`
+}
+
+// PrivateView carries actor-only information that must never be pushed to peers.
+type PrivateView struct {
+	DeckPeek      []simulatorview.CardView `json:"deck_peek,omitempty"`
+	DeckPeekOwner string                   `json:"deck_peek_owner,omitempty"`
+	OrbPeek       *simulatorview.CardView  `json:"orb_peek,omitempty"`
 }
 
 type ErrorPayload struct {

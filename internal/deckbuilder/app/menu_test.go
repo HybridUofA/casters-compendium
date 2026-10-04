@@ -38,15 +38,17 @@ func TestBuildMainMenuDisplaysOnlinePlayActions(t *testing.T) {
 	defer window.Close()
 
 	menu := buildMainMenu(window, mainMenuActions{
+		OnlineLobby:    func() {},
 		HostOnlineGame: func() {},
 		JoinOnlineGame: func() {},
 	})
+	lobby := findButtonText(menu, "Online Lobby")
 	host := findButtonText(menu, "Host Online Game")
 	join := findButtonText(menu, "Join Online Game")
-	if host == nil || join == nil {
-		t.Fatal("main menu does not display Host/Join online actions")
+	if lobby == nil || host == nil || join == nil {
+		t.Fatal("main menu does not display Online Lobby / Host / Join actions")
 	}
-	if host.Disabled() || join.Disabled() {
+	if lobby.Disabled() || host.Disabled() || join.Disabled() {
 		t.Fatal("online play actions are disabled despite having handlers")
 	}
 }

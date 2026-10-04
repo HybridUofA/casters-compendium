@@ -148,16 +148,38 @@ func (client Client) fetch(
 	rawURL string,
 	limit int64,
 ) ([]byte, error) {
+	data, status, err := client.fetchOnce(ctx, rawURL, limit)
+	if err == nil {
+		return data, nil
+	}
+	// Cloudflare can cache a long-lived 404 for an immutable catalog object that
+	// was probed before upload finished. Retry once with a cache-busting query.
+	if status == http.StatusNotFound {
+		busted, bustErr := withCacheBust(rawURL)
+		if bustErr == nil {
+			if data, _, retryErr := client.fetchOnce(ctx, busted, limit); retryErr == nil {
+				return data, nil
+			}
+		}
+	}
+	return nil, err
+}
+
+func (client Client) fetchOnce(
+	ctx context.Context,
+	rawURL string,
+	limit int64,
+) ([]byte, int, error) {
 	if client.HTTP == nil {
-		return nil, fmt.Errorf("HTTP client cannot be nil")
+		return nil, 0, fmt.Errorf("HTTP client cannot be nil")
 	}
 	parsed, err := url.Parse(strings.TrimSpace(rawURL))
 	if err != nil || parsed.Scheme != "https" || parsed.Host == "" {
-		return nil, fmt.Errorf("URL must be absolute HTTPS")
+		return nil, 0, fmt.Errorf("URL must be absolute HTTPS")
 	}
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, parsed.String(), nil)
 	if err != nil {
-		return nil, fmt.Errorf("create request: %w", err)
+		return nil, 0, fmt.Errorf("create request: %w", err)
 	}
 	request.Header.Set("Accept", "application/json")
 	if strings.TrimSpace(client.UserAgent) != "" {
@@ -165,18 +187,29 @@ func (client Client) fetch(
 	}
 	response, err := client.HTTP.Do(request)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer response.Body.Close()
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		return nil, fmt.Errorf("server returned %s", response.Status)
+		return nil, response.StatusCode, fmt.Errorf("server returned %s", response.Status)
 	}
 	data, err := io.ReadAll(io.LimitReader(response.Body, limit+1))
 	if err != nil {
-		return nil, err
+		return nil, response.StatusCode, err
 	}
 	if int64(len(data)) > limit {
-		return nil, fmt.Errorf("response exceeds %d bytes", limit)
+		return nil, response.StatusCode, fmt.Errorf("response exceeds %d bytes", limit)
 	}
-	return data, nil
+	return data, response.StatusCode, nil
+}
+
+func withCacheBust(rawURL string) (string, error) {
+	parsed, err := url.Parse(strings.TrimSpace(rawURL))
+	if err != nil {
+		return "", err
+	}
+	query := parsed.Query()
+	query.Set("cacheBust", "1")
+	parsed.RawQuery = query.Encode()
+	return parsed.String(), nil
 }

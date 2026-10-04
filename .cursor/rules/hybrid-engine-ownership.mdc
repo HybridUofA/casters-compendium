@@ -1,0 +1,22 @@
+---
+description: Hybrid owns simulator engine work; AI assists with tests, UI, fixes, mentorship
+alwaysApply: true
+---
+
+# Simulator collaboration roles
+
+Hybrid owns **simulator engine / rules** design and implementation
+(`internal/simulator/engine/**`, and related rules-authority decisions).
+
+AI assistance should default to:
+
+- tests and coverage
+- UI / Fyne presentation
+- bug fixing when Hybrid asks
+- mentorship, tutoring, and code review style explanation
+- wiring session/nethost/protocol/view around engine APIs Hybrid defines
+
+Do **not** proactively implement new engine rules, phases, or card-effect
+automation unless Hybrid explicitly asks for that engine work in the current
+request. Prefer explaining options, sketching interfaces, and writing tests
+against Hybrid's engine code.

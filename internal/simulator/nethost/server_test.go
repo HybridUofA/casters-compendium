@@ -42,7 +42,7 @@ func TestWebSocketCreateJoinAndRequestView(t *testing.T) {
 	if err := hostClient.Hello(ctx, "Host"); err != nil {
 		t.Fatalf("host Hello() error = %v", err)
 	}
-	created, err := hostClient.CreateRoom(ctx, "Host", decks.Deck{SchemaVersion: 1, Name: "Host Deck"})
+	created, err := hostClient.CreateRoom(ctx, "Host", "Host Room", decks.Deck{SchemaVersion: 1, Name: "Host Deck"}, "")
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
@@ -53,7 +53,7 @@ func TestWebSocketCreateJoinAndRequestView(t *testing.T) {
 	if err := guestClient.Hello(ctx, "Guest"); err != nil {
 		t.Fatalf("guest Hello() error = %v", err)
 	}
-	joined, err := guestClient.JoinRoom(ctx, created.RoomCode, "Guest", decks.Deck{SchemaVersion: 1, Name: "Guest Deck"})
+	joined, err := guestClient.JoinRoom(ctx, created.RoomCode, "Guest", decks.Deck{SchemaVersion: 1, Name: "Guest Deck"}, "")
 	if err != nil {
 		t.Fatalf("JoinRoom() error = %v", err)
 	}

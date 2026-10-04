@@ -259,7 +259,7 @@ func TestPassPriorityUsesDefenseAgainstReversedServant(t *testing.T) {
 	}
 }
 
-func TestPassPriorityCorruptsFrontmostOrbOnPlayerAttack(t *testing.T) {
+func TestPassPriorityAwaitsOrbChoiceOnPlayerAttack(t *testing.T) {
 	state, catalog := battleJudgmentStateForTest()
 	state.Players[1].ServantZone = nil
 
@@ -270,14 +270,70 @@ func TestPassPriorityCorruptsFrontmostOrbOnPlayerAttack(t *testing.T) {
 	}
 	passTwiceForTest(t, &state, catalog)
 
-	if !reflect.DeepEqual(state.Players[1].Orbs, []model.MatchCardID{"p2-orb-2"}) {
-		t.Fatalf("Orbs = %#v; want only p2-orb-2 remaining", state.Players[1].Orbs)
+	if state.Attack.Step != model.BattleStepAwaitingJudgment {
+		t.Fatalf("Attack.Step = %q; want Awaiting Judgment", state.Attack.Step)
 	}
-	if !slicesContains(state.Players[1].Hand, "p2-orb-1") {
-		t.Fatalf("Hand = %#v; want corrupted p2-orb-1", state.Players[1].Hand)
+	if state.Attack.CorruptCount != 1 {
+		t.Fatalf("CorruptCount = %d; want 1 without Double Corrupt", state.Attack.CorruptCount)
+	}
+	if state.PrioritySequenceOpen || state.PriorityHolder != "" || state.PassCount != 0 {
+		t.Fatal("orb-choice pause left priority open")
+	}
+	if !reflect.DeepEqual(state.Players[1].Orbs, []model.MatchCardID{"p2-orb-1", "p2-orb-2"}) {
+		t.Fatalf("Orbs = %#v; want unchanged until CorruptOrb", state.Players[1].Orbs)
+	}
+}
+
+func TestCorruptOrbChoosesSelectedEnemyOrb(t *testing.T) {
+	state, catalog := battleJudgmentStateForTest()
+	state.Players[1].ServantZone = nil
+
+	if err := DeclareAttack(
+		&state, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
+	); err != nil {
+		t.Fatalf("DeclareAttack() error = %v", err)
+	}
+	passTwiceForTest(t, &state, catalog)
+
+	if err := CorruptOrb(&state, catalog, "player-one", 1, state.Revision); err != nil {
+		t.Fatalf("CorruptOrb() error = %v", err)
+	}
+	if !reflect.DeepEqual(state.Players[1].Orbs, []model.MatchCardID{"p2-orb-1"}) {
+		t.Fatalf("Orbs = %#v; want p2-orb-1 remaining after choosing index 1", state.Players[1].Orbs)
+	}
+	if !slicesContains(state.Players[1].Hand, "p2-orb-2") {
+		t.Fatalf("Hand = %#v; want corrupted p2-orb-2", state.Players[1].Hand)
+	}
+	if state.Attack != (model.AttackState{}) {
+		t.Fatalf("Attack = %#v; want cleared after corruption", state.Attack)
+	}
+	if !state.PrioritySequenceOpen || state.PriorityHolder != "player-one" || state.PassCount != 0 {
+		t.Fatalf("post-corruption priority = open %t holder %q passes %d",
+			state.PrioritySequenceOpen, state.PriorityHolder, state.PassCount)
 	}
 	if state.MatchStatus != model.StatusInProgress {
 		t.Fatalf("MatchStatus = %q; corrupting an Orb must not finish the match", state.MatchStatus)
+	}
+}
+
+func TestCorruptOrbRejectsInvalidChoiceWithoutMutation(t *testing.T) {
+	state, catalog := battleJudgmentStateForTest()
+	state.Players[1].ServantZone = nil
+	if err := DeclareAttack(
+		&state, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
+	); err != nil {
+		t.Fatalf("DeclareAttack() error = %v", err)
+	}
+	passTwiceForTest(t, &state, catalog)
+	beforeRevision := state.Revision
+	beforeOrbs := append([]model.MatchCardID(nil), state.Players[1].Orbs...)
+
+	err := CorruptOrb(&state, catalog, "player-one", 2, state.Revision)
+	if err == nil || !strings.Contains(err.Error(), "out of range") {
+		t.Fatalf("CorruptOrb() error = %v; want out-of-range", err)
+	}
+	if state.Revision != beforeRevision || !reflect.DeepEqual(state.Players[1].Orbs, beforeOrbs) {
+		t.Fatal("rejected CorruptOrb mutated state")
 	}
 }
 

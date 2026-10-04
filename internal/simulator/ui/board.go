@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
@@ -66,6 +67,11 @@ type cardLookup map[model.CardID]cards.Card
 // BoardActions translates presentation choices into session-owned commands.
 type BoardActions struct {
 	MoveCard                   func(model.MoveCardCommand, model.Revision)
+	DrawCards                  func(count int, revision model.Revision)
+	ShuffleDeck                func(revision model.Revision)
+	PeekDeckTops               func(ownerID model.PlayerID, count int, done func([]simulatorview.CardView, error))
+	MoveDeckTopToBottom        func(ownerID model.PlayerID, revision model.Revision)
+	ResolveDeckDig             func(keep model.MatchCardID, bottomOrder []model.MatchCardID, revision model.Revision)
 	SubmitOpeningHand          func([]model.MatchCardID, model.Revision)
 	CallFaceDownLevelOne       func(model.MatchCardID, model.Revision)
 	CallFaceUpLevelOne         func(model.MatchCardID, model.Revision)
@@ -81,8 +87,19 @@ type BoardActions struct {
 	CastBarrierWithPlan        func(model.MatchCardID, model.CastPaymentPlan, model.Revision)
 	PassPriority               func(model.Revision)
 	DeclareAttack              func(model.MatchCardID, model.AttackTargetKind, model.MatchCardID, model.Revision)
+	CorruptOrbs                func(orbIndexes []int, revision model.Revision)
+	SetGrantedDoubleCorrupt    func(cardID model.MatchCardID, enabled bool, revision model.Revision)
+	PlayBreak                  func(cardID model.MatchCardID, orientation model.CardOrientation, revision model.Revision)
+	DeclineBreak               func(revision model.Revision)
+	AcceptSageAdvice           func(revision model.Revision)
+	DeclineDrawReplacement     func(revision model.Revision)
+	PeekOrb                    func(ownerID model.PlayerID, orbIndex int, revision model.Revision, done func(simulatorview.CardView, error))
+	RevealOrb                  func(orbIndex int, revision model.Revision)
 	CompleteCurrentPhase       func(model.Revision)
-	BackLabel                  string
+	// ShouldAutoPassPriority opts into Arena-style auto-pass when true for the
+	// current view. The board calls PassPriority at most once per revision.
+	ShouldAutoPassPriority func(simulatorview.MatchView) bool
+	BackLabel              string
 }
 
 // BoardScreen owns a persistent simulator widget tree. Update changes public
@@ -103,6 +120,12 @@ type BoardScreen struct {
 	definitions  cardLookup
 	preview      previewState
 	actions      BoardActions
+	dropTargets          []zoneDropTarget
+	drag                 cardDragSession
+	lastAutoPassRevision model.Revision
+	lastSageDigRevision  model.Revision
+	// pendingAttackerID is a local UI selection for left-click attack targeting.
+	pendingAttackerID model.MatchCardID
 }
 
 // NewBoardScreen renders one viewer-safe match projection. It deliberately
@@ -202,6 +225,9 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 	}
 	previous := screen.match
 	screen.match = match
+	if screen.pendingAttackerID != "" && !canViewerDeclareAttack(match) {
+		screen.pendingAttackerID = ""
+	}
 	if previous.Revision != match.Revision || previous.ViewerID != match.ViewerID || previous.MatchStatus != match.MatchStatus {
 		screen.updateManualMoves()
 	}
@@ -251,6 +277,7 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 }
 
 func (screen *BoardScreen) rebuildBoards() {
+	screen.clearDropTargets()
 	viewerIndex := screen.viewerIndex()
 	opponentIndex := 1 - viewerIndex
 	opponentBoard := screen.newProjectedPlayerBoardController(opponentIndex, false)
@@ -258,6 +285,7 @@ func (screen *BoardScreen) rebuildBoards() {
 	screen.playerBoards = [2]*playerBoardController{opponentBoard, playerBoard}
 	screen.boards.Objects = []fyne.CanvasObject{opponentBoard.root, playerBoard.root}
 	refreshContainerStructure(screen.boards)
+	screen.refreshDropTargets()
 }
 
 func (screen *BoardScreen) viewerIndex() int {
@@ -276,6 +304,7 @@ func (screen *BoardScreen) newProjectedPlayerBoardController(
 		playerName = "Player"
 	}
 	return newPlayerBoardController(
+		screen,
 		playerName,
 		screen.match.Players[playerIndex],
 		isViewer,
@@ -296,23 +325,28 @@ func (screen *BoardScreen) newProjectedPlayerBoardController(
 
 func (screen *BoardScreen) updateMetadata() {
 	match := screen.match
+	activeLabel := displayNameFor(match, match.Turn.ActivePlayer)
+	priorityLabel := displayNameFor(match, match.PriorityHolder)
 	status := fmt.Sprintf(
 		"Turn %d • %s • Revision %d • Active player: %s • Priority: %s • Chase: %d",
 		match.Turn.Number,
 		match.Turn.Phase,
 		match.Revision,
-		match.Turn.ActivePlayer,
-		match.PriorityHolder,
+		activeLabel,
+		priorityLabel,
 		match.ChaseLinkCount,
 	)
+	if match.Spectator {
+		status = "Spectating • " + status
+	}
 	if match.MatchStatus == model.StatusFinished {
 		if match.Result.IsDraw {
 			status = fmt.Sprintf("Match finished — draw (%s) • Revision %d", match.Result.Reason, match.Revision)
 		} else {
 			status = fmt.Sprintf(
 				"Match finished — %s defeated %s (%s) • Revision %d",
-				match.Result.Winner,
-				match.Result.Loser,
+				displayNameFor(match, match.Result.Winner),
+				displayNameFor(match, match.Result.Loser),
 				match.Result.Reason,
 				match.Revision,
 			)
@@ -327,6 +361,33 @@ func (screen *BoardScreen) updateMetadata() {
 	screen.updatePhaseButtons()
 	screen.updatePriorityButton()
 	screen.updateAttackPanel()
+	screen.maybePromptSageDig()
+	screen.maybeAutoPassPriority()
+}
+
+func displayNameFor(match simulatorview.MatchView, id model.PlayerID) string {
+	if id == "" {
+		return ""
+	}
+	if name, ok := match.DisplayNames[id]; ok && strings.TrimSpace(name) != "" {
+		return name
+	}
+	return string(id)
+}
+
+func (screen *BoardScreen) maybeAutoPassPriority() {
+	if screen == nil || screen.actions.PassPriority == nil || screen.actions.ShouldAutoPassPriority == nil {
+		return
+	}
+	match := screen.match
+	if match.Revision == 0 || match.Revision == screen.lastAutoPassRevision {
+		return
+	}
+	if !screen.actions.ShouldAutoPassPriority(match) {
+		return
+	}
+	screen.lastAutoPassRevision = match.Revision
+	screen.actions.PassPriority(match.Revision)
 }
 
 func canViewerCallFaceDownLevelOne(match simulatorview.MatchView) bool {
@@ -427,6 +488,36 @@ func (screen *BoardScreen) updateAttackPanel() {
 	}
 	screen.attackPanel.Objects = nil
 	match := screen.match
+	if canViewerDecideSageAdvice(match) &&
+		(screen.actions.AcceptSageAdvice != nil || screen.actions.DeclineDrawReplacement != nil) {
+		screen.renderSageAdvicePanel()
+		return
+	}
+	if match.PendingDraw.Step != model.PendingDrawIdle &&
+		match.PendingDraw.PlayerID != "" &&
+		match.PendingDraw.PlayerID != match.ViewerID {
+		hint := widget.NewLabel("Waiting for opponent's Sage Advice draw decision…")
+		hint.Wrapping = fyne.TextWrapWord
+		screen.attackPanel.Objects = []fyne.CanvasObject{hint}
+		refreshContainerStructure(screen.attackPanel)
+		return
+	}
+	if canViewerDecideBreak(match) &&
+		(screen.actions.PlayBreak != nil || screen.actions.DeclineBreak != nil) {
+		screen.renderBreakPanel()
+		return
+	}
+	if screen.actions.CorruptOrbs != nil && canViewerCorruptOrb(match) {
+		screen.renderOrbChoicePanel()
+		return
+	}
+	if match.PendingBreak.PlayerID != "" && match.PendingBreak.PlayerID != match.ViewerID {
+		hint := widget.NewLabel("Waiting for opponent to decide whether to use Break…")
+		hint.Wrapping = fyne.TextWrapWord
+		screen.attackPanel.Objects = []fyne.CanvasObject{hint}
+		refreshContainerStructure(screen.attackPanel)
+		return
+	}
 	if screen.actions.DeclareAttack == nil || !canViewerDeclareAttack(match) {
 		refreshContainerStructure(screen.attackPanel)
 		return
@@ -452,6 +543,9 @@ func (screen *BoardScreen) updateAttackPanel() {
 					continue
 				}
 				label := fmt.Sprintf("%s (%s)", name, card.MatchID)
+				if cardShowsDoubleCorrupt(card, definition) {
+					label += " [Double Corrupt]"
+				}
 				attackerLabels = append(attackerLabels, label)
 				attackerIDs[label] = card.MatchID
 				continue
@@ -484,6 +578,7 @@ func (screen *BoardScreen) updateAttackPanel() {
 				"",
 				match.Revision,
 			)
+			screen.clearPendingAttacker()
 			return
 		}
 		targetID, ok := targetIDs[targetSelect.Selected]
@@ -496,6 +591,7 @@ func (screen *BoardScreen) updateAttackPanel() {
 			targetID,
 			match.Revision,
 		)
+		screen.clearPendingAttacker()
 	})
 	confirm.Disable()
 	updateConfirm := func(string) {
@@ -507,14 +603,418 @@ func (screen *BoardScreen) updateAttackPanel() {
 	}
 	attackerSelect.OnChanged = updateConfirm
 	targetSelect.OnChanged = updateConfirm
-	hint := widget.NewLabel("Battle: declare an attack, then both players pass to judge it.")
+	if pending := screen.pendingAttackerID; pending != "" {
+		for label, id := range attackerIDs {
+			if id == pending {
+				attackerSelect.SetSelected(label)
+				break
+			}
+		}
+	}
+	attackPlayer := widget.NewButton("Attack Enemy Player", func() {
+		attackerID := screen.pendingAttackerID
+		if attackerID == "" {
+			attackerID = attackerIDs[attackerSelect.Selected]
+		}
+		if attackerID == "" || screen.actions.DeclareAttack == nil || viewerHasReversedEnemy {
+			return
+		}
+		screen.actions.DeclareAttack(
+			attackerID,
+			model.AttackTargetPlayer,
+			"",
+			match.Revision,
+		)
+		screen.clearPendingAttacker()
+	})
+	updateAttackPlayer := func() {
+		attackerReady := screen.pendingAttackerID != "" || attackerSelect.Selected != ""
+		if viewerHasReversedEnemy || !attackerReady {
+			attackPlayer.Disable()
+			return
+		}
+		attackPlayer.Enable()
+	}
+	updateAttackPlayer()
+	previousAttackerChanged := attackerSelect.OnChanged
+	attackerSelect.OnChanged = func(value string) {
+		if previousAttackerChanged != nil {
+			previousAttackerChanged(value)
+		}
+		updateAttackPlayer()
+	}
+	hintText := "Battle: left-click your Servant, then left-click a target (or Attack Enemy Player). Right-click a Servant to grant/clear Double Corrupt."
+	if screen.pendingAttackerID != "" {
+		hintText = "Attacker selected. Left-click an enemy Servant, or Attack Enemy Player. Right-click grants Double Corrupt."
+	}
+	hint := widget.NewLabel(hintText)
 	hint.Wrapping = fyne.TextWrapWord
 	screen.attackPanel.Objects = []fyne.CanvasObject{
 		hint,
 		attackerSelect,
 		targetSelect,
 		confirm,
+		attackPlayer,
 	}
+	refreshContainerStructure(screen.attackPanel)
+	screen.refreshAttackSelectionHighlights()
+}
+
+func (screen *BoardScreen) clearPendingAttacker() {
+	if screen == nil {
+		return
+	}
+	screen.pendingAttackerID = ""
+	screen.refreshAttackSelectionHighlights()
+}
+
+func (screen *BoardScreen) refreshAttackSelectionHighlights() {
+	if screen == nil {
+		return
+	}
+	for _, board := range screen.playerBoards {
+		if board == nil || board.servants == nil {
+			continue
+		}
+		for _, tile := range collectCardTiles(board.servants) {
+			tile.SetSelected(tile.View.MatchID != "" && tile.View.MatchID == screen.pendingAttackerID)
+		}
+	}
+}
+
+func (screen *BoardScreen) handleServantPrimaryTap(
+	board *playerBoardController,
+	card simulatorview.CardView,
+) {
+	if screen == nil || board == nil || card.MatchID == "" {
+		return
+	}
+	if screen.actions.DeclareAttack == nil || !canViewerDeclareAttack(screen.match) {
+		return
+	}
+	if board.isViewer {
+		if card.Orientation != model.OrientationRecovered {
+			return
+		}
+		if screen.pendingAttackerID == card.MatchID {
+			screen.clearPendingAttacker()
+			screen.updateAttackPanel()
+			return
+		}
+		screen.pendingAttackerID = card.MatchID
+		screen.updateAttackPanel()
+		return
+	}
+	if screen.pendingAttackerID == "" {
+		return
+	}
+	screen.actions.DeclareAttack(
+		screen.pendingAttackerID,
+		model.AttackTargetServant,
+		card.MatchID,
+		screen.match.Revision,
+	)
+	screen.clearPendingAttacker()
+}
+
+func canViewerCorruptOrb(match simulatorview.MatchView) bool {
+	if match.MatchStatus != model.StatusInProgress ||
+		match.Turn.Phase != model.PhaseBattle ||
+		match.Turn.ActivePlayer != match.ViewerID ||
+		match.Attack.Step != model.BattleStepAwaitingJudgment ||
+		match.Attack.TargetKind != model.AttackTargetPlayer ||
+		match.PendingBreak.PlayerID != "" {
+		return false
+	}
+	for _, player := range match.Players {
+		if player.ID == match.ViewerID {
+			continue
+		}
+		return len(player.Orbs) > 0
+	}
+	return false
+}
+
+func viewerHasMandatoryAttacker(match simulatorview.MatchView) bool {
+	if match.MatchStatus != model.StatusInProgress ||
+		match.Turn.Phase != model.PhaseBattle ||
+		match.Turn.ActivePlayer != match.ViewerID ||
+		match.Attack.Step != model.BattleStepIdle ||
+		match.PendingBreak.PlayerID != "" {
+		return false
+	}
+	var viewer, opponent *simulatorview.PlayerView
+	for index := range match.Players {
+		player := &match.Players[index]
+		if player.ID == match.ViewerID {
+			viewer = player
+		} else {
+			opponent = player
+		}
+	}
+	if viewer == nil || opponent == nil {
+		return false
+	}
+	opponentHasReversed := false
+	for _, card := range opponent.ServantZone {
+		if card.Orientation == model.OrientationReversed {
+			opponentHasReversed = true
+			break
+		}
+	}
+	for _, card := range viewer.ServantZone {
+		if card.MatchID == "" || card.Orientation != model.OrientationRecovered {
+			continue
+		}
+		if !opponentHasReversed {
+			return true
+		}
+		if len(opponent.ServantZone) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func canViewerDecideBreak(match simulatorview.MatchView) bool {
+	return match.MatchStatus == model.StatusInProgress &&
+		match.PendingBreak.PlayerID == match.ViewerID &&
+		len(match.PendingBreak.CardIDs) > 0
+}
+
+func canViewerDecideSageAdvice(match simulatorview.MatchView) bool {
+	return match.MatchStatus == model.StatusInProgress &&
+		match.PendingDraw.PlayerID == match.ViewerID &&
+		match.PendingDraw.Step == model.PendingDrawOffer
+}
+
+func (screen *BoardScreen) renderSageAdvicePanel() {
+	match := screen.match
+	remaining := match.PendingDraw.Remaining
+	hint := widget.NewLabel(fmt.Sprintf(
+		"Sage Advice: replace the next draw with a dig (look at top cards, keep 1)? Remaining draws in this sequence: %d.",
+		remaining,
+	))
+	hint.Wrapping = fyne.TextWrapWord
+	useButton := widget.NewButton("Use Sage Advice", func() {
+		if screen.actions.AcceptSageAdvice != nil {
+			screen.actions.AcceptSageAdvice(match.Revision)
+		}
+	})
+	declineButton := widget.NewButton("Draw Normally", func() {
+		if screen.actions.DeclineDrawReplacement != nil {
+			screen.actions.DeclineDrawReplacement(match.Revision)
+		}
+	})
+	screen.attackPanel.Objects = []fyne.CanvasObject{
+		hint,
+		container.NewHBox(useButton, declineButton),
+	}
+	refreshContainerStructure(screen.attackPanel)
+}
+
+func (screen *BoardScreen) maybePromptSageDig() {
+	if screen == nil || screen.actions.PeekDeckTops == nil || screen.actions.ResolveDeckDig == nil {
+		return
+	}
+	match := screen.match
+	if match.PendingDraw.Step != model.PendingDrawDig ||
+		match.PendingDraw.PlayerID != match.ViewerID {
+		return
+	}
+	if screen.lastSageDigRevision == match.Revision {
+		return
+	}
+	screen.lastSageDigRevision = match.Revision
+	count := 3
+	for _, player := range match.Players {
+		if player.ID != match.ViewerID {
+			continue
+		}
+		if player.DeckCount > 0 && player.DeckCount < count {
+			count = player.DeckCount
+		}
+		break
+	}
+	if count < 1 {
+		return
+	}
+	screen.actions.PeekDeckTops(match.ViewerID, count, func(cards []simulatorview.CardView, err error) {
+		if err != nil {
+			window := windowForObject(screen.content)
+			if window != nil {
+				dialog.ShowError(err, window)
+			}
+			return
+		}
+		screen.showSageDigDialog(cards)
+	})
+}
+
+func (screen *BoardScreen) renderBreakPanel() {
+	match := screen.match
+	cardID := match.PendingBreak.CardIDs[0]
+	cardName := string(cardID)
+	var definitionType string
+	for _, player := range match.Players {
+		if player.ID != match.ViewerID {
+			continue
+		}
+		for _, card := range player.Hand {
+			if card.MatchID != cardID {
+				continue
+			}
+			definition := screen.definitions[card.CardID]
+			if name := strings.TrimSpace(definition.Name); name != "" {
+				cardName = name
+			}
+			definitionType = strings.ToLower(strings.TrimSpace(definition.Type))
+			break
+		}
+	}
+	hint := widget.NewLabel(fmt.Sprintf(
+		"%s entered your hand from an Orb. Use Break to play it immediately without paying its cost? Printed effects stay manual.",
+		cardName,
+	))
+	hint.Wrapping = fyne.TextWrapWord
+
+	orientationSelect := widget.NewSelect([]string{"Recovered", "Reversed"}, nil)
+	orientationSelect.SetSelected("Recovered")
+	if definitionType != "servant" {
+		orientationSelect.Hide()
+	}
+
+	useButton := widget.NewButton("Use Break", func() {
+		if screen.actions.PlayBreak == nil {
+			return
+		}
+		orientation := model.CardOrientation("")
+		if definitionType == "servant" {
+			orientation = model.CardOrientation(orientationSelect.Selected)
+		}
+		screen.actions.PlayBreak(cardID, orientation, match.Revision)
+	})
+	declineButton := widget.NewButton("Decline Break", func() {
+		if screen.actions.DeclineBreak != nil {
+			screen.actions.DeclineBreak(match.Revision)
+		}
+	})
+	objects := []fyne.CanvasObject{hint}
+	if definitionType == "servant" {
+		objects = append(objects, orientationSelect)
+	}
+	objects = append(objects, container.NewHBox(useButton, declineButton))
+	screen.attackPanel.Objects = objects
+	refreshContainerStructure(screen.attackPanel)
+}
+
+func cardShowsDoubleCorrupt(card simulatorview.CardView, definition cards.Card) bool {
+	if card.GrantedDoubleCorrupt {
+		return true
+	}
+	return cardDeclaresDoubleCorruptAbility(definition.Ability)
+}
+
+func cardDeclaresDoubleCorruptAbility(ability string) bool {
+	for _, line := range strings.Split(ability, "\n") {
+		trimmed := strings.TrimSpace(strings.TrimLeft(strings.TrimSpace(line), "•*-"))
+		if trimmed == "" {
+			continue
+		}
+		if strings.HasPrefix(trimmed, "[") {
+			if closing := strings.IndexRune(trimmed, ']'); closing > 1 {
+				trimmed = trimmed[1:closing]
+			}
+		} else if separator := strings.IndexAny(trimmed, "(:,→"); separator >= 0 {
+			trimmed = trimmed[:separator]
+		} else if strings.ContainsAny(trimmed, ".!?;") {
+			continue
+		}
+		if strings.EqualFold(strings.TrimSpace(trimmed), "Double Corrupt") {
+			return true
+		}
+	}
+	return false
+}
+
+func (screen *BoardScreen) renderOrbChoicePanel() {
+	match := screen.match
+	var opponentOrbs []simulatorview.CardView
+	for _, player := range match.Players {
+		if player.ID != match.ViewerID {
+			opponentOrbs = player.Orbs
+			break
+		}
+	}
+	wantCount := match.Attack.CorruptCount
+	if wantCount < 1 {
+		wantCount = 1
+	}
+	if wantCount > len(opponentOrbs) {
+		wantCount = len(opponentOrbs)
+	}
+	labels := make([]string, 0, len(opponentOrbs))
+	indexes := make(map[string]int, len(opponentOrbs))
+	for index := range opponentOrbs {
+		label := fmt.Sprintf("Orb %d", index+1)
+		labels = append(labels, label)
+		indexes[label] = index
+	}
+
+	selected := make(map[string]bool, len(labels))
+	confirm := widget.NewButton("Corrupt Orb", nil)
+	confirm.Disable()
+	updateConfirm := func() {
+		count := 0
+		for _, on := range selected {
+			if on {
+				count++
+			}
+		}
+		if count == wantCount {
+			confirm.Enable()
+			return
+		}
+		confirm.Disable()
+	}
+	checks := make([]fyne.CanvasObject, 0, len(labels))
+	for _, label := range labels {
+		captured := label
+		check := widget.NewCheck(captured, func(on bool) {
+			selected[captured] = on
+			updateConfirm()
+		})
+		checks = append(checks, check)
+	}
+	confirm.OnTapped = func() {
+		if screen.actions.CorruptOrbs == nil {
+			return
+		}
+		chosen := make([]int, 0, wantCount)
+		for _, label := range labels {
+			if selected[label] {
+				chosen = append(chosen, indexes[label])
+			}
+		}
+		if len(chosen) != wantCount {
+			return
+		}
+		screen.actions.CorruptOrbs(chosen, match.Revision)
+	}
+	hintText := "Player attack connected. Choose which enemy Orb to corrupt (faces stay hidden)."
+	if wantCount > 1 {
+		hintText = fmt.Sprintf(
+			"Double Corrupt: choose %d enemy Orbs to corrupt simultaneously (faces stay hidden).",
+			wantCount,
+		)
+		confirm.SetText(fmt.Sprintf("Corrupt %d Orbs", wantCount))
+	}
+	hint := widget.NewLabel(hintText)
+	hint.Wrapping = fyne.TextWrapWord
+	objects := []fyne.CanvasObject{hint}
+	objects = append(objects, checks...)
+	objects = append(objects, confirm)
+	screen.attackPanel.Objects = objects
 	refreshContainerStructure(screen.attackPanel)
 }
 
@@ -529,6 +1029,11 @@ func (screen *BoardScreen) updatePhaseButtons() {
 			} else {
 				hint += fmt.Sprintf("  •  Select %s to continue", completionTarget)
 			}
+		}
+		if match.Turn.Phase == model.PhaseBattle &&
+			match.Turn.ActivePlayer == match.ViewerID &&
+			viewerHasMandatoryAttacker(match) {
+			hint += "  •  Attack with every able Servant before ending Battle"
 		}
 		if match.ChaseLinkCount > 0 {
 			hint += "  •  Pass priority to resolve; printed effects are manual in this alpha"
@@ -561,6 +1066,11 @@ func (screen *BoardScreen) updatePhaseButtons() {
 				!match.PrioritySequenceOpen &&
 				hasCompletionTarget &&
 				phase == completionTarget
+		if legalCompletion &&
+			match.Turn.Phase == model.PhaseBattle &&
+			viewerHasMandatoryAttacker(match) {
+			legalCompletion = false
+		}
 		if !legalCompletion {
 			button.Disable()
 		} else {
@@ -717,6 +1227,7 @@ func refreshContainerStructure(target *fyne.Container) {
 
 type playerBoardController struct {
 	root            fyne.CanvasObject
+	host            *BoardScreen
 	playerName      string
 	isViewer        bool
 	definitions     cardLookup
@@ -752,6 +1263,7 @@ func replaceZone(holder *fyne.Container, object fyne.CanvasObject) {
 }
 
 func newPlayerBoardController(
+	host *BoardScreen,
 	playerName string,
 	player simulatorview.PlayerView,
 	isViewer bool,
@@ -766,6 +1278,7 @@ func newPlayerBoardController(
 	canUseCasterToken bool,
 ) *playerBoardController {
 	board := &playerBoardController{
+		host:            host,
 		playerName:      playerName,
 		isViewer:        isViewer,
 		definitions:     definitions,
@@ -780,57 +1293,35 @@ func newPlayerBoardController(
 		canUseToken:     canUseCasterToken,
 	}
 	servants, barriers := splitPersistentFieldCards(player.ServantZone, definitions)
-	board.orbs = newZoneHolder(newLayeredOrbZone(
-		playerName,
-		player.Orbs,
-		definitions,
-		preview,
-		!isViewer,
-	))
-	board.deck = newZoneHolder(newCompactDeckZone(playerName, player.DeckCount, preview))
-	board.graveyard = newZoneHolder(newCompactCardZone(
-		playerName,
+	board.orbs = newZoneHolder(board.newOrbZone(player.Orbs))
+	board.deck = newZoneHolder(board.newDeckZone(player.DeckCount))
+	board.graveyard = newZoneHolder(board.newPileZone(
 		"Graveyard",
 		"Used and destroyed cards are displayed here.",
+		model.ZoneGraveyard,
 		player.Graveyard,
-		fyne.NewSize(utilityCardWidth, utilityCardHeight),
-		false,
-		false,
-		definitions,
-		preview,
 	))
-	board.exile = newZoneHolder(newCompactCardZone(
-		playerName,
+	board.exile = newZoneHolder(board.newPileZone(
 		"Exile",
 		"Cards removed from the game are displayed here.",
+		model.ZoneExile,
 		player.Exile,
-		fyne.NewSize(utilityCardWidth, utilityCardHeight),
-		false,
-		false,
-		definitions,
-		preview,
 	))
-	board.servants = newZoneHolder(newCardZone(
-		playerName,
+	board.servants = newZoneHolder(board.newInteractiveCardZone(
 		"Servant Zone",
 		"Servants in play occupy this row.",
+		model.ZoneServant,
 		servants,
 		fyne.NewSize(fieldCardWidth, fieldCardHeight),
 		false,
-		false,
-		definitions,
-		preview,
 	))
-	board.barriers = newZoneHolder(newCardZone(
-		playerName,
+	board.barriers = newZoneHolder(board.newInteractiveCardZone(
 		"Barrier Zone",
 		"Barriers in play occupy this row.",
+		model.ZoneServant,
 		barriers,
 		fyne.NewSize(fieldCardWidth, fieldCardHeight),
 		false,
-		false,
-		definitions,
-		preview,
 	))
 	board.caster = newZoneHolder(newAetherCasterZone(
 		playerName,
@@ -844,14 +1335,13 @@ func newPlayerBoardController(
 		canGenerateCasterAether,
 		canUseCasterToken,
 	))
-	board.hand = newZoneHolder(newHandZone(
-		playerName,
+	if board.host != nil {
+		for _, tile := range collectCardTiles(board.caster) {
+			board.host.bindCardDrag(tile, model.ZoneCaster, board.player.ID)
+		}
+	}
+	board.hand = newZoneHolder(board.newHandZone(
 		player,
-		isViewer,
-		definitions,
-		preview,
-		actions,
-		currentRevision,
 		canCallLevelOne,
 		canCastCards,
 	))
@@ -902,33 +1392,62 @@ func (board *playerBoardController) update(
 	canUseToken bool,
 ) {
 	previous := board.player
-	if previous.DeckCount != player.DeckCount {
-		replaceZone(board.deck, newCompactDeckZone(board.playerName, player.DeckCount, board.preview))
+	if previous.DeckCount != player.DeckCount || !reflect.DeepEqual(previous.Deck, player.Deck) {
+		replaceZone(board.deck, board.newDeckZone(player.DeckCount))
 	}
 	if !reflect.DeepEqual(previous.Orbs, player.Orbs) {
-		replaceZone(board.orbs, newLayeredOrbZone(board.playerName, player.Orbs, board.definitions, board.preview, !board.isViewer))
+		replaceZone(board.orbs, board.newOrbZone(player.Orbs))
 	}
 	if !reflect.DeepEqual(previous.Graveyard, player.Graveyard) {
-		replaceZone(board.graveyard, newCompactCardZone(board.playerName, "Graveyard", "Used and destroyed cards are displayed here.", player.Graveyard, fyne.NewSize(utilityCardWidth, utilityCardHeight), false, false, board.definitions, board.preview))
+		replaceZone(board.graveyard, board.newPileZone(
+			"Graveyard",
+			"Used and destroyed cards are displayed here.",
+			model.ZoneGraveyard,
+			player.Graveyard,
+		))
 	}
 	if !reflect.DeepEqual(previous.Exile, player.Exile) {
-		replaceZone(board.exile, newCompactCardZone(board.playerName, "Exile", "Cards removed from the game are displayed here.", player.Exile, fyne.NewSize(utilityCardWidth, utilityCardHeight), false, false, board.definitions, board.preview))
+		replaceZone(board.exile, board.newPileZone(
+			"Exile",
+			"Cards removed from the game are displayed here.",
+			model.ZoneExile,
+			player.Exile,
+		))
 	}
 	if !reflect.DeepEqual(previous.ServantZone, player.ServantZone) {
 		servants, barriers := splitPersistentFieldCards(player.ServantZone, board.definitions)
-		replaceZone(board.servants, newCardZone(board.playerName, "Servant Zone", "Servants in play occupy this row.", servants, fyne.NewSize(fieldCardWidth, fieldCardHeight), false, false, board.definitions, board.preview))
-		replaceZone(board.barriers, newCardZone(board.playerName, "Barrier Zone", "Barriers in play occupy this row.", barriers, fyne.NewSize(fieldCardWidth, fieldCardHeight), false, false, board.definitions, board.preview))
+		replaceZone(board.servants, board.newInteractiveCardZone(
+			"Servant Zone",
+			"Servants in play occupy this row.",
+			model.ZoneServant,
+			servants,
+			fyne.NewSize(fieldCardWidth, fieldCardHeight),
+			false,
+		))
+		replaceZone(board.barriers, board.newInteractiveCardZone(
+			"Barrier Zone",
+			"Barriers in play occupy this row.",
+			model.ZoneServant,
+			barriers,
+			fyne.NewSize(fieldCardWidth, fieldCardHeight),
+			false,
+		))
 	}
 	aetherChangedForCasting := (canCast || board.canCast) && previous.Aether != player.Aether
 	if !reflect.DeepEqual(previous.Hand, player.Hand) ||
 		previous.OpeningHandFinalized != player.OpeningHandFinalized ||
 		aetherChangedForCasting ||
 		board.canCall != canCall || board.canCast != canCast {
-		replaceZone(board.hand, newHandZone(board.playerName, player, board.isViewer, board.definitions, board.preview, board.actions, board.currentRevision, canCall, canCast))
+		replaceZone(board.hand, board.newHandZone(player, canCall, canCast))
 	}
 	if !reflect.DeepEqual(previous.CasterZone, player.CasterZone) ||
 		board.canNonElemental != canNonElemental || board.canCasterAether != canCasterAether || board.canUseToken != canUseToken {
 		replaceZone(board.caster, newAetherCasterZone(board.playerName, player, board.isViewer, board.definitions, board.preview, board.actions, board.currentRevision, canNonElemental, canCasterAether, canUseToken))
+		if board.host != nil {
+			for _, tile := range collectCardTiles(board.caster) {
+				board.host.bindCardDrag(tile, model.ZoneCaster, player.ID)
+			}
+		}
 	}
 	board.player = player
 	board.canCall = canCall
@@ -936,6 +1455,9 @@ func (board *playerBoardController) update(
 	board.canNonElemental = canNonElemental
 	board.canCasterAether = canCasterAether
 	board.canUseToken = canUseToken
+	if board.host != nil {
+		board.host.refreshDropTargets()
+	}
 }
 
 func splitPersistentFieldCards(
@@ -1965,22 +2487,69 @@ func (stack *verticalCardStackLayout) Layout(objects []fyne.CanvasObject, size f
 	}
 }
 
+func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) fyne.CanvasObject {
+	var onSecondary func(*fyne.PointEvent)
+	canPeek := !board.isViewer && board.actions.PeekOrb != nil && len(cards) > 0
+	canReveal := board.isViewer && board.actions.RevealOrb != nil && len(cards) > 0
+	if canPeek || canReveal {
+		onSecondary = func(event *fyne.PointEvent) {
+			board.showOrbContextMenu(event)
+		}
+	}
+	return newLayeredOrbZone(
+		board.playerName,
+		cards,
+		board.definitions,
+		board.preview,
+		!board.isViewer,
+		onSecondary,
+	)
+}
+
+func (board *playerBoardController) showOrbContextMenu(event *fyne.PointEvent) {
+	if board == nil || board.orbs == nil || event == nil {
+		return
+	}
+	canvas := fyne.CurrentApp().Driver().CanvasForObject(board.orbs)
+	if canvas == nil {
+		return
+	}
+	items := make([]*fyne.MenuItem, 0, 2)
+	if board.isViewer && board.actions.RevealOrb != nil && len(board.player.Orbs) > 0 {
+		items = append(items, fyne.NewMenuItem("Reveal Orb to opponent...", board.beginRevealOrbPrompt))
+	}
+	if !board.isViewer && board.actions.PeekOrb != nil && len(board.player.Orbs) > 0 {
+		items = append(items, fyne.NewMenuItem("Peek Orb (remember)...", board.beginPeekOrbPrompt))
+	}
+	if len(items) == 0 {
+		return
+	}
+	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", items...), canvas, event.AbsolutePosition)
+}
+
 func newLayeredOrbZone(
 	playerName string,
 	cardViews []simulatorview.CardView,
 	definitions cardLookup,
 	preview previewState,
 	alignBottom bool,
+	onSecondary func(*fyne.PointEvent),
 ) fyne.CanvasObject {
 	objects := make([]fyne.CanvasObject, 0, len(cardViews))
 	for _, projectedCard := range cardViews {
 		definition := definitions[projectedCard.CardID]
+		onHidden := func() { preview.showHiddenCard(playerName, "Orb Zone") }
+		onShow := preview.showCard
+		if projectedCard.CardID != "" {
+			captured := definition
+			onHidden = func() { preview.showCard(captured) }
+		}
 		tile := newOrientedCardTile(
 			projectedCard,
 			definition,
 			fyne.NewSize(orbCardWidth, orbCardHeight),
-			preview.showCard,
-			func() { preview.showHiddenCard(playerName, "Orb Zone") },
+			onShow,
+			onHidden,
 			true,
 		)
 		objects = append(objects, tile)
@@ -1993,14 +2562,18 @@ func newLayeredOrbZone(
 			alignBottom: alignBottom,
 		}, objects...)
 	}
-	return newZoneWithMinimum(
+	zone := newZoneWithMinimum(
 		playerName,
 		"Orb Zone",
-		"Face-down Orbs. Their identities are concealed from both players.",
+		"Face-down Orbs. You only see identities you already knew (hand-placed, peeked, or revealed).",
 		content,
 		preview,
 		fyne.Size{},
 	)
+	if onSecondary != nil {
+		return newZoneInteractLayer(zone, nil, onSecondary)
+	}
+	return zone
 }
 
 func newCardZoneWithMinimum(
@@ -2159,7 +2732,282 @@ func newDeckZone(playerName string, count int, preview previewState) fyne.Canvas
 	)
 }
 
-func newCompactDeckZone(playerName string, count int, preview previewState) fyne.CanvasObject {
+func (board *playerBoardController) newDeckZone(count int) fyne.CanvasObject {
+	var onSecondary func(*fyne.PointEvent)
+	canOwnMenu := board.isViewer && (board.actions.DrawCards != nil || board.host != nil || board.actions.PeekDeckTops != nil)
+	canEnemyPeek := !board.isViewer && board.actions.PeekDeckTops != nil
+	if canOwnMenu || canEnemyPeek {
+		onSecondary = func(event *fyne.PointEvent) {
+			board.showDeckContextMenu(event)
+		}
+	}
+	return newCompactDeckZone(board.playerName, count, board.preview, onSecondary)
+}
+
+func (board *playerBoardController) newHandZone(
+	player simulatorview.PlayerView,
+	canCallLevelOne bool,
+	canCastCards bool,
+) fyne.CanvasObject {
+	zone := newHandZone(
+		board.playerName,
+		player,
+		board.isViewer,
+		board.definitions,
+		board.preview,
+		board.actions,
+		board.currentRevision,
+		canCallLevelOne,
+		canCastCards,
+	)
+	if board.host != nil && player.OpeningHandFinalized {
+		for _, tile := range collectCardTiles(zone) {
+			board.host.bindCardDrag(tile, model.ZoneHand, player.ID)
+		}
+	}
+	return zone
+}
+
+func (board *playerBoardController) newPileZone(
+	zoneName string,
+	description string,
+	zone model.Zone,
+	cards []simulatorview.CardView,
+) fyne.CanvasObject {
+	openBrowser := func() {
+		if board.host == nil {
+			return
+		}
+		board.host.showPileViewer(pileViewerRequest{
+			title:    fmt.Sprintf("%s %s", board.playerName, zoneName),
+			zone:     zone,
+			playerID: board.player.ID,
+			cards:    cards,
+			canMove:  board.isViewer && board.actions.MoveCard != nil,
+		})
+	}
+	content := newCompactCardZone(
+		board.playerName,
+		zoneName,
+		description,
+		cards,
+		fyne.NewSize(utilityCardWidth, utilityCardHeight),
+		false,
+		false,
+		board.definitions,
+		board.preview,
+	)
+	for _, tile := range collectCardTiles(content) {
+		tile.OnActivate = openBrowser
+		if board.host != nil {
+			board.host.bindCardDrag(tile, zone, board.player.ID)
+		}
+	}
+	return newZoneInteractLayer(content, openBrowser, nil)
+}
+
+func (board *playerBoardController) newInteractiveCardZone(
+	zoneName string,
+	description string,
+	zone model.Zone,
+	cards []simulatorview.CardView,
+	tileSize fyne.Size,
+	vertical bool,
+) fyne.CanvasObject {
+	content := newCardZone(
+		board.playerName,
+		zoneName,
+		description,
+		cards,
+		tileSize,
+		vertical,
+		false,
+		board.definitions,
+		board.preview,
+	)
+	for _, tile := range collectCardTiles(content) {
+		if board.host != nil {
+			board.host.bindCardDrag(tile, zone, board.player.ID)
+		}
+		if zoneName != "Servant Zone" {
+			continue
+		}
+		captured := tile.View
+		tile.OnActivate = func() {
+			if board.host != nil {
+				board.host.handleServantPrimaryTap(board, captured)
+			}
+		}
+		if board.actions.SetGrantedDoubleCorrupt != nil {
+			tile.OnSecondaryActivate = func(event *fyne.PointEvent) {
+				board.showServantContextMenu(captured, event)
+			}
+		}
+	}
+	return content
+}
+
+func (board *playerBoardController) showServantContextMenu(
+	card simulatorview.CardView,
+	event *fyne.PointEvent,
+) {
+	if board == nil || event == nil || card.MatchID == "" || board.actions.SetGrantedDoubleCorrupt == nil {
+		return
+	}
+	canvas := fyne.CurrentApp().Driver().CanvasForObject(board.servants)
+	if canvas == nil {
+		return
+	}
+	label := "Grant Double Corrupt"
+	enabled := true
+	if card.GrantedDoubleCorrupt {
+		label = "Clear granted Double Corrupt"
+		enabled = false
+	}
+	item := fyne.NewMenuItem(label, func() {
+		board.actions.SetGrantedDoubleCorrupt(card.MatchID, enabled, board.currentRevision())
+	})
+	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", item), canvas, event.AbsolutePosition)
+}
+
+func (screen *BoardScreen) refreshDropTargets() {
+	if screen == nil {
+		return
+	}
+	screen.clearDropTargets()
+	for _, board := range screen.playerBoards {
+		if board == nil {
+			continue
+		}
+		screen.registerDropTarget(board.hand, board.player.ID, model.ZoneHand)
+		screen.registerDropTarget(board.deck, board.player.ID, model.ZoneDeck)
+		screen.registerDropTarget(board.graveyard, board.player.ID, model.ZoneGraveyard)
+		screen.registerDropTarget(board.exile, board.player.ID, model.ZoneExile)
+		screen.registerDropTarget(board.caster, board.player.ID, model.ZoneCaster)
+		screen.registerDropTarget(board.servants, board.player.ID, model.ZoneServant)
+		screen.registerDropTarget(board.barriers, board.player.ID, model.ZoneServant)
+	}
+}
+
+func (board *playerBoardController) showDeckContextMenu(event *fyne.PointEvent) {
+	if board == nil || board.deck == nil || event == nil {
+		return
+	}
+	canvas := fyne.CurrentApp().Driver().CanvasForObject(board.deck)
+	if canvas == nil {
+		return
+	}
+	items := make([]*fyne.MenuItem, 0, 4)
+	if board.isViewer {
+		if board.actions.DrawCards != nil {
+			items = append(items, fyne.NewMenuItem("Draw X cards...", board.beginDrawCardsPrompt))
+		}
+		if board.host != nil {
+			items = append(items, fyne.NewMenuItem("Browse deck...", board.beginBrowseDeck))
+		}
+		if board.actions.PeekDeckTops != nil {
+			items = append(items, fyne.NewMenuItem("Dig top 3 (keep 1)...", board.beginSageDig))
+		}
+	} else if board.actions.PeekDeckTops != nil {
+		items = append(items, fyne.NewMenuItem("Look at top card...", board.beginLookAtEnemyTop))
+	}
+	if len(items) == 0 {
+		return
+	}
+	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", items...), canvas, event.AbsolutePosition)
+}
+
+func (board *playerBoardController) beginBrowseDeck() {
+	if board == nil || board.host == nil {
+		return
+	}
+	board.host.showPileViewer(pileViewerRequest{
+		title:    fmt.Sprintf("%s Deck", board.playerName),
+		zone:     model.ZoneDeck,
+		playerID: board.player.ID,
+		cards:    board.player.Deck,
+		canMove:  board.isViewer && board.actions.MoveCard != nil,
+	})
+}
+
+func (board *playerBoardController) beginDrawCardsPrompt() {
+	if board == nil || board.actions.DrawCards == nil {
+		return
+	}
+	revision := board.currentRevision()
+	promptDrawCardCount(windowForObject(board.deck), func(count int) {
+		board.actions.DrawCards(count, revision)
+	})
+}
+
+var promptDrawCardCount = showDrawCardCountDialog
+
+func showDrawCardCountDialog(window fyne.Window, onConfirm func(int)) {
+	if window == nil || onConfirm == nil {
+		return
+	}
+	entry := widget.NewEntry()
+	entry.SetText("1")
+	entry.Validator = func(text string) error {
+		if _, err := parseDrawCount(text); err != nil {
+			return err
+		}
+		return nil
+	}
+	showScaledForm(
+		"Draw cards",
+		"Draw",
+		"Cancel",
+		[]*widget.FormItem{widget.NewFormItem("How many?", entry)},
+		func(ok bool) {
+			if !ok {
+				return
+			}
+			count, err := parseDrawCount(entry.Text)
+			if err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
+			onConfirm(count)
+		},
+		window,
+		0.4, 0.3, 420, 220, 720, 420,
+	)
+}
+
+func parseDrawCount(text string) (int, error) {
+	count, err := strconv.Atoi(strings.TrimSpace(text))
+	if err != nil {
+		return 0, fmt.Errorf("enter a whole number of cards")
+	}
+	if count < 1 {
+		return 0, fmt.Errorf("draw at least 1 card")
+	}
+	return count, nil
+}
+
+func windowForObject(object fyne.CanvasObject) fyne.Window {
+	if object == nil || fyne.CurrentApp() == nil || fyne.CurrentApp().Driver() == nil {
+		return nil
+	}
+	objectCanvas := fyne.CurrentApp().Driver().CanvasForObject(object)
+	if objectCanvas == nil {
+		return nil
+	}
+	for _, window := range fyne.CurrentApp().Driver().AllWindows() {
+		if window != nil && window.Canvas() == objectCanvas {
+			return window
+		}
+	}
+	return nil
+}
+
+func newCompactDeckZone(
+	playerName string,
+	count int,
+	preview previewState,
+	onSecondary func(*fyne.PointEvent),
+) fyne.CanvasObject {
 	content := fyne.CanvasObject(layout.NewSpacer())
 	if count > 0 {
 		cardBack := NewCardTile(
@@ -2169,11 +3017,12 @@ func newCompactDeckZone(playerName string, count int, preview previewState) fyne
 			preview.showCard,
 			func() { preview.showHiddenCard(playerName, "Deck Zone") },
 		)
+		cardBack.OnSecondaryActivate = onSecondary
 		countLabel := widget.NewLabel(fmt.Sprintf("%d", count))
 		countLabel.Alignment = fyne.TextAlignCenter
 		content = container.NewCenter(container.NewHBox(cardBack, countLabel))
 	}
-	return newZoneWithMinimum(
+	zone := newZoneWithMinimum(
 		playerName,
 		"Deck Zone",
 		fmt.Sprintf("%d cards remain in this deck.", count),
@@ -2181,6 +3030,10 @@ func newCompactDeckZone(playerName string, count int, preview previewState) fyne
 		preview,
 		fyne.NewSize(0, utilityZoneHeight),
 	)
+	if onSecondary == nil {
+		return zone
+	}
+	return newZoneInteractLayer(zone, nil, onSecondary)
 }
 
 func newZone(

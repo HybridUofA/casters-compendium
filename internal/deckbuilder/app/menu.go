@@ -17,6 +17,7 @@ import (
 
 type mainMenuActions struct {
 	PlayGame         func()
+	OnlineLobby      func()
 	HostOnlineGame   func()
 	JoinOnlineGame   func()
 	OpenDeckEditor   func()
@@ -45,6 +46,10 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 	if actions.PlayGame == nil {
 		playButton.Disable()
 	}
+	lobbyButton := widget.NewButton("Online Lobby", actions.OnlineLobby)
+	if actions.OnlineLobby == nil {
+		lobbyButton.Disable()
+	}
 	hostButton := widget.NewButton("Host Online Game", actions.HostOnlineGame)
 	if actions.HostOnlineGame == nil {
 		hostButton.Disable()
@@ -63,6 +68,7 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 		description,
 		widget.NewSeparator(),
 		playButton,
+		lobbyButton,
 		hostButton,
 		joinButton,
 		editorButton,

@@ -19,7 +19,13 @@ type MatchView struct {
 	ChaseLinkCount       int
 	PrioritySequenceOpen bool
 	Attack               model.AttackState
+	PendingDraw          model.PendingDraw
+	PendingBreak         model.PendingBreak
 	Result               model.MatchResult
+	// DisplayNames maps seat/spectator IDs to lobby display names when known.
+	DisplayNames map[model.PlayerID]string
+	// Spectator is true when ViewerID is not a match player seat.
+	Spectator bool
 }
 
 // PlayerView contains the zones and public counts that may be displayed for
@@ -29,6 +35,9 @@ type PlayerView struct {
 	ID                   model.PlayerID
 	DeckCount            int
 	Aether               model.AetherPool
+	// Deck is only populated for the viewer's own library so the UI can offer
+	// Cockatrice-style browse/search without revealing the opponent's order.
+	Deck                 []CardView
 	Hand                 []CardView
 	Orbs                 []CardView
 	CasterZone           []CardView
@@ -57,4 +66,6 @@ type CardView struct {
 	// avoid doomed manual-move submissions without receiving MatchState.
 	Owner    model.PlayerID
 	HasStock bool
+	// GrantedDoubleCorrupt is visible whenever MatchID is known (field cards).
+	GrantedDoubleCorrupt bool
 }

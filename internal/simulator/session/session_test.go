@@ -1062,6 +1062,60 @@ func TestPlayerSessionDeclareAttackUpdatesSharedPrivateViews(t *testing.T) {
 	}
 }
 
+func TestPlayerSessionCorruptOrbUpdatesSharedViews(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Revision = 3
+	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseBattle}
+	state.PrioritySequenceOpen = false
+	state.PriorityHolder = ""
+	state.PassCount = 0
+	state.Attack = model.AttackState{
+		AttackerID: "p1-attacker",
+		TargetKind: model.AttackTargetPlayer,
+		Step:       model.BattleStepAwaitingJudgment,
+	}
+	state.Players[1].Orbs = []model.MatchCardID{"p2-orb-a", "p2-orb-b"}
+	state.CardInstances["p2-orb-a"] = model.CardInstance{
+		MatchID: "p2-orb-a", CardID: "orb", Owner: "player-two", Controller: "player-two",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown,
+	}
+	state.CardInstances["p2-orb-b"] = model.CardInstance{
+		MatchID: "p2-orb-b", CardID: "orb", Owner: "player-two", Controller: "player-two",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown,
+	}
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), sessionCardCatalog{})
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player one) error = %v", err)
+	}
+	playerTwo, err := NewPlayerSession(localMatch, "player-two")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player two) error = %v", err)
+	}
+
+	result, err := playerOne.CorruptOrb(1, 3)
+	if err != nil {
+		t.Fatalf("CorruptOrb() error = %v", err)
+	}
+	if result.Attack.Step != model.BattleStepIdle || result.Revision != 4 {
+		t.Fatalf("result Attack/Revision = %#v/%d", result.Attack, result.Revision)
+	}
+	if len(localMatch.state.Players[1].Orbs) != 1 || localMatch.state.Players[1].Orbs[0] != "p2-orb-a" {
+		t.Fatalf("shared Orbs = %#v; want only p2-orb-a", localMatch.state.Players[1].Orbs)
+	}
+	otherView, err := playerTwo.View()
+	if err != nil {
+		t.Fatalf("player two View() error = %v", err)
+	}
+	if otherView.Revision != result.Revision || len(otherView.Players[1].Orbs) != 1 {
+		t.Fatalf("opponent view Revision/Orbs = %d/%d", otherView.Revision, len(otherView.Players[1].Orbs))
+	}
+}
+
 func TestPlayerSessionPassPriorityTransfersPriority(t *testing.T) {
 	state := sessionStateForTest()
 	state.MatchStatus = model.StatusInProgress

@@ -49,14 +49,10 @@ jobs:
           fi
 
           # GITHUB_TOKEN release creates do not fire on.release, so packaging
-          # calls this workflow with workflow_call + tag. Manual dispatch uses
-          # the same tag lookup path.
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$EVENT_NAME" = "workflow_call" ]; then
-            if [ -z "$REQUESTED_TAG" ]; then
-              echo "A release tag is required for a manual announcement" >&2
-              exit 1
-            fi
-
+          # calls this workflow with workflow_call + tag. Inside a called
+          # workflow github.event_name stays the caller's event (often "push"),
+          # so key off REQUESTED_TAG rather than event_name == workflow_call.
+          if [ -n "${REQUESTED_TAG:-}" ]; then
             release_json="$(
               curl \
                 --fail-with-body \
@@ -74,6 +70,14 @@ jobs:
             RELEASE_NOTES="$(jq -r '.body // ""' <<<"$release_json")"
             PRERELEASE="$(jq -r '.prerelease' <<<"$release_json")"
             RELEASE_ASSETS_JSON="$(jq -c '.assets // []' <<<"$release_json")"
+          elif [ "$EVENT_NAME" != "release" ]; then
+            echo "A release tag is required unless this workflow is triggered by release:published" >&2
+            exit 1
+          fi
+
+          if [ -z "${RELEASE_TAG:-}" ]; then
+            echo "Could not resolve release tag/notes for Discord announcement" >&2
+            exit 1
           fi
 
           if [ -z "$RELEASE_ASSETS_JSON" ] || [ "$RELEASE_ASSETS_JSON" = "null" ]; then

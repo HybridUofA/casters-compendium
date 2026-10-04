@@ -44,7 +44,7 @@ func main() {
 	if err := hostClient.Hello(ctx, "SmokeHost"); err != nil {
 		fail("host hello: %v", err)
 	}
-	created, err := hostClient.CreateRoom(ctx, "SmokeHost", deck)
+	created, err := hostClient.CreateRoom(ctx, "SmokeHost", "Smoke Room", deck, "")
 	if err != nil {
 		fail("create room: %v", err)
 	}
@@ -53,7 +53,7 @@ func main() {
 	if err := guestClient.Hello(ctx, "SmokeGuest"); err != nil {
 		fail("guest hello: %v", err)
 	}
-	joined, err := guestClient.JoinRoom(ctx, created.RoomCode, "SmokeGuest", deck)
+	joined, err := guestClient.JoinRoom(ctx, created.RoomCode, "SmokeGuest", deck, "")
 	if err != nil {
 		fail("join room: %v", err)
 	}

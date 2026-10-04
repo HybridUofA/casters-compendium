@@ -13,18 +13,18 @@ for the first implementation exercise.
 Rules are interpreted using the source precedence and traceability policy in
 [`../../docs/simulator/rules-authority.md`](../../docs/simulator/rules-authority.md).
 
-## v0.3.2 prototype boundary
+## v1.0.0 prototype boundary
 
-The rc.4 prototype supports manual movement of controlled printed cards between
-the selectable Hand, Deck, Graveyard, Exile, Caster, and Servant zones. Deck
-moves choose the top or bottom explicitly, and field-to-field control transfers
-preserve the card's face and orientation.
+The v1.0.0 skeleton supports manual movement of controlled printed cards between
+the selectable Hand, Deck, Graveyard, Exile, Caster, Servant, and Orbs zones.
+Deck moves choose the top or bottom explicitly, and field-to-field control
+transfers preserve the card's face and orientation. Hand→Orb keeps owner
+knowledge for Luna-style placement.
 
 The following manual-effect cases remain deliberately deferred: moving tokens,
-moving cards with Stock, inserting cards into Orbs, selecting hidden Deck or Orb
-cards, and moving cards into or out of face-down Exile. These limitations keep
-hidden-information grants, nested-card ownership, and ordered Orb behavior out
-of the prototype until their rules are designed.
+moving cards with Stock, selecting unknown Deck/Orb identities without peek
+helpers, and moving cards into or out of face-down Exile. Nested Stock ownership
+and fully automatic printed effects remain out of scope.
 
 Planned casts may select recovered Caster-zone cards as Aether sources. Source
 generation, payment, card play, Chase creation, priority transfer, and the

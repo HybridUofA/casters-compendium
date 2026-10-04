@@ -2,12 +2,39 @@ package view
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 )
 
+// IsMatchPlayer reports whether viewerID occupies a seated player slot.
+func IsMatchPlayer(state model.MatchState, viewerID model.PlayerID) bool {
+	return viewerID == state.Players[0].ID || viewerID == state.Players[1].ID
+}
+
+func projectPendingBreak(pending model.PendingBreak, viewerID model.PlayerID) model.PendingBreak {
+	if pending.PlayerID == "" {
+		return model.PendingBreak{}
+	}
+	if pending.PlayerID != viewerID {
+		// Peers only learn that a Break decision is outstanding.
+		return model.PendingBreak{PlayerID: pending.PlayerID}
+	}
+	out := model.PendingBreak{
+		PlayerID: pending.PlayerID,
+		CardIDs:  append([]model.MatchCardID(nil), pending.CardIDs...),
+	}
+	return out
+}
+
+// IsSpectatorViewer reports whether viewerID is a recognized spectator id.
+func IsSpectatorViewer(viewerID model.PlayerID) bool {
+	return strings.HasPrefix(string(viewerID), "spectator-")
+}
+
 func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, error) {
-	if viewerID != state.Players[0].ID && viewerID != state.Players[1].ID {
+	isPlayer := IsMatchPlayer(state, viewerID)
+	if !isPlayer && !IsSpectatorViewer(viewerID) {
 		return MatchView{}, fmt.Errorf("viewer ID %q is not in current player IDs", viewerID)
 	}
 	projection := MatchView{
@@ -21,7 +48,10 @@ func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, e
 		ChaseLinkCount:       len(state.ChaseLinks),
 		PrioritySequenceOpen: state.PrioritySequenceOpen,
 		Attack:               state.Attack,
+		PendingDraw:          state.PendingDraw,
+		PendingBreak:         projectPendingBreak(state.PendingBreak, viewerID),
 		Result:               state.Result,
+		Spectator:            !isPlayer,
 	}
 	for index, player := range state.Players {
 		playerView := PlayerView{
@@ -29,11 +59,15 @@ func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, e
 			DeckCount: len(player.Deck),
 			Aether:    player.Aether,
 		}
+		deckView, err := projectDeck(state, player, viewerID)
+		if err != nil {
+			return MatchView{}, fmt.Errorf("error displaying %q deck: %w", player.ID, err)
+		}
 		handView, err := projectHand(state, player, viewerID)
 		if err != nil {
 			return MatchView{}, fmt.Errorf("error displaying %q hand: %w", player.ID, err)
 		}
-		orbView, err := projectOrbs(state, player)
+		orbView, err := projectOrbs(state, player, viewerID)
 		if err != nil {
 			return MatchView{}, fmt.Errorf("error displaying %q orbs: %w", player.ID, err)
 		}
@@ -53,6 +87,7 @@ func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, e
 		if err != nil {
 			return MatchView{}, fmt.Errorf("error displaying removed from game zone: %w", err)
 		}
+		playerView.Deck = deckView
 		playerView.Hand = handView
 		playerView.Orbs = orbView
 		playerView.CasterZone = casterZoneView
@@ -61,6 +96,28 @@ func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, e
 		playerView.OpeningHandFinalized = player.OpeningHandFinalized
 		playerView.Exile = exileView
 		projection.Players[index] = playerView
+	}
+	return projection, nil
+}
+
+func projectDeck(state model.MatchState, player model.PlayerState, viewerID model.PlayerID) ([]CardView, error) {
+	if player.ID != viewerID {
+		return nil, nil
+	}
+	projection := make([]CardView, 0, len(player.Deck))
+	for _, ID := range player.Deck {
+		instance, exists := state.CardInstances[ID]
+		if !exists {
+			return nil, fmt.Errorf("card %q not in card instances", ID)
+		}
+		projection = append(projection, CardView{
+			MatchID:  ID,
+			CardID:   instance.CardID,
+			Face:     model.CardFaceDown,
+			ShowFace: false,
+			Owner:    instance.Owner,
+			HasStock: len(instance.Stock) > 0,
+		})
 	}
 	return projection, nil
 }
@@ -93,20 +150,31 @@ func projectHand(state model.MatchState, player model.PlayerState, viewerID mode
 	return projection, nil
 }
 
-func projectOrbs(state model.MatchState, player model.PlayerState) ([]CardView, error) {
+func projectOrbs(state model.MatchState, player model.PlayerState, viewerID model.PlayerID) ([]CardView, error) {
 	projection := make([]CardView, 0, len(player.Orbs))
 	for _, ID := range player.Orbs {
-		_, exists := state.CardInstances[ID]
+		instance, exists := state.CardInstances[ID]
 		if !exists {
 			return nil, fmt.Errorf("card %q not in card instances", ID)
 		}
-		cardView := CardView{
+		// Orbs are hidden unless this viewer already knows them (hand-placed,
+		// peeked, or revealed). Setup/deck-top Orbs stay unknown.
+		if model.ViewerKnowsCard(&state, viewerID, ID) {
+			projection = append(projection, CardView{
+				MatchID:  ID,
+				CardID:   instance.CardID,
+				Face:     model.CardFaceDown,
+				ShowFace: false,
+				Owner:    instance.Owner,
+			})
+			continue
+		}
+		projection = append(projection, CardView{
 			MatchID:  "",
 			CardID:   "",
 			Face:     model.CardFaceDown,
 			ShowFace: false,
-		}
-		projection = append(projection, cardView)
+		})
 	}
 	return projection, nil
 }
@@ -135,12 +203,14 @@ func projectFieldZone(
 			cardView.ShowFace = true
 			cardView.Owner = instance.Owner
 			cardView.HasStock = len(instance.Stock) > 0
+			cardView.GrantedDoubleCorrupt = instance.GrantedDoubleCorrupt
 		case instance.Face == model.CardFaceDown && player.ID == viewerID:
 			cardView.MatchID = instance.MatchID
 			cardView.CardID = instance.CardID
 			cardView.ShowFace = false
 			cardView.Owner = instance.Owner
 			cardView.HasStock = len(instance.Stock) > 0
+			cardView.GrantedDoubleCorrupt = instance.GrantedDoubleCorrupt
 		case instance.Face == model.CardFaceDown:
 			cardView.ShowFace = false
 		default:
