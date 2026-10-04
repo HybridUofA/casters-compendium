@@ -20,6 +20,7 @@ type LocalMatch struct {
 	mu      sync.RWMutex
 	state   model.MatchState
 	seed    engine.MatchSeed
+	random  engine.RandomSource
 	catalog rules.CardCatalog
 }
 
@@ -41,6 +42,156 @@ func (session *PlayerSession) MoveCard(command model.MoveCardCommand, expectedRe
 	}
 	if err := engine.MoveCard(&session.match.state, session.match.catalog, session.playerID, command, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("move card: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// DrawCards draws count cards from the bound player's deck into their hand.
+func (session *PlayerSession) DrawCards(count int, expectedRevision model.Revision) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.ManualDrawCards(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		count,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("draw cards: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// ShuffleDeck shuffles the bound player's deck using the match random stream.
+func (session *PlayerSession) ShuffleDeck(expectedRevision model.Revision) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.ShufflePlayerDeck(&session.match.state, session.match.random, session.playerID, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("shuffle deck: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// PeekDeckTops returns the top count cards of deckOwner's library for the bound
+// player only. It does not mutate match state or bump revision.
+func (session *PlayerSession) PeekDeckTops(
+	deckOwnerID model.PlayerID,
+	count int,
+) (peeked []view.CardView, matchView view.MatchView, err error) {
+	if session == nil || session.match == nil {
+		return nil, view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.RLock()
+	defer session.match.mu.RUnlock()
+	tops, err := engine.PeekDeckTops(&session.match.state, deckOwnerID, count)
+	if err != nil {
+		return nil, view.MatchView{}, fmt.Errorf("peek deck: %w", err)
+	}
+	peeked = make([]view.CardView, 0, len(tops))
+	for _, matchID := range tops {
+		instance, exists := session.match.state.CardInstances[matchID]
+		if !exists {
+			return nil, view.MatchView{}, fmt.Errorf("peek deck: card %q missing", matchID)
+		}
+		peeked = append(peeked, view.CardView{
+			MatchID:  matchID,
+			CardID:   instance.CardID,
+			Face:     model.CardFaceDown,
+			ShowFace: true,
+			Owner:    instance.Owner,
+			HasStock: len(instance.Stock) > 0,
+		})
+	}
+	matchView, err = view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return nil, view.MatchView{}, err
+	}
+	return peeked, matchView, nil
+}
+
+// MoveDeckTopToBottom puts the top card of deckOwner's deck on the bottom.
+func (session *PlayerSession) MoveDeckTopToBottom(
+	deckOwnerID model.PlayerID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.MoveDeckTopToBottom(
+		&session.match.state,
+		session.playerID,
+		deckOwnerID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("move deck top to bottom: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// ResolveDeckDig keeps one peeked card into hand and bottoms the rest in order.
+func (session *PlayerSession) ResolveDeckDig(
+	keep model.MatchCardID,
+	bottomOrder []model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.ResolveDeckDig(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		session.playerID,
+		keep,
+		bottomOrder,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("resolve deck dig: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// AcceptSageAdvice chooses the dig replacement for the next pending draw.
+func (session *PlayerSession) AcceptSageAdvice(
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.AcceptSageAdvice(&session.match.state, session.playerID, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("accept sage advice: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// DeclineDrawReplacement draws normally instead of using Sage Advice.
+func (session *PlayerSession) DeclineDrawReplacement(
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.DeclineDrawReplacement(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("decline draw replacement: %w", err)
 	}
 	return view.ProjectMatch(session.match.state, session.playerID)
 }
@@ -117,6 +268,7 @@ func NewLocalMatch(state model.MatchState, seed engine.MatchSeed, catalog rules.
 	localMatch := &LocalMatch{
 		state:   state,
 		seed:    seed,
+		random:  engine.NewSeededRandom(seed),
 		catalog: catalog,
 	}
 	return localMatch, nil
@@ -364,6 +516,7 @@ func (session *PlayerSession) CompleteCurrentPhase(
 	defer session.match.mu.Unlock()
 	err := engine.CompleteCurrentPhase(
 		&session.match.state,
+		session.match.catalog,
 		session.playerID,
 		expectedRevision,
 	)
@@ -559,4 +712,184 @@ func (session *PlayerSession) PassPriority(
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
 	return updatedView, nil
+}
+
+func (session *PlayerSession) DeclareAttack(
+	attackerID model.MatchCardID,
+	targetKind model.AttackTargetKind,
+	targetCardID model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil {
+		return view.MatchView{}, fmt.Errorf("session cannot be nil")
+	}
+	if session.match == nil {
+		return view.MatchView{}, fmt.Errorf("match cannot be nil")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.DeclareAttack(
+		&session.match.state,
+		session.playerID,
+		attackerID,
+		targetKind,
+		targetCardID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("declare attack: %w", err)
+	}
+	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
+	}
+	return updatedView, nil
+}
+
+// CorruptOrb chooses one enemy Orb to corrupt after a player-attack judgment.
+func (session *PlayerSession) CorruptOrb(
+	orbIndex int,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	return session.CorruptOrbs([]int{orbIndex}, expectedRevision)
+}
+
+// CorruptOrbs chooses one or more enemy Orbs to corrupt (Double Corrupt).
+func (session *PlayerSession) CorruptOrbs(
+	orbIndexes []int,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.CorruptOrbs(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		orbIndexes,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("corrupt orbs: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// SetGrantedDoubleCorrupt toggles a manual Double Corrupt marker on a Servant.
+func (session *PlayerSession) SetGrantedDoubleCorrupt(
+	cardID model.MatchCardID,
+	enabled bool,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.SetGrantedDoubleCorrupt(
+		&session.match.state,
+		session.playerID,
+		cardID,
+		enabled,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("set granted double corrupt: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// PlayBreak uses the optional Break on a just-corrupted Orb card.
+func (session *PlayerSession) PlayBreak(
+	cardID model.MatchCardID,
+	entryOrientation model.CardOrientation,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.PlayBreak(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		entryOrientation,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("play break: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// DeclineBreak skips the optional Break for the currently offered card.
+func (session *PlayerSession) DeclineBreak(
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.DeclineBreak(&session.match.state, session.playerID, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("decline break: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// PeekOrb looks at an Orb and remembers its identity for the bound player.
+func (session *PlayerSession) PeekOrb(
+	orbOwnerID model.PlayerID,
+	orbIndex int,
+	expectedRevision model.Revision,
+) (peeked view.CardView, matchView view.MatchView, err error) {
+	if session == nil || session.match == nil {
+		return view.CardView{}, view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	orbID, err := engine.PeekOrb(
+		&session.match.state,
+		session.playerID,
+		orbOwnerID,
+		orbIndex,
+		expectedRevision,
+	)
+	if err != nil {
+		return view.CardView{}, view.MatchView{}, fmt.Errorf("peek orb: %w", err)
+	}
+	instance := session.match.state.CardInstances[orbID]
+	peeked = view.CardView{
+		MatchID:  orbID,
+		CardID:   instance.CardID,
+		Face:     model.CardFaceDown,
+		ShowFace: true,
+		Owner:    instance.Owner,
+	}
+	matchView, err = view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.CardView{}, view.MatchView{}, err
+	}
+	return peeked, matchView, nil
+}
+
+// RevealOrb shows one of the bound player's Orbs to the opponent permanently.
+func (session *PlayerSession) RevealOrb(
+	orbIndex int,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if _, err := engine.RevealOrb(
+		&session.match.state,
+		session.playerID,
+		orbIndex,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("reveal orb: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
 }

@@ -68,17 +68,21 @@ func MoveCard(state *model.MatchState, catalog rules.CardCatalog, actingPlayerID
 	if !exists {
 		return fmt.Errorf("card %q does not exist", command.CardID)
 	}
+	sourceZone := location.Zone
+	sourcePlayerID := state.Players[location.PlayerIndex].ID
+	sourceFace := instance.Face
 	instance.Controller = command.DestinationPlayerID
 	instance.Face = command.DestinationFace
 	instance.Orientation = command.EntryOrientation
+	if command.DestinationZone != model.ZoneServant {
+		instance.GrantedDoubleCorrupt = false
+	}
 	insertionIndex := len(*destSlice)
 	switch command.DestinationZone {
 	case model.ZoneDeck:
 		if command.Placement == model.DeckPlacementTop {
 			insertionIndex = 0
 		}
-	case model.ZoneOrbs:
-		return fmt.Errorf("orb insertion not implemented yet")
 	}
 	*sourceSlice = slices.Delete(
 		*sourceSlice,
@@ -91,6 +95,40 @@ func MoveCard(state *model.MatchState, catalog rules.CardCatalog, actingPlayerID
 		command.CardID,
 	)
 	state.CardInstances[command.CardID] = instance
+	if command.DestinationZone == model.ZoneOrbs {
+		grantOrbEntryKnowledge(state, command.CardID, sourceZone, sourcePlayerID, sourceFace, instance.Owner)
+	}
 	state.Revision++
 	return nil
+}
+
+// grantOrbEntryKnowledge records who still knows a card after it becomes an Orb.
+// Setup/deck-top Orbs stay unknown; cards placed from a known zone (hand, public
+// piles, known face-down field cards) keep that knowledge — Luna hand-orbs.
+func grantOrbEntryKnowledge(
+	state *model.MatchState,
+	cardID model.MatchCardID,
+	sourceZone model.Zone,
+	sourcePlayerID model.PlayerID,
+	sourceFace model.CardFace,
+	owner model.PlayerID,
+) {
+	switch sourceZone {
+	case model.ZoneHand:
+		model.MarkCardKnown(state, sourcePlayerID, cardID)
+	case model.ZoneGraveyard, model.ZoneExile:
+		for _, player := range state.Players {
+			model.MarkCardKnown(state, player.ID, cardID)
+		}
+	case model.ZoneCaster, model.ZoneServant:
+		if sourceFace == model.CardFaceUp {
+			for _, player := range state.Players {
+				model.MarkCardKnown(state, player.ID, cardID)
+			}
+			return
+		}
+		model.MarkCardKnown(state, owner, cardID)
+	case model.ZoneDeck, model.ZoneOrbs:
+		// Unknown unless already marked (peek/reveal); do not grant new knowledge.
+	}
 }

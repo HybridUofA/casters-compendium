@@ -8,23 +8,36 @@ import (
 // It must contain only information the identified viewer is permitted to know;
 // presentation and network code must not receive the unrestricted MatchState.
 type MatchView struct {
-	ViewerID       model.PlayerID
-	Players        [2]PlayerView
-	MatchStatus    model.Status
-	Revision       model.Revision
-	Turn           model.TurnState
-	PriorityHolder model.PlayerID
-	PassCount      int
-	ChaseLinkCount int
+	ViewerID             model.PlayerID
+	Players              [2]PlayerView
+	MatchStatus          model.Status
+	Revision             model.Revision
+	Turn                 model.TurnState
+	FirstPlayer          model.PlayerID
+	PriorityHolder       model.PlayerID
+	PassCount            int
+	ChaseLinkCount       int
+	PrioritySequenceOpen bool
+	Attack               model.AttackState
+	PendingDraw          model.PendingDraw
+	PendingBreak         model.PendingBreak
+	Result               model.MatchResult
+	// DisplayNames maps seat/spectator IDs to lobby display names when known.
+	DisplayNames map[model.PlayerID]string
+	// Spectator is true when ViewerID is not a match player seat.
+	Spectator bool
 }
 
 // PlayerView contains the zones and public counts that may be displayed for
 // one player. Cards within a zone are individually projected as CardViews so
 // hidden opponent information never needs to reach the user interface.
 type PlayerView struct {
-	ID                   model.PlayerID
-	DeckCount            int
-	Aether               model.AetherPool
+	ID        model.PlayerID
+	DeckCount int
+	Aether    model.AetherPool
+	// Deck is only populated for the viewer's own library so the UI can offer
+	// Cockatrice-style browse/search without revealing the opponent's order.
+	Deck                 []CardView
 	Hand                 []CardView
 	Orbs                 []CardView
 	CasterZone           []CardView
@@ -48,4 +61,11 @@ type CardView struct {
 	Face        model.CardFace
 	Orientation model.CardOrientation
 	ShowFace    bool
+	// Owner and HasStock are projected only when the viewer already knows the
+	// card object's identity (MatchID is non-empty). They exist so the UI can
+	// avoid doomed manual-move submissions without receiving MatchState.
+	Owner    model.PlayerID
+	HasStock bool
+	// GrantedDoubleCorrupt is visible whenever MatchID is known (field cards).
+	GrantedDoubleCorrupt bool
 }

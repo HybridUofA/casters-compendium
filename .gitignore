@@ -25,9 +25,13 @@ exports/
 
 # Secrets and temporary captures
 .env
+*.pem
 *.har
 card_list
 card_list_tcc
+
+# Local deploy helper (may contain personal host/key paths)
+scripts/deploy-simhost.sh
 
 # Temporary downloaded data
 snapshots/

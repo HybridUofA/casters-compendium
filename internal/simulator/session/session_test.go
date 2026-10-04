@@ -191,6 +191,7 @@ func TestPlayerSessionCompleteCurrentPhaseUpdatesSharedMatch(t *testing.T) {
 		t.Fatalf("other player's phase = %q; want shared Call phase", otherView.Turn.Phase)
 	}
 
+	result = closeSessionPriorityForTest(t, playerOne, playerTwo, result.Revision)
 	result, err = playerOne.CompleteCurrentPhase(result.Revision)
 	if err != nil {
 		t.Fatalf("CompleteCurrentPhase(Call) error = %v", err)
@@ -714,6 +715,7 @@ func TestPlayerSessionCompletesLaterRecoveryAndDraw(t *testing.T) {
 		t.Fatalf("drawn card = %q; want former deck top %q", drawn, topCard)
 	}
 
+	drawView = closeSessionPriorityForTest(t, activeSession, opponentSession, drawView.Revision)
 	callView, err := activeSession.CompleteCurrentPhase(drawView.Revision)
 	if err != nil {
 		t.Fatalf("CompleteCurrentPhase(Draw) error = %v", err)
@@ -759,8 +761,7 @@ func TestPlayerSessionsRunPhaseSkeletonAndRollTurn(t *testing.T) {
 	expectedRevision := state.Revision
 	for _, wantPhase := range []model.Phase{
 		model.PhaseMain,
-		model.PhaseBattle,
-		model.PhaseEnd,
+		model.PhaseEnd, // first player skips Battle on turn 1
 		model.PhaseRecovery,
 	} {
 		result, completeErr := playerOne.CompleteCurrentPhase(expectedRevision)
@@ -771,6 +772,10 @@ func TestPlayerSessionsRunPhaseSkeletonAndRollTurn(t *testing.T) {
 			t.Fatalf("phase = %q; want %q", result.Turn.Phase, wantPhase)
 		}
 		expectedRevision = result.Revision
+		if wantPhase != model.PhaseRecovery {
+			result = closeSessionPriorityForTest(t, playerOne, playerTwo, expectedRevision)
+			expectedRevision = result.Revision
+		}
 	}
 
 	rolledView, err := playerTwo.View()
@@ -787,6 +792,7 @@ func TestPlayerSessionsRunPhaseSkeletonAndRollTurn(t *testing.T) {
 		t.Fatalf("former active player completion error = %v; want inactive-player error", err)
 	}
 
+	rolledView = closeSessionPriorityForTest(t, playerTwo, playerOne, rolledView.Revision)
 	drawView, err := playerTwo.CompleteCurrentPhase(rolledView.Revision)
 	if err != nil {
 		t.Fatalf("player two CompleteCurrentPhase(Recovery) error = %v", err)
@@ -963,6 +969,7 @@ func TestPlayerSessionCastsConjureAndBarrier(t *testing.T) {
 			state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseMain}
 			state.PriorityHolder = "player-one"
 			state.NextLinkID = 1
+			state.PrioritySequenceOpen = true
 			cardID := state.Players[0].Hand[0]
 			instance := state.CardInstances[cardID]
 			instance.CardCategory = model.CategoryPrintedCard
@@ -1001,10 +1008,111 @@ func TestPlayerSessionCastsConjureAndBarrier(t *testing.T) {
 					t.Fatalf("cast card %q remained in hand", cardID)
 				}
 			}
-			if localMatch.state.PriorityHolder != "player-two" {
-				t.Fatalf("PriorityHolder = %q; want player-two", localMatch.state.PriorityHolder)
+			if localMatch.state.PriorityHolder != "player-one" {
+				t.Fatalf("PriorityHolder = %q; want player-one", localMatch.state.PriorityHolder)
 			}
 		})
+	}
+}
+
+func TestPlayerSessionDeclareAttackUpdatesSharedPrivateViews(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Revision = 8
+	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseBattle}
+	state.PriorityHolder = "player-one"
+	state.PrioritySequenceOpen = true
+	attackerID := state.Players[0].Hand[0]
+	state.Players[0].Hand = state.Players[0].Hand[1:]
+	state.Players[0].ServantZone = []model.MatchCardID{attackerID}
+	attacker := state.CardInstances[attackerID]
+	attacker.Face = model.CardFaceUp
+	attacker.Orientation = model.OrientationRecovered
+	attacker.CardCategory = model.CategoryPrintedCard
+	state.CardInstances[attackerID] = attacker
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), sessionCardCatalog{})
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player one) error = %v", err)
+	}
+	playerTwo, err := NewPlayerSession(localMatch, "player-two")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player two) error = %v", err)
+	}
+
+	result, err := playerOne.DeclareAttack(attackerID, model.AttackTargetPlayer, "", state.Revision)
+	if err != nil {
+		t.Fatalf("DeclareAttack() error = %v", err)
+	}
+	if result.Attack.Step != model.BattleStepDeclared || result.Attack.AttackerID != attackerID {
+		t.Fatalf("requesting view Attack = %#v", result.Attack)
+	}
+	otherView, err := playerTwo.View()
+	if err != nil {
+		t.Fatalf("player two View() error = %v", err)
+	}
+	if otherView.Attack != result.Attack || otherView.Revision != result.Revision {
+		t.Fatalf("shared attack view diverged: %#v vs %#v", otherView.Attack, result.Attack)
+	}
+	if localMatch.state.CardInstances[attackerID].Orientation != model.OrientationRested {
+		t.Fatal("DeclareAttack did not rest the attacker in shared state")
+	}
+}
+
+func TestPlayerSessionCorruptOrbUpdatesSharedViews(t *testing.T) {
+	state := sessionStateForTest()
+	state.MatchStatus = model.StatusInProgress
+	state.Revision = 3
+	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseBattle}
+	state.PrioritySequenceOpen = false
+	state.PriorityHolder = ""
+	state.PassCount = 0
+	state.Attack = model.AttackState{
+		AttackerID: "p1-attacker",
+		TargetKind: model.AttackTargetPlayer,
+		Step:       model.BattleStepAwaitingJudgment,
+	}
+	state.Players[1].Orbs = []model.MatchCardID{"p2-orb-a", "p2-orb-b"}
+	state.CardInstances["p2-orb-a"] = model.CardInstance{
+		MatchID: "p2-orb-a", CardID: "orb", Owner: "player-two", Controller: "player-two",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown,
+	}
+	state.CardInstances["p2-orb-b"] = model.CardInstance{
+		MatchID: "p2-orb-b", CardID: "orb", Owner: "player-two", Controller: "player-two",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown,
+	}
+	localMatch, err := NewLocalMatch(state, matchSeedForTest(), sessionCardCatalog{})
+	if err != nil {
+		t.Fatalf("NewLocalMatch() error = %v", err)
+	}
+	playerOne, err := NewPlayerSession(localMatch, "player-one")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player one) error = %v", err)
+	}
+	playerTwo, err := NewPlayerSession(localMatch, "player-two")
+	if err != nil {
+		t.Fatalf("NewPlayerSession(player two) error = %v", err)
+	}
+
+	result, err := playerOne.CorruptOrb(1, 3)
+	if err != nil {
+		t.Fatalf("CorruptOrb() error = %v", err)
+	}
+	if result.Attack.Step != model.BattleStepIdle || result.Revision != 4 {
+		t.Fatalf("result Attack/Revision = %#v/%d", result.Attack, result.Revision)
+	}
+	if len(localMatch.state.Players[1].Orbs) != 1 || localMatch.state.Players[1].Orbs[0] != "p2-orb-a" {
+		t.Fatalf("shared Orbs = %#v; want only p2-orb-a", localMatch.state.Players[1].Orbs)
+	}
+	otherView, err := playerTwo.View()
+	if err != nil {
+		t.Fatalf("player two View() error = %v", err)
+	}
+	if otherView.Revision != result.Revision || len(otherView.Players[1].Orbs) != 1 {
+		t.Fatalf("opponent view Revision/Orbs = %d/%d", otherView.Revision, len(otherView.Players[1].Orbs))
 	}
 }
 
@@ -1014,6 +1122,7 @@ func TestPlayerSessionPassPriorityTransfersPriority(t *testing.T) {
 	state.Revision = 6
 	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseMain}
 	state.PriorityHolder = "player-one"
+	state.PrioritySequenceOpen = true
 	localMatch, err := NewLocalMatch(state, matchSeedForTest(), sessionCardCatalog{})
 	if err != nil {
 		t.Fatalf("NewLocalMatch() error = %v", err)
@@ -1042,6 +1151,7 @@ func TestPlayerSessionPassPriorityResolvesTopLink(t *testing.T) {
 	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseMain}
 	state.PriorityHolder = "player-two"
 	state.PassCount = 1
+	state.PrioritySequenceOpen = true
 	cardID := state.Players[0].Hand[0]
 	state.Players[0].Hand = state.Players[0].Hand[1:]
 	instance := state.CardInstances[cardID]
@@ -1091,6 +1201,7 @@ func TestPlayerSessionPassPriorityRejectsStaleRevisionWithoutMutation(t *testing
 	state.Revision = 6
 	state.Turn = model.TurnState{Number: 2, ActivePlayer: "player-one", Phase: model.PhaseMain}
 	state.PriorityHolder = "player-one"
+	state.PrioritySequenceOpen = true
 	localMatch, err := NewLocalMatch(state, matchSeedForTest(), sessionCardCatalog{})
 	if err != nil {
 		t.Fatalf("NewLocalMatch() error = %v", err)
@@ -1391,6 +1502,27 @@ func TestNilLocalSessionMethodsReturnErrors(t *testing.T) {
 		!strings.Contains(err.Error(), "cannot be nil") {
 		t.Fatalf("nil SubmitOpeningHandDecision() error = %v; want nil-session error", err)
 	}
+}
+
+func closeSessionPriorityForTest(
+	t *testing.T,
+	firstHolder *PlayerSession,
+	secondHolder *PlayerSession,
+	expectedRevision model.Revision,
+) simulatorview.MatchView {
+	t.Helper()
+	firstPass, err := firstHolder.PassPriority(expectedRevision)
+	if err != nil {
+		t.Fatalf("first PassPriority() error = %v", err)
+	}
+	secondPass, err := secondHolder.PassPriority(firstPass.Revision)
+	if err != nil {
+		t.Fatalf("second PassPriority() error = %v", err)
+	}
+	if secondPass.PriorityHolder != "" || secondPass.PassCount != 0 || secondPass.ChaseLinkCount != 0 {
+		t.Fatalf("closed priority view = %#v", secondPass)
+	}
+	return secondPass
 }
 
 func sessionStateForTest() model.MatchState {

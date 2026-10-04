@@ -113,7 +113,7 @@ func TestCompleteEndPhaseRecoversIncomingPlayerAtomically(t *testing.T) {
 	state.Players[0].Aether = model.AetherPool{Aes: 1}
 	state.Players[1].Aether = model.AetherPool{NonElemental: 2}
 
-	if err := CompleteCurrentPhase(&state, "player-one", state.Revision); err != nil {
+	if err := CompleteCurrentPhase(&state, nil, "player-one", state.Revision); err != nil {
 		t.Fatalf("CompleteCurrentPhase(End) error = %v", err)
 	}
 	if state.Turn.ActivePlayer != "player-two" ||
@@ -145,7 +145,7 @@ func TestCompleteEndPhaseRecoveryFailurePreservesCompleteState(t *testing.T) {
 	delete(state.CardInstances, "p2-rested-servant")
 	before := cloneRecoveryState(state)
 
-	err := CompleteCurrentPhase(&state, "player-one", state.Revision)
+	err := CompleteCurrentPhase(&state, nil, "player-one", state.Revision)
 	if err == nil || !strings.Contains(err.Error(), "error recovering cards") {
 		t.Fatalf("CompleteCurrentPhase(End) error = %v; want Recovery error", err)
 	}

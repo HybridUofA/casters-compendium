@@ -52,6 +52,9 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 				if card.MatchID == "" || card.CardID == "" || card.CardID == model.CasterTokenCardID {
 					continue
 				}
+				if card.HasStock {
+					continue
+				}
 				if group.zone == model.ZoneExile && card.Face == model.CardFaceDown {
 					continue
 				}
@@ -71,7 +74,15 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 	}
 	cardChoice := widget.NewSelect(options, nil)
 	cardChoice.PlaceHolder = "Choose card"
-	zoneChoice := widget.NewSelect([]string{string(model.ZoneHand), string(model.ZoneDeck), string(model.ZoneGraveyard), string(model.ZoneExile), string(model.ZoneCaster), string(model.ZoneServant)}, nil)
+	zoneChoice := widget.NewSelect([]string{
+		string(model.ZoneHand),
+		string(model.ZoneDeck),
+		string(model.ZoneOrbs),
+		string(model.ZoneGraveyard),
+		string(model.ZoneExile),
+		string(model.ZoneCaster),
+		string(model.ZoneServant),
+	}, nil)
 	zoneChoice.PlaceHolder = "Destination zone"
 	playerChoice := widget.NewSelect([]string{"Your side", "Opponent's side"}, nil)
 	playerChoice.SetSelected("Your side")
@@ -150,6 +161,10 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 				}
 			}
 		}
+		// Non-field destinations must stay on the card owner's side.
+		if !field && source.card.Owner != "" {
+			destination = source.card.Owner
+		}
 		command = model.MoveCardCommand{CardID: source.card.MatchID, DestinationPlayerID: destination, DestinationZone: zone, DestinationFace: face}
 		if field {
 			command.EntryOrientation = model.CardOrientation(orientationChoice.Selected)
@@ -184,7 +199,7 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 	update(true)
 	note := widget.NewLabel("Move a printed card you control between supported zones.")
 	note.Wrapping = fyne.TextWrapWord
-	limits := widget.NewLabel("Prototype limits: Tokens, cards with Stock, Orbs, face-down Exile, and hidden Deck or Orb cards are not selectable.")
+	limits := widget.NewLabel("Prototype limits: Tokens, cards with Stock, face-down Exile, and unknown Deck/Orb cards are not selectable. Hand→Orb keeps your knowledge (Luna).")
 	limits.Wrapping = fyne.TextWrapWord
 	limits.Importance = widget.LowImportance
 	heading := widget.NewLabelWithStyle("Manual move", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})

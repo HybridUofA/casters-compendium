@@ -56,6 +56,10 @@ type CardInstance struct {
 	Face         CardFace
 	Orientation  CardOrientation
 	Stock        []MatchCardID
+	// GrantedDoubleCorrupt is a manual marker for effects that give a Servant
+	// Double Corrupt (caster abilities, temporary grants). Cleared when the
+	// card leaves the Servant zone.
+	GrantedDoubleCorrupt bool
 }
 
 type CardLocation struct {
@@ -144,16 +148,50 @@ type PlayerState struct {
 }
 
 type MatchState struct {
-	CardInstances  map[MatchCardID]CardInstance
-	Players        [2]PlayerState
-	FirstPlayer    PlayerID
-	MatchStatus    Status
-	Revision       Revision
-	Turn           TurnState
-	ChaseLinks     Chase
-	PriorityHolder PlayerID
-	PassCount      int
-	NextLinkID     ChaseLinkID
+	CardInstances        map[MatchCardID]CardInstance
+	Players              [2]PlayerState
+	FirstPlayer          PlayerID
+	MatchStatus          Status
+	Revision             Revision
+	Turn                 TurnState
+	ChaseLinks           Chase
+	PriorityHolder       PlayerID
+	PassCount            int
+	NextLinkID           ChaseLinkID
+	PrioritySequenceOpen bool
+	Result               MatchResult
+	Attack               AttackState
+	// PendingDraw tracks an optional replace-on-draw choice (Sage Advice).
+	PendingDraw PendingDraw
+	// PendingBreak tracks optional Break plays after Orb corruption.
+	// CardIDs[0] is the card currently offered; the owner may Use or Decline
+	// each entry in order (multi-corrupt queues several at once).
+	PendingBreak PendingBreak
+	// KnownCards records MatchCardIDs whose faces a player has seen and should
+	// keep seeing while those cards remain in a hidden zone (e.g. peeked Orbs).
+	KnownCards map[PlayerID]map[MatchCardID]struct{}
+}
+
+// PendingBreak is set when corrupted Orbs with Break enter their owner's hand.
+type PendingBreak struct {
+	PlayerID PlayerID
+	CardIDs  []MatchCardID
+}
+
+// PendingDrawStep is the replace-on-draw decision state.
+type PendingDrawStep string
+
+const (
+	PendingDrawIdle  PendingDrawStep = ""
+	PendingDrawOffer PendingDrawStep = "Offer"
+	PendingDrawDig   PendingDrawStep = "Dig"
+)
+
+// PendingDraw is set when a player would draw and may apply Sage Advice instead.
+type PendingDraw struct {
+	PlayerID  PlayerID
+	Remaining int
+	Step      PendingDrawStep
 }
 
 type TurnState struct {
@@ -190,3 +228,45 @@ const (
 	DeckPlacementTop    DeckPlacement = "top"
 	DeckPlacementBottom DeckPlacement = "bottom"
 )
+
+type MatchEndReason string
+
+const (
+	EndReasonDeckOut          MatchEndReason = "Deck Out"
+	EndReasonZeroOrbs         MatchEndReason = "Zero Orbs"
+	EndReasonSimultaneousLoss MatchEndReason = "Simultaneous Loss"
+)
+
+type MatchResult struct {
+	Winner PlayerID
+	Loser  PlayerID
+	IsDraw bool
+	Reason MatchEndReason
+}
+
+type BattleStep string
+
+const (
+	BattleStepIdle             BattleStep = ""
+	BattleStepDeclared         BattleStep = "Declared"
+	BattleStepAwaitingJudgment BattleStep = "Awaiting Judgment"
+)
+
+type AttackTargetKind string
+
+const (
+	AttackTargetPlayer  AttackTargetKind = "Player"
+	AttackTargetServant AttackTargetKind = "Servant"
+)
+
+type AttackState struct {
+	AttackerID   MatchCardID
+	TargetKind   AttackTargetKind
+	TargetCardID MatchCardID
+	Step         BattleStep
+	// CorruptCount is how many enemy Orbs the attacker chooses after a
+	// player-attack judgment (1 normally, up to 2 with Double Corrupt,
+	// capped by remaining Orbs). Meaningful only while Step is
+	// AwaitingJudgment.
+	CorruptCount int
+}

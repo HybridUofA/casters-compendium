@@ -9,7 +9,7 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 )
 
-func TestAddChaseLinkAppendsLinkAndTransfersPriority(t *testing.T) {
+func TestAddChaseLinkAppendsLinkAndRetainsPriority(t *testing.T) {
 	state := chaseEngineStateForTest()
 	state.PassCount = 1
 
@@ -39,8 +39,8 @@ func TestAddChaseLinkAppendsLinkAndTransfersPriority(t *testing.T) {
 	if state.PassCount != 0 {
 		t.Fatalf("PassCount = %d; want 0", state.PassCount)
 	}
-	if state.PriorityHolder != "player-two" {
-		t.Fatalf("PriorityHolder = %q; want %q", state.PriorityHolder, "player-two")
+	if state.PriorityHolder != "player-one" {
+		t.Fatalf("PriorityHolder = %q; want %q", state.PriorityHolder, "player-one")
 	}
 	if state.Revision != 10 {
 		t.Fatalf("Revision = %d; want 10", state.Revision)
@@ -153,18 +153,96 @@ func TestPassPriorityResolvesTopLinkOnSecondPass(t *testing.T) {
 	}
 }
 
-func TestPassPriorityRejectsUnimplementedEmptySecondPassWithoutMutation(t *testing.T) {
+func TestPassPriorityClosesEmptySequenceOnSecondPass(t *testing.T) {
 	state := chaseEngineStateForTest()
 	state.PassCount = 1
 	state.PriorityHolder = "player-two"
-	before := cloneChaseEngineState(state)
 
 	err := PassPriority(&state, nil, "player-two", state.Revision)
-	if err == nil || !strings.Contains(err.Error(), "second pass not currently implemented") {
-		t.Fatalf("PassPriority() error = %v; want unimplemented-second-pass error", err)
+	if err != nil {
+		t.Fatalf("PassPriority() error = %v", err)
+	}
+	if state.PrioritySequenceOpen {
+		t.Fatal("priority sequence remains open after consecutive passes with an empty Chase")
+	}
+	if state.PriorityHolder != "" || state.PassCount != 0 {
+		t.Fatalf("closed priority state = holder %q, passes %d; want blank holder and 0 passes", state.PriorityHolder, state.PassCount)
+	}
+	if len(state.ChaseLinks) != 0 {
+		t.Fatalf("ChaseLinks = %#v; want empty Chase", state.ChaseLinks)
+	}
+	if state.Revision != 10 {
+		t.Fatalf("Revision = %d; want 10", state.Revision)
+	}
+}
+
+func TestPassPriorityRejectsClosedSequenceWithoutMutation(t *testing.T) {
+	state := chaseEngineStateForTest()
+	state.PrioritySequenceOpen = false
+	state.PriorityHolder = ""
+	before := cloneChaseEngineState(state)
+
+	err := PassPriority(&state, nil, "player-one", state.Revision)
+	if err == nil || !strings.Contains(err.Error(), "priority sequence is closed") {
+		t.Fatalf("PassPriority() error = %v; want closed-sequence error", err)
 	}
 	if !reflect.DeepEqual(state, before) {
-		t.Fatalf("state mutated after rejected second pass:\n got: %#v\nwant: %#v", state, before)
+		t.Fatalf("state mutated after pass on closed sequence:\n got: %#v\nwant: %#v", state, before)
+	}
+}
+
+func TestCastResolveAndClosePrioritySequence(t *testing.T) {
+	state, catalog := castServantEngineStateForTest()
+
+	if err := CastServant(
+		&state,
+		catalog,
+		"player-one",
+		"servant-one",
+		model.AetherPayment{Aes: 1, NonElemental: 2},
+		model.OrientationRecovered,
+		state.Revision,
+	); err != nil {
+		t.Fatalf("CastServant() error = %v", err)
+	}
+	if state.PriorityHolder != "player-one" || state.PassCount != 0 {
+		t.Fatalf("post-cast priority = holder %q, passes %d; want player-one, 0", state.PriorityHolder, state.PassCount)
+	}
+
+	if err := PassPriority(&state, catalog, "player-one", state.Revision); err != nil {
+		t.Fatalf("first resolution pass error = %v", err)
+	}
+	if err := PassPriority(&state, catalog, "player-two", state.Revision); err != nil {
+		t.Fatalf("second resolution pass error = %v", err)
+	}
+	if len(state.ChaseLinks) != 0 || state.PriorityHolder != "player-one" || state.PassCount != 0 {
+		t.Fatalf(
+			"post-resolution state = links %#v, holder %q, passes %d; want empty Chase, player-one, 0",
+			state.ChaseLinks,
+			state.PriorityHolder,
+			state.PassCount,
+		)
+	}
+	if !reflect.DeepEqual(state.Players[0].ServantZone, []model.MatchCardID{"servant-one"}) {
+		t.Fatalf("ServantZone = %#v; want resolved servant-one", state.Players[0].ServantZone)
+	}
+
+	if err := PassPriority(&state, catalog, "player-one", state.Revision); err != nil {
+		t.Fatalf("first closure pass error = %v", err)
+	}
+	if err := PassPriority(&state, catalog, "player-two", state.Revision); err != nil {
+		t.Fatalf("second closure pass error = %v", err)
+	}
+	if state.PrioritySequenceOpen || state.PriorityHolder != "" || state.PassCount != 0 {
+		t.Fatalf(
+			"closed priority state = open %t, holder %q, passes %d; want false, blank, 0",
+			state.PrioritySequenceOpen,
+			state.PriorityHolder,
+			state.PassCount,
+		)
+	}
+	if state.Revision != 14 {
+		t.Fatalf("Revision = %d; want 14 after cast and four passes", state.Revision)
 	}
 }
 
@@ -604,11 +682,12 @@ func chaseEngineStateForTest() model.MatchState {
 			{ID: "player-one"},
 			{ID: "player-two"},
 		},
-		MatchStatus:    model.StatusInProgress,
-		Revision:       9,
-		Turn:           model.TurnState{Number: 1, ActivePlayer: "player-one", Phase: model.PhaseMain},
-		PriorityHolder: "player-one",
-		NextLinkID:     4,
+		MatchStatus:          model.StatusInProgress,
+		Revision:             9,
+		Turn:                 model.TurnState{Number: 1, ActivePlayer: "player-one", Phase: model.PhaseMain},
+		PriorityHolder:       "player-one",
+		NextLinkID:           4,
+		PrioritySequenceOpen: true,
 	}
 }
 

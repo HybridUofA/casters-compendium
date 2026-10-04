@@ -199,7 +199,7 @@ func castCardWithPlan(
 	state.ChaseLinks = append(state.ChaseLinks, link)
 	state.NextLinkID++
 	state.PassCount = 0
-	state.PriorityHolder = nonActingPlayerID
+	state.PriorityHolder = actingPlayerID
 	state.Revision++
 	return nil
 }

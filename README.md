@@ -25,9 +25,10 @@ maintainer direction and review. The statement also documents the automated
 tests and explicitly authorized production assistance used for v0.1.4's
 Tabletop Simulator integration, the complete v0.1.5 hosted-catalog patch,
 v0.1.6's selectable bundled backgrounds, its first rendering hotfix, and
-v0.1.8-hotfix.2's card-art recovery fix. Functional simulator behavior remains
-maintainer-authored; the statement separately records authorized simulator
-tests, presentation work, and v0.2.0-rc.4 release preparation.
+v0.1.8-hotfix.2's card-art recovery fix. The statement also records that Hybrid
+explicitly authorized OpenAI assistance to implement the v0.3.2 networked
+playtest stack and Host/Join UI under maintainer direction, and later the
+v1.0.0 manual-playable simulator skeleton under the same review model.
 
 ## Features
 
@@ -82,6 +83,28 @@ tests, presentation work, and v0.2.0-rc.4 release preparation.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v1.0.0
+
+- First stable manual-playable networked simulator skeleton (effects still
+  mostly manual).
+- Online lobby with room names, search, optional passwords, and spectators.
+- Battle judgment, Orb corruption, Break, Double Corrupt (printed or granted),
+  and mandatory-attack Battle completion.
+- Cockatrice-style board helpers: drag/move, deck dig/browse, Orb peek/reveal,
+  Sage Advice dig-on-draw, window-scaled dialogs.
+- Requires a protocol v3 `simhost` for online play.
+
+### What's new in v0.3.2
+
+- Host or join an online simulator match over WebSocket against an authoritative
+  `simhost`.
+- Choose your own deck (saved deck or official template) before connecting.
+- Keep local hotseat play available beside the new Host/Join online actions.
+- Package a Linux amd64 simulator host tarball, systemd unit, and Docker recipe
+  for LAN or cloud playtests.
+- Announce GitHub releases to Discord automatically after packaging publishes
+  assets.
 
 ### What's new in v0.2.0-rc.4
 
@@ -336,13 +359,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_0.2.0-rc.4_amd64.deb
+sudo apt install ./casters-compendium_1.0.0_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-0.2.0_rc.4-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-1.0.0-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

@@ -394,8 +394,9 @@ func servantCastStateForTest() (model.MatchState, definitionCatalogForTest) {
 			ActivePlayer: "player-one",
 			Phase:        model.PhaseMain,
 		},
-		PriorityHolder: "player-one",
-		NextLinkID:     1,
+		PriorityHolder:       "player-one",
+		NextLinkID:           1,
+		PrioritySequenceOpen: true,
 	}
 	catalog := definitionCatalogForTest{
 		"printed-servant": gamecards.Card{

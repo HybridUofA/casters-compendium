@@ -19,7 +19,7 @@ func TestCompleteRecoveryPhaseSkipsFirstPlayersFirstDraw(t *testing.T) {
 		append([]model.MatchCardID(nil), state.Players[1].Deck...),
 	}
 
-	if err := completeRecoveryPhase(&state, state.Turn.ActivePlayer); err != nil {
+	if err := completeRecoveryPhase(&state, nil, state.Turn.ActivePlayer); err != nil {
 		t.Fatalf("completeRecoveryPhase() error = %v", err)
 	}
 
@@ -42,7 +42,7 @@ func TestCompleteRecoveryPhaseAdvancesLaterTurnsToDraw(t *testing.T) {
 	beforeDeckSize := len(state.Players[1].Deck)
 	beforeHandSize := len(state.Players[1].Hand)
 
-	if err := completeRecoveryPhase(&state, state.Turn.ActivePlayer); err != nil {
+	if err := completeRecoveryPhase(&state, nil, state.Turn.ActivePlayer); err != nil {
 		t.Fatalf("completeRecoveryPhase() error = %v", err)
 	}
 	if state.Turn.Phase != model.PhaseDraw {
@@ -64,9 +64,10 @@ func TestCompleteCurrentPhaseCompletesDrawWithoutDrawingAgain(t *testing.T) {
 	state.Turn.Number = 2
 	state.Turn.ActivePlayer = state.Players[1].ID
 
-	if err := CompleteCurrentPhase(&state, state.Turn.ActivePlayer, state.Revision); err != nil {
+	if err := CompleteCurrentPhase(&state, nil, state.Turn.ActivePlayer, state.Revision); err != nil {
 		t.Fatalf("CompleteCurrentPhase(Recovery) error = %v", err)
 	}
+	closePrioritySequenceForTest(t, &state)
 	beforeHands := [2][]model.MatchCardID{
 		append([]model.MatchCardID(nil), state.Players[0].Hand...),
 		append([]model.MatchCardID(nil), state.Players[1].Hand...),
@@ -76,7 +77,7 @@ func TestCompleteCurrentPhaseCompletesDrawWithoutDrawingAgain(t *testing.T) {
 		append([]model.MatchCardID(nil), state.Players[1].Deck...),
 	}
 
-	if err := CompleteCurrentPhase(&state, state.Turn.ActivePlayer, state.Revision); err != nil {
+	if err := CompleteCurrentPhase(&state, nil, state.Turn.ActivePlayer, state.Revision); err != nil {
 		t.Fatalf("CompleteCurrentPhase(Draw) error = %v", err)
 	}
 	if state.Turn.Phase != model.PhaseCall {
@@ -90,19 +91,44 @@ func TestCompleteCurrentPhaseCompletesDrawWithoutDrawingAgain(t *testing.T) {
 	}
 }
 
-func TestCompleteCurrentPhaseRejectsEmptyDeckWithoutMutation(t *testing.T) {
+func TestCompleteCurrentPhaseFinishesMatchOnDrawPhaseDeckOut(t *testing.T) {
 	state := initialRecoveryStateForTest()
 	state.Turn.Number = 2
 	state.Turn.ActivePlayer = state.Players[1].ID
 	state.Players[1].Deck = nil
-	before := state
-
-	err := CompleteCurrentPhase(&state, state.Turn.ActivePlayer, state.Revision)
-	if err == nil || !strings.Contains(err.Error(), "deck cannot be empty") {
-		t.Fatalf("CompleteCurrentPhase() error = %v; want empty-deck error", err)
+	beforeHands := [2][]model.MatchCardID{
+		append([]model.MatchCardID(nil), state.Players[0].Hand...),
+		append([]model.MatchCardID(nil), state.Players[1].Hand...),
 	}
-	if !reflect.DeepEqual(state, before) {
-		t.Fatalf("failed Draw entry mutated state\n before: %#v\n  after: %#v", before, state)
+
+	if err := CompleteCurrentPhase(&state, nil, state.Turn.ActivePlayer, state.Revision); err != nil {
+		t.Fatalf("CompleteCurrentPhase() error = %v", err)
+	}
+	if state.MatchStatus != model.StatusFinished {
+		t.Fatalf("MatchStatus = %q; want %q", state.MatchStatus, model.StatusFinished)
+	}
+	wantResult := model.MatchResult{
+		Winner: state.Players[0].ID,
+		Loser:  state.Players[1].ID,
+		Reason: model.EndReasonDeckOut,
+	}
+	if state.Result != wantResult {
+		t.Fatalf("Result = %#v; want %#v", state.Result, wantResult)
+	}
+	if state.PrioritySequenceOpen || state.PriorityHolder != "" || state.PassCount != 0 {
+		t.Fatalf(
+			"priority after deck-out = open %t, holder %q, passes %d; want closed blank 0",
+			state.PrioritySequenceOpen,
+			state.PriorityHolder,
+			state.PassCount,
+		)
+	}
+	if state.Revision != 1 {
+		t.Fatalf("Revision = %d; want 1", state.Revision)
+	}
+	if !reflect.DeepEqual(state.Players[0].Hand, beforeHands[0]) ||
+		!reflect.DeepEqual(state.Players[1].Hand, beforeHands[1]) {
+		t.Fatal("deck-out finish moved cards into a hand")
 	}
 }
 
@@ -111,7 +137,7 @@ func TestCompleteCurrentPhaseRejectsDrawOnTurnOneWithoutMutation(t *testing.T) {
 	state.Turn.Phase = model.PhaseDraw
 	before := state
 
-	err := CompleteCurrentPhase(&state, state.Turn.ActivePlayer, state.Revision)
+	err := CompleteCurrentPhase(&state, nil, state.Turn.ActivePlayer, state.Revision)
 	if err == nil || !strings.Contains(err.Error(), "turn 1") {
 		t.Fatalf("CompleteCurrentPhase() error = %v; want turn-one Draw error", err)
 	}
@@ -132,7 +158,7 @@ func TestCompleteCurrentPhaseCompletesCallWithoutMovingCards(t *testing.T) {
 		append([]model.MatchCardID(nil), state.Players[1].Deck...),
 	}
 
-	if err := CompleteCurrentPhase(&state, state.Turn.ActivePlayer, state.Revision); err != nil {
+	if err := CompleteCurrentPhase(&state, nil, state.Turn.ActivePlayer, state.Revision); err != nil {
 		t.Fatalf("CompleteCurrentPhase(Call) error = %v", err)
 	}
 	if state.Turn.Phase != model.PhaseMain {
@@ -183,10 +209,12 @@ func TestCompleteCurrentPhaseRunsRemainingSkeletonAndRollsTurn(t *testing.T) {
 
 	for step, wantPhase := range []model.Phase{
 		model.PhaseMain,
-		model.PhaseBattle,
-		model.PhaseEnd,
+		model.PhaseEnd, // first player skips Battle on turn 1
 	} {
-		if err := CompleteCurrentPhase(&state, firstPlayer, state.Revision); err != nil {
+		if state.PrioritySequenceOpen {
+			closePrioritySequenceForTest(t, &state)
+		}
+		if err := CompleteCurrentPhase(&state, nil, firstPlayer, state.Revision); err != nil {
 			t.Fatalf("CompleteCurrentPhase() toward %q error = %v", wantPhase, err)
 		}
 		if state.Turn.Phase != wantPhase {
@@ -195,7 +223,7 @@ func TestCompleteCurrentPhaseRunsRemainingSkeletonAndRollsTurn(t *testing.T) {
 		if state.Turn.ActivePlayer != firstPlayer || state.Turn.Number != 1 {
 			t.Fatalf("phase %q prematurely rolled turn: active=%q turn=%d", wantPhase, state.Turn.ActivePlayer, state.Turn.Number)
 		}
-		wantRevision := model.Revision(step + 1)
+		wantRevision := model.Revision(1 + step*3)
 		if state.Revision != wantRevision {
 			t.Fatalf("revision at phase %q = %d; want %d", wantPhase, state.Revision, wantRevision)
 		}
@@ -203,10 +231,21 @@ func TestCompleteCurrentPhaseRunsRemainingSkeletonAndRollsTurn(t *testing.T) {
 			state.Players[1].Aether != beforeAether[1] {
 			t.Fatalf("Aether cleared before End completion at phase %q", wantPhase)
 		}
+		if !state.PrioritySequenceOpen || state.PriorityHolder != firstPlayer || state.PassCount != 0 {
+			t.Fatalf(
+				"priority at phase %q = open %t, holder %q, passes %d; want true, %q, 0",
+				wantPhase,
+				state.PrioritySequenceOpen,
+				state.PriorityHolder,
+				state.PassCount,
+				firstPlayer,
+			)
+		}
 	}
 
 	state.Turn.CallActionTaken = true
-	if err := CompleteCurrentPhase(&state, firstPlayer, state.Revision); err != nil {
+	closePrioritySequenceForTest(t, &state)
+	if err := CompleteCurrentPhase(&state, nil, firstPlayer, state.Revision); err != nil {
 		t.Fatalf("CompleteCurrentPhase(End) error = %v", err)
 	}
 	if state.Turn.Phase != model.PhaseRecovery ||
@@ -215,8 +254,11 @@ func TestCompleteCurrentPhaseRunsRemainingSkeletonAndRollsTurn(t *testing.T) {
 		state.Turn.CallActionTaken ||
 		state.Players[0].Aether != (model.AetherPool{}) ||
 		state.Players[1].Aether != (model.AetherPool{}) ||
-		state.Revision != 4 {
-		t.Fatalf("rollover state = phase %q, active %q, turn %d, Call action taken %t, Aether %#v/%#v, revision %d; want Recovery, %q, 2, false, empty pools, revision 4", state.Turn.Phase, state.Turn.ActivePlayer, state.Turn.Number, state.Turn.CallActionTaken, state.Players[0].Aether, state.Players[1].Aether, state.Revision, secondPlayer)
+		state.Revision != 7 ||
+		!state.PrioritySequenceOpen ||
+		state.PriorityHolder != secondPlayer ||
+		state.PassCount != 0 {
+		t.Fatalf("rollover state = phase %q, active %q, turn %d, Call action taken %t, Aether %#v/%#v, revision %d, priority open %t holder %q passes %d; want Recovery, %q, 2, false, empty pools, revision 7, open priority for incoming player", state.Turn.Phase, state.Turn.ActivePlayer, state.Turn.Number, state.Turn.CallActionTaken, state.Players[0].Aether, state.Players[1].Aether, state.Revision, state.PrioritySequenceOpen, state.PriorityHolder, state.PassCount, secondPlayer)
 	}
 	if !reflect.DeepEqual(state.Players[0].Hand, beforeHands[0]) ||
 		!reflect.DeepEqual(state.Players[1].Hand, beforeHands[1]) ||
@@ -311,7 +353,7 @@ func TestCompleteRecoveryPhaseRejectsInvalidStateWithoutMutation(t *testing.T) {
 			actingPlayer := test.mutate(&state)
 			before := state
 
-			err := completeRecoveryPhase(&state, actingPlayer)
+			err := completeRecoveryPhase(&state, nil, actingPlayer)
 			if err == nil || !strings.Contains(err.Error(), test.wantErrPart) {
 				t.Fatalf("completeRecoveryPhase() error = %v; want containing %q", err, test.wantErrPart)
 			}
@@ -323,7 +365,7 @@ func TestCompleteRecoveryPhaseRejectsInvalidStateWithoutMutation(t *testing.T) {
 }
 
 func TestCompleteRecoveryPhaseRejectsNilState(t *testing.T) {
-	err := completeRecoveryPhase(nil, "player-one")
+	err := completeRecoveryPhase(nil, nil, "player-one")
 	if err == nil || !strings.Contains(err.Error(), "cannot be nil") {
 		t.Fatalf("completeRecoveryPhase(nil) error = %v; want nil-state error", err)
 	}
@@ -332,7 +374,7 @@ func TestCompleteRecoveryPhaseRejectsNilState(t *testing.T) {
 func TestCompleteCurrentPhaseSupportsInitialRecoveryToCall(t *testing.T) {
 	state := initialRecoveryStateForTest()
 
-	if err := CompleteCurrentPhase(&state, state.Turn.ActivePlayer, state.Revision); err != nil {
+	if err := CompleteCurrentPhase(&state, nil, state.Turn.ActivePlayer, state.Revision); err != nil {
 		t.Fatalf("CompleteCurrentPhase() error = %v", err)
 	}
 	if state.Turn.Phase != model.PhaseCall {
@@ -376,7 +418,7 @@ func TestCompleteCurrentPhaseRejectsInvalidRequestWithoutMutation(t *testing.T) 
 			actingPlayer := test.prepare(&state)
 			before := state
 
-			err := CompleteCurrentPhase(&state, actingPlayer, state.Revision)
+			err := CompleteCurrentPhase(&state, nil, actingPlayer, state.Revision)
 			if err == nil || !strings.Contains(err.Error(), test.wantErrPart) {
 				t.Fatalf("CompleteCurrentPhase() error = %v; want containing %q", err, test.wantErrPart)
 			}
@@ -388,7 +430,7 @@ func TestCompleteCurrentPhaseRejectsInvalidRequestWithoutMutation(t *testing.T) 
 }
 
 func TestCompleteCurrentPhaseRejectsNilState(t *testing.T) {
-	err := CompleteCurrentPhase(nil, "player-one", 0)
+	err := CompleteCurrentPhase(nil, nil, "player-one", 0)
 	if err == nil || !strings.Contains(err.Error(), "cannot be nil") {
 		t.Fatalf("CompleteCurrentPhase(nil) error = %v; want nil-state error", err)
 	}
@@ -399,13 +441,67 @@ func TestCompleteCurrentPhaseRejectsStaleRevisionWithoutMutation(t *testing.T) {
 	state.Revision = 9
 	before := state
 
-	err := CompleteCurrentPhase(&state, state.Turn.ActivePlayer, 8)
+	err := CompleteCurrentPhase(&state, nil, state.Turn.ActivePlayer, 8)
 	if err == nil || !strings.Contains(err.Error(), "expected revision 8") ||
 		!strings.Contains(err.Error(), "current revision 9") {
 		t.Fatalf("CompleteCurrentPhase() error = %v; want stale-revision details", err)
 	}
 	if !reflect.DeepEqual(state, before) {
 		t.Fatalf("stale phase completion mutated state\n before: %#v\n  after: %#v", before, state)
+	}
+}
+
+func TestCompleteCurrentPhaseRejectsOpenOrInconsistentClosedPriorityWithoutMutation(t *testing.T) {
+	tests := []struct {
+		name    string
+		mutate  func(*model.MatchState)
+		wantErr string
+	}{
+		{
+			name: "open priority sequence",
+			mutate: func(state *model.MatchState) {
+				state.PrioritySequenceOpen = true
+				state.PriorityHolder = state.Turn.ActivePlayer
+			},
+			wantErr: "priority sequence must be closed",
+		},
+		{
+			name: "closed sequence retains holder",
+			mutate: func(state *model.MatchState) {
+				state.PriorityHolder = state.Turn.ActivePlayer
+			},
+			wantErr: "closed priority sequence has inconsistent state",
+		},
+		{
+			name: "closed sequence retains pass count",
+			mutate: func(state *model.MatchState) {
+				state.PassCount = 1
+			},
+			wantErr: "closed priority sequence has inconsistent state",
+		},
+		{
+			name: "closed sequence retains Chase link",
+			mutate: func(state *model.MatchState) {
+				state.ChaseLinks = model.Chase{{ID: 1}}
+			},
+			wantErr: "closed priority sequence has inconsistent state",
+		},
+	}
+
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			state := initialRecoveryStateForTest()
+			testCase.mutate(&state)
+			before := state
+
+			err := CompleteCurrentPhase(&state, nil, state.Turn.ActivePlayer, state.Revision)
+			if err == nil || !strings.Contains(err.Error(), testCase.wantErr) {
+				t.Fatalf("CompleteCurrentPhase() error = %v; want containing %q", err, testCase.wantErr)
+			}
+			if !reflect.DeepEqual(state, before) {
+				t.Fatalf("rejected phase completion mutated state\n before: %#v\n  after: %#v", before, state)
+			}
+		})
 	}
 }
 
@@ -422,5 +518,18 @@ func initialRecoveryStateForTest() model.MatchState {
 			ActivePlayer: "player-one",
 			Phase:        model.PhaseRecovery,
 		},
+	}
+}
+
+func closePrioritySequenceForTest(t *testing.T, state *model.MatchState) {
+	t.Helper()
+	if !state.PrioritySequenceOpen {
+		t.Fatal("cannot close a priority sequence that is not open")
+	}
+	for range 2 {
+		actingPlayerID := state.PriorityHolder
+		if err := PassPriority(state, nil, actingPlayerID, state.Revision); err != nil {
+			t.Fatalf("PassPriority(%q) error = %v", actingPlayerID, err)
+		}
 	}
 }

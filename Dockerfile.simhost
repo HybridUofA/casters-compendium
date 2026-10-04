@@ -1,0 +1,17 @@
+# Minimal networked simulator host. Build from repo root:
+#   docker build -f Dockerfile.simhost -t casters-simhost .
+#   docker run --rm -p 7474:7474 casters-simhost
+FROM golang:1.26-bookworm AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /out/simhost ./cmd/simhost
+
+FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /app
+COPY --from=build /out/simhost /app/simhost
+COPY data/cards.json /app/data/cards.json
+EXPOSE 7474
+USER nonroot:nonroot
+ENTRYPOINT ["/app/simhost", "-addr", ":7474", "-catalog", "/app/data/cards.json"]

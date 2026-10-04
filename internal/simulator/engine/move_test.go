@@ -63,7 +63,7 @@ func TestMoveCardUpdatesZonesAndInstance(t *testing.T) {
 }
 
 func TestMoveCardRejectionsDoNotMutateState(t *testing.T) {
-	for _, reason := range []string{"stale revision", "wrong controller", "orb insertion", "missing card", "same zone", "token", "stock", "deck placement", "transfer orientation"} {
+	for _, reason := range []string{"stale revision", "wrong controller", "missing card", "same zone", "token", "stock", "deck placement", "transfer orientation"} {
 		t.Run(reason, func(t *testing.T) {
 			state, catalog := moveEngineFixture()
 			command := model.MoveCardCommand{CardID: "moving", DestinationPlayerID: "owner", DestinationZone: model.ZoneHand, DestinationFace: model.CardFaceDown}
@@ -75,8 +75,6 @@ func TestMoveCardRejectionsDoNotMutateState(t *testing.T) {
 				revision = 6
 			case "wrong controller":
 				actor = "owner"
-			case "orb insertion":
-				command.DestinationZone = model.ZoneOrbs
 			case "missing card":
 				command.CardID = "missing"
 			case "same zone":
@@ -109,6 +107,50 @@ func TestMoveCardRejectionsDoNotMutateState(t *testing.T) {
 				t.Fatal("rejected move mutated state")
 			}
 		})
+	}
+}
+
+func TestMoveCardHandToOrbMarksOwnerKnowledge(t *testing.T) {
+	state, catalog := moveEngineFixture()
+	state.Players[0].Hand = []model.MatchCardID{"hand-orb"}
+	state.CardInstances["hand-orb"] = model.CardInstance{
+		MatchID: "hand-orb", CardID: "printed", Owner: "owner", Controller: "owner",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown,
+	}
+	command := model.MoveCardCommand{
+		CardID: "hand-orb", DestinationPlayerID: "owner",
+		DestinationZone: model.ZoneOrbs, DestinationFace: model.CardFaceDown,
+	}
+	if err := MoveCard(&state, catalog, "owner", command, state.Revision); err != nil {
+		t.Fatal(err)
+	}
+	if !model.ViewerKnowsCard(&state, "owner", "hand-orb") {
+		t.Fatal("owner should know Orbs placed from hand")
+	}
+	if model.ViewerKnowsCard(&state, "controller", "hand-orb") {
+		t.Fatal("opponent should not learn hand-placed Orbs")
+	}
+	if !reflect.DeepEqual(state.Players[0].Orbs, []model.MatchCardID{"hand-orb"}) {
+		t.Fatalf("Orbs = %#v", state.Players[0].Orbs)
+	}
+}
+
+func TestMoveCardDeckToOrbStaysUnknown(t *testing.T) {
+	state, catalog := moveEngineFixture()
+	state.Players[0].Deck = []model.MatchCardID{"deck-orb"}
+	state.CardInstances["deck-orb"] = model.CardInstance{
+		MatchID: "deck-orb", CardID: "printed", Owner: "owner", Controller: "owner",
+		CardCategory: model.CategoryPrintedCard, Face: model.CardFaceDown,
+	}
+	command := model.MoveCardCommand{
+		CardID: "deck-orb", DestinationPlayerID: "owner",
+		DestinationZone: model.ZoneOrbs, DestinationFace: model.CardFaceDown,
+	}
+	if err := MoveCard(&state, catalog, "owner", command, state.Revision); err != nil {
+		t.Fatal(err)
+	}
+	if model.ViewerKnowsCard(&state, "owner", "deck-orb") {
+		t.Fatal("deck-top Orbs must stay unknown (Compensation-style)")
 	}
 }
 

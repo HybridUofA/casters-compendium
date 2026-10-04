@@ -54,8 +54,8 @@ func TestCastServantPaysAndAddsCardToChase(t *testing.T) {
 	if state.NextLinkID != 5 || state.PassCount != 0 {
 		t.Fatalf("NextLinkID/PassCount = %d/%d; want 5/0", state.NextLinkID, state.PassCount)
 	}
-	if state.PriorityHolder != "player-two" {
-		t.Fatalf("PriorityHolder = %q; want player-two", state.PriorityHolder)
+	if state.PriorityHolder != "player-one" {
+		t.Fatalf("PriorityHolder = %q; want player-one", state.PriorityHolder)
 	}
 	if state.Revision != 10 {
 		t.Fatalf("Revision = %d; want 10", state.Revision)
@@ -111,8 +111,8 @@ func TestCastConjureAndBarrierUseSharedCastMutation(t *testing.T) {
 			if len(state.ChaseLinks) != 1 || state.ChaseLinks[0].Kind != model.ChaseLinkCardPlay {
 				t.Fatalf("ChaseLinks = %#v; want one card-play link", state.ChaseLinks)
 			}
-			if state.PriorityHolder != "player-two" || state.Revision != 10 {
-				t.Fatalf("priority/revision = %q/%d; want player-two/10", state.PriorityHolder, state.Revision)
+			if state.PriorityHolder != "player-one" || state.Revision != 10 {
+				t.Fatalf("priority/revision = %q/%d; want player-one/10", state.PriorityHolder, state.Revision)
 			}
 		})
 	}
@@ -326,9 +326,10 @@ func castServantEngineStateForTest() (model.MatchState, casterAetherCatalogForTe
 			ActivePlayer: "player-one",
 			Phase:        model.PhaseMain,
 		},
-		PriorityHolder: "player-one",
-		PassCount:      1,
-		NextLinkID:     4,
+		PriorityHolder:       "player-one",
+		PassCount:            1,
+		NextLinkID:           4,
+		PrioritySequenceOpen: true,
 	}
 	catalog := casterAetherCatalogForTest{
 		"printed-servant": gamecards.Card{

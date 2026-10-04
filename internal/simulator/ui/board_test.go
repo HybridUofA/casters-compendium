@@ -41,7 +41,7 @@ func TestNewBoardScreenContainsBothPlayerFieldsAndRequiredZones(t *testing.T) {
 		"Card Information",
 		"Aether Pools",
 		"Card Preview",
-		"Turn 0 • Call • Revision 7 • Active player: player-one • Priority:  • Chase: 0",
+		"Turn 1 • Call • Revision 7 • Active player: player-one • Priority:  • Chase: 0",
 	} {
 		if !containsText(screen, text) {
 			t.Errorf("board screen does not contain %q", text)
@@ -110,7 +110,7 @@ func TestCenteredPhaseGuidanceUpdatesWithMatchState(t *testing.T) {
 	updated.Revision++
 	controller.Update(updated)
 
-	if !containsText(controller.boardArea, "Current phase: Main  •  Select Battle to continue") {
+	if !containsText(controller.boardArea, "Current phase: Main  •  Select End to continue") {
 		t.Fatal("center phase guidance did not update after the phase changed")
 	}
 }
@@ -239,6 +239,7 @@ func TestOrbZoneUsesUnscrolledVerticalCardLayers(t *testing.T) {
 		cardLookup{},
 		newPreviewPanel(),
 		false,
+		nil,
 	)
 	if scroll := findScroll(zone); scroll != nil {
 		t.Fatal("Orb zone contains a scrollbar")
@@ -935,11 +936,246 @@ func TestPhaseBarEnablesInitialCallOnlyForActiveViewer(t *testing.T) {
 	}
 }
 
+func TestDeclareAttackPanelSubmitsSelectedAttackerAndTarget(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 41
+	match.Turn = model.TurnState{Number: 2, ActivePlayer: match.ViewerID, Phase: model.PhaseBattle}
+	match.PriorityHolder = match.ViewerID
+	match.PrioritySequenceOpen = true
+	match.Players[0].ServantZone = []simulatorview.CardView{{
+		MatchID:     "p1-attacker",
+		CardID:      "visible-hand-card",
+		Face:        model.CardFaceUp,
+		Orientation: model.OrientationRecovered,
+		ShowFace:    true,
+	}}
+	match.Players[1].ServantZone = []simulatorview.CardView{{
+		MatchID:     "p2-defender",
+		CardID:      "visible-hand-card",
+		Face:        model.CardFaceUp,
+		Orientation: model.OrientationRecovered,
+		ShowFace:    true,
+	}}
+	var (
+		attackerID   model.MatchCardID
+		targetKind   model.AttackTargetKind
+		targetCardID model.MatchCardID
+		revision     model.Revision
+	)
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{DeclareAttack: func(
+			gotAttacker model.MatchCardID,
+			gotKind model.AttackTargetKind,
+			gotTarget model.MatchCardID,
+			gotRevision model.Revision,
+		) {
+			attackerID = gotAttacker
+			targetKind = gotKind
+			targetCardID = gotTarget
+			revision = gotRevision
+		}},
+		nil,
+	)
+
+	attackerSelect := findSelectWithPlaceholder(controller.Content(), "Choose attacker")
+	targetSelect := findSelectWithPlaceholder(controller.Content(), "Choose target")
+	confirm := findButton(controller.Content(), "Declare Attack")
+	if attackerSelect == nil || targetSelect == nil || confirm == nil {
+		t.Fatal("battle attack controls were not rendered")
+	}
+	attackerTile := findCardTileByMatchID(controller.Content(), "p1-attacker")
+	defenderTile := findCardTileByMatchID(controller.Content(), "p2-defender")
+	if attackerTile == nil || defenderTile == nil {
+		t.Fatal("servant tiles missing for click targeting")
+	}
+	test.Tap(attackerTile)
+	if !attackerTile.selected {
+		t.Fatal("left-click did not select attacker")
+	}
+	test.Tap(defenderTile)
+	if attackerID != "p1-attacker" || targetKind != model.AttackTargetServant || targetCardID != "p2-defender" || revision != 41 {
+		t.Fatalf(
+			"left-click DeclareAttack submitted %#v/%q/%q/%d; want p1-attacker/Servant/p2-defender/41",
+			attackerID,
+			targetKind,
+			targetCardID,
+			revision,
+		)
+	}
+}
+
+func TestSageAdvicePanelOffersUseAndDecline(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 77
+	match.PendingDraw = model.PendingDraw{
+		PlayerID:  match.ViewerID,
+		Remaining: 1,
+		Step:      model.PendingDrawOffer,
+	}
+	accepted := model.Revision(0)
+	declined := model.Revision(0)
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{
+			AcceptSageAdvice:       func(revision model.Revision) { accepted = revision },
+			DeclineDrawReplacement: func(revision model.Revision) { declined = revision },
+		},
+		nil,
+	)
+	use := findButton(controller.Content(), "Use Sage Advice")
+	draw := findButton(controller.Content(), "Draw Normally")
+	if use == nil || draw == nil {
+		t.Fatal("Sage Advice panel buttons missing")
+	}
+	test.Tap(use)
+	if accepted != 77 {
+		t.Fatalf("AcceptSageAdvice revision = %d; want 77", accepted)
+	}
+	test.Tap(draw)
+	if declined != 77 {
+		t.Fatalf("DeclineDrawReplacement revision = %d; want 77", declined)
+	}
+}
+
+func TestBreakPanelOffersUseAndDecline(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 61
+	match.PendingBreak = model.PendingBreak{
+		PlayerID: match.ViewerID,
+		CardIDs:  []model.MatchCardID{"break-card"},
+	}
+	match.Players[0].ID = match.ViewerID
+	match.Players[0].Hand = []simulatorview.CardView{{
+		MatchID:  "break-card",
+		CardID:   "def-break",
+		ShowFace: true,
+	}}
+	var played model.MatchCardID
+	var declined model.Revision
+	controller := NewBoardController(
+		match,
+		[]cards.Card{{ID: "def-break", Name: "Break Servant", Type: "Servant"}},
+		BoardActions{
+			PlayBreak: func(cardID model.MatchCardID, orientation model.CardOrientation, revision model.Revision) {
+				played = cardID
+			},
+			DeclineBreak: func(revision model.Revision) { declined = revision },
+		},
+		nil,
+	)
+	use := findButton(controller.Content(), "Use Break")
+	decline := findButton(controller.Content(), "Decline Break")
+	if use == nil || decline == nil {
+		t.Fatal("Break panel buttons missing")
+	}
+	test.Tap(use)
+	if played != "break-card" {
+		t.Fatalf("PlayBreak card = %q; want break-card", played)
+	}
+	test.Tap(decline)
+	if declined != 61 {
+		t.Fatalf("DeclineBreak revision = %d; want 61", declined)
+	}
+}
+
+func TestCorruptOrbPanelSubmitsSelectedOrbIndex(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 55
+	match.Turn = model.TurnState{Number: 2, ActivePlayer: match.ViewerID, Phase: model.PhaseBattle}
+	match.Attack = model.AttackState{
+		AttackerID:   "p1-attacker",
+		TargetKind:   model.AttackTargetPlayer,
+		Step:         model.BattleStepAwaitingJudgment,
+		CorruptCount: 1,
+	}
+	match.PrioritySequenceOpen = false
+	match.PriorityHolder = ""
+	match.PassCount = 0
+	// Viewer is player-one (Players[0]); opponent orbs are on Players[1].
+	match.Players[1].Orbs = []simulatorview.CardView{
+		{Face: model.CardFaceDown},
+		{Face: model.CardFaceDown},
+		{Face: model.CardFaceDown},
+	}
+	var (
+		orbIndexes []int
+		revision   model.Revision
+	)
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{CorruptOrbs: func(gotIndexes []int, gotRevision model.Revision) {
+			orbIndexes = append([]int(nil), gotIndexes...)
+			revision = gotRevision
+		}},
+		nil,
+	)
+
+	checks := findChecks(controller.Content())
+	confirm := findButton(controller.Content(), "Corrupt Orb")
+	if len(checks) != 3 || confirm == nil {
+		t.Fatal("orb choice controls were not rendered")
+	}
+	checks[1].SetChecked(true) // Orb 2 → index 1
+	if confirm.Disabled() {
+		t.Fatal("Corrupt Orb remained disabled after selecting an Orb")
+	}
+	test.Tap(confirm)
+	if len(orbIndexes) != 1 || orbIndexes[0] != 1 || revision != 55 {
+		t.Fatalf("CorruptOrbs submitted %#v/%d; want [1]/55", orbIndexes, revision)
+	}
+}
+
+func TestBoardAutoPassesPriorityWhenConfigured(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 40
+	match.Turn.Phase = model.PhaseDraw
+	match.PriorityHolder = match.ViewerID
+	match.PrioritySequenceOpen = true
+	match.DisplayNames = map[model.PlayerID]string{
+		match.ViewerID: "Hybrid",
+	}
+	passedRevision := model.Revision(0)
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{
+			PassPriority: func(revision model.Revision) { passedRevision = revision },
+			ShouldAutoPassPriority: func(view simulatorview.MatchView) bool {
+				return view.Turn.Phase == model.PhaseDraw
+			},
+		},
+		nil,
+	)
+	if passedRevision != 40 {
+		t.Fatalf("auto-pass revision = %d; want 40", passedRevision)
+	}
+	if !strings.Contains(controller.status.Text, "Hybrid") {
+		t.Fatalf("status missing display name: %q", controller.status.Text)
+	}
+
+	// Same revision must not re-fire.
+	passedRevision = 0
+	controller.Update(match)
+	if passedRevision != 0 {
+		t.Fatalf("auto-pass fired again on same revision: %d", passedRevision)
+	}
+}
+
 func TestPassPriorityButtonRequiresPriorityAndUsesCurrentRevision(t *testing.T) {
 	match := testMatchView()
 	match.MatchStatus = model.StatusInProgress
 	match.Revision = 23
 	match.PriorityHolder = match.ViewerID
+	match.PrioritySequenceOpen = true
 	passedRevision := model.Revision(0)
 	controller := NewBoardController(
 		match,
@@ -1201,21 +1437,29 @@ func TestPhaseBarEnablesMainDuringCall(t *testing.T) {
 func TestPhaseBarEnablesRemainingSkeletonTransitions(t *testing.T) {
 	tests := []struct {
 		name    string
+		number  int
 		current model.Phase
 		target  model.Phase
 		label   string
 	}{
-		{name: "Main to Battle", current: model.PhaseMain, target: model.PhaseBattle, label: "Battle"},
-		{name: "Battle to End", current: model.PhaseBattle, target: model.PhaseEnd, label: "End"},
-		{name: "End turn", current: model.PhaseEnd, target: model.PhaseEnd, label: "End Turn"},
+		{name: "Main to End on first turn", number: 1, current: model.PhaseMain, target: model.PhaseEnd, label: "End"},
+		{name: "Main to Battle later", number: 2, current: model.PhaseMain, target: model.PhaseBattle, label: "Battle"},
+		{name: "Battle to End", number: 2, current: model.PhaseBattle, target: model.PhaseEnd, label: "End"},
+		{name: "End turn", number: 1, current: model.PhaseEnd, target: model.PhaseEnd, label: "End Turn"},
 	}
 
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
 			match := testMatchView()
 			match.MatchStatus = model.StatusInProgress
-			match.Turn.Number = 1
+			match.Turn.Number = testCase.number
 			match.Turn.Phase = testCase.current
+			if testCase.current == model.PhaseBattle {
+				// Rest able attackers so Battle may legally end.
+				for index := range match.Players[0].ServantZone {
+					match.Players[0].ServantZone[index].Orientation = model.OrientationRested
+				}
+			}
 			completionRequested := false
 			screen := NewBoardScreen(
 				match,
@@ -1272,11 +1516,11 @@ func TestBoardControllerUpdatesMetadataWithoutRebuildingPlayerFields(t *testing.
 	) {
 		t.Fatal("metadata-only update did not refresh status")
 	}
-	battleButton := findButton(controller.Content(), string(model.PhaseBattle))
-	if battleButton == nil || battleButton.Disabled() {
-		t.Fatal("metadata-only update did not enable Battle")
+	endButton := findButton(controller.Content(), string(model.PhaseEnd))
+	if endButton == nil || endButton.Disabled() {
+		t.Fatal("metadata-only update did not enable End after first-turn Main")
 	}
-	test.Tap(battleButton)
+	test.Tap(endButton)
 	if requestedRevision != 3 {
 		t.Fatalf("phase action used revision %d; want updated revision 3", requestedRevision)
 	}
@@ -1475,22 +1719,6 @@ func findVerticalCardStack(object fyne.CanvasObject) *fyne.Container {
 	return nil
 }
 
-func collectCardTiles(object fyne.CanvasObject) []*CardTile {
-	if tile, ok := object.(*CardTile); ok {
-		return []*CardTile{tile}
-	}
-	result := make([]*CardTile, 0)
-	if fyneContainer, ok := object.(*fyne.Container); ok {
-		for _, child := range fyneContainer.Objects {
-			result = append(result, collectCardTiles(child)...)
-		}
-	}
-	if scroll, ok := object.(*container.Scroll); ok {
-		result = append(result, collectCardTiles(scroll.Content)...)
-	}
-	return result
-}
-
 func findButton(object fyne.CanvasObject, text string) *widget.Button {
 	if button, ok := object.(*widget.Button); ok && button.Text == text {
 		return button
@@ -1563,6 +1791,15 @@ func findSelects(object fyne.CanvasObject) []*widget.Select {
 	return result
 }
 
+func findSelectWithPlaceholder(object fyne.CanvasObject, placeholder string) *widget.Select {
+	for _, selection := range findSelects(object) {
+		if selection.PlaceHolder == placeholder {
+			return selection
+		}
+	}
+	return nil
+}
+
 func findChecks(object fyne.CanvasObject) []*widget.Check {
 	result := make([]*widget.Check, 0)
 	if check, ok := object.(*widget.Check); ok {
@@ -1583,15 +1820,10 @@ func findCardTile(object fyne.CanvasObject, cardID string) *CardTile {
 	if tile, ok := object.(*CardTile); ok && tile.Card.ID == cardID {
 		return tile
 	}
-	if container, ok := object.(*fyne.Container); ok {
-		for _, child := range container.Objects {
-			if tile := findCardTile(child, cardID); tile != nil {
-				return tile
-			}
+	for _, child := range childCanvasObjects(object) {
+		if tile := findCardTile(child, cardID); tile != nil {
+			return tile
 		}
-	}
-	if scroll, ok := object.(*container.Scroll); ok {
-		return findCardTile(scroll.Content, cardID)
 	}
 	return nil
 }
@@ -1600,15 +1832,10 @@ func findCardTileByMatchID(object fyne.CanvasObject, matchID model.MatchCardID) 
 	if tile, ok := object.(*CardTile); ok && tile.View.MatchID == matchID {
 		return tile
 	}
-	if fyneContainer, ok := object.(*fyne.Container); ok {
-		for _, child := range fyneContainer.Objects {
-			if tile := findCardTileByMatchID(child, matchID); tile != nil {
-				return tile
-			}
+	for _, child := range childCanvasObjects(object) {
+		if tile := findCardTileByMatchID(child, matchID); tile != nil {
+			return tile
 		}
-	}
-	if scroll, ok := object.(*container.Scroll); ok {
-		return findCardTileByMatchID(scroll.Content, matchID)
 	}
 	return nil
 }
@@ -1620,17 +1847,36 @@ func findConcealedCardTile(object fyne.CanvasObject) *CardTile {
 		tile.View.MatchID == "" {
 		return tile
 	}
-	if fyneContainer, ok := object.(*fyne.Container); ok {
-		for _, child := range fyneContainer.Objects {
-			if tile := findConcealedCardTile(child); tile != nil {
-				return tile
-			}
+	for _, child := range childCanvasObjects(object) {
+		if tile := findConcealedCardTile(child); tile != nil {
+			return tile
 		}
 	}
-	if scroll, ok := object.(*container.Scroll); ok {
-		return findConcealedCardTile(scroll.Content)
-	}
 	return nil
+}
+
+func childCanvasObjects(object fyne.CanvasObject) []fyne.CanvasObject {
+	switch typed := object.(type) {
+	case *fyne.Container:
+		return typed.Objects
+	case *container.Scroll:
+		if typed.Content == nil {
+			return nil
+		}
+		return []fyne.CanvasObject{typed.Content}
+	case *zoneInteractLayer:
+		if typed.content == nil {
+			return nil
+		}
+		return []fyne.CanvasObject{typed.content}
+	case *secondaryTapLayer:
+		if typed.content == nil {
+			return nil
+		}
+		return []fyne.CanvasObject{typed.content}
+	default:
+		return nil
+	}
 }
 
 func testDefinitions() []cards.Card {
@@ -1705,8 +1951,10 @@ func testDefinitions() []cards.Card {
 func testMatchView() simulatorview.MatchView {
 	return simulatorview.MatchView{
 		ViewerID:    "player-one",
+		FirstPlayer: "player-one",
 		MatchStatus: model.StatusSetup,
 		Turn: model.TurnState{
+			Number:       1,
 			ActivePlayer: "player-one",
 			Phase:        model.PhaseCall,
 		},

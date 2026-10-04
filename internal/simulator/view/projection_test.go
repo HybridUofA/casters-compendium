@@ -20,9 +20,13 @@ func TestProjectMatchProtectsHiddenInformation(t *testing.T) {
 		result.Turn != state.Turn ||
 		result.MatchStatus != state.MatchStatus ||
 		result.Revision != state.Revision ||
+		result.FirstPlayer != state.FirstPlayer ||
 		result.PriorityHolder != state.PriorityHolder ||
 		result.PassCount != state.PassCount ||
-		result.ChaseLinkCount != len(state.ChaseLinks) {
+		result.ChaseLinkCount != len(state.ChaseLinks) ||
+		result.PrioritySequenceOpen != state.PrioritySequenceOpen ||
+		result.Attack != state.Attack ||
+		result.Result != state.Result {
 		t.Fatal("ProjectMatch() did not preserve public match metadata")
 	}
 	if result.Players[0].DeckCount != len(state.Players[0].Deck) ||
@@ -35,7 +39,19 @@ func TestProjectMatchProtectsHiddenInformation(t *testing.T) {
 	}
 
 	assertVisibleCard(t, result.Players[0].Hand[0], "p1-hand", "card-p1-hand")
+	if result.Players[0].Hand[0].Owner != "player-one" || result.Players[0].Hand[0].HasStock {
+		t.Fatalf("own hand legality metadata = %#v", result.Players[0].Hand[0])
+	}
 	assertConcealedCard(t, result.Players[1].Hand[0])
+	if len(result.Players[0].Deck) != 2 ||
+		result.Players[0].Deck[0].MatchID != "p1-deck-1" ||
+		result.Players[0].Deck[0].CardID != "card-p1-deck-1" ||
+		result.Players[0].Deck[0].ShowFace {
+		t.Fatalf("own deck projection = %#v", result.Players[0].Deck)
+	}
+	if len(result.Players[1].Deck) != 0 {
+		t.Fatalf("opponent deck identities leaked: %#v", result.Players[1].Deck)
+	}
 	assertConcealedCard(t, result.Players[0].Orbs[0])
 	assertConcealedCard(t, result.Players[1].Orbs[0])
 
@@ -96,10 +112,50 @@ func TestProjectMatchUsesViewerPerspectiveForEitherPlayer(t *testing.T) {
 	}
 }
 
+func TestProjectMatchShowsKnownEnemyOrbPersistently(t *testing.T) {
+	state := projectionStateForTest()
+	model.MarkCardKnown(&state, "player-one", "p2-orb")
+
+	result, err := ProjectMatch(state, "player-one")
+	if err != nil {
+		t.Fatal(err)
+	}
+	known := result.Players[1].Orbs[0]
+	if known.ShowFace || known.MatchID != "p2-orb" || known.CardID != "card-p2-orb" {
+		t.Fatalf("known enemy Orb = %#v; want remembered identity face down", known)
+	}
+
+	ownerView, err := ProjectMatch(state, "player-two")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Owner still does not see their own Orb unless they gained knowledge too.
+	assertConcealedCard(t, ownerView.Players[1].Orbs[0])
+}
+
 func TestProjectMatchRejectsUnknownViewer(t *testing.T) {
-	_, err := ProjectMatch(projectionStateForTest(), "spectator")
+	_, err := ProjectMatch(projectionStateForTest(), "unknown-viewer")
 	if err == nil || !strings.Contains(err.Error(), "not in current player IDs") {
 		t.Fatalf("ProjectMatch() error = %v; want unknown-viewer error", err)
+	}
+}
+
+func TestProjectMatchAllowsSpectatorWithoutPrivateInfo(t *testing.T) {
+	state := projectionStateForTest()
+	result, err := ProjectMatch(state, "spectator-1")
+	if err != nil {
+		t.Fatalf("ProjectMatch(spectator) error = %v", err)
+	}
+	if !result.Spectator || result.ViewerID != "spectator-1" {
+		t.Fatalf("spectator view = %#v", result)
+	}
+	if len(result.Players[0].Deck) != 0 || len(result.Players[1].Deck) != 0 {
+		t.Fatal("spectator must not receive deck identities")
+	}
+	for _, handCard := range append(result.Players[0].Hand, result.Players[1].Hand...) {
+		if handCard.ShowFace || handCard.CardID != "" || handCard.MatchID != "" {
+			t.Fatalf("spectator saw hand identity %#v", handCard)
+		}
 	}
 }
 
@@ -227,6 +283,7 @@ func projectionStateForTest() model.MatchState {
 				Exile:       []model.MatchCardID{"p2-exile"},
 			},
 		},
+		FirstPlayer: "player-one",
 		MatchStatus: model.StatusSetup,
 		Turn: model.TurnState{
 			ActivePlayer:    "player-one",
@@ -253,6 +310,9 @@ func projectionStateForTest() model.MatchState {
 		}
 	}
 
+	addInstance("p1-deck-1", "card-p1-deck-1", "player-one", model.CardFaceDown, "")
+	addInstance("p1-deck-2", "card-p1-deck-2", "player-one", model.CardFaceDown, "")
+	addInstance("p2-deck-1", "card-p2-deck-1", "player-two", model.CardFaceDown, "")
 	addInstance("p1-hand", "card-p1-hand", "player-one", "", "")
 	addInstance("p1-orb", "card-p1-orb", "player-one", "", "")
 	addInstance("p2-hand", "card-p2-hand", "player-two", "", "")

@@ -95,12 +95,16 @@ func TestManualMovePanelExplainsAndHidesUnsupportedChoices(t *testing.T) {
 	if len(choices[0].Options) != 2 {
 		t.Fatalf("source count = %d; want visible Hand and Exile cards only", len(choices[0].Options))
 	}
+	foundOrbs := false
 	for _, destination := range choices[1].Options {
 		if destination == string(model.ZoneOrbs) {
-			t.Fatal("unsupported Orb destination is selectable")
+			foundOrbs = true
 		}
 	}
-	for _, text := range []string{"Prototype limits", "Tokens", "Stock", "Orbs", "face-down Exile"} {
+	if !foundOrbs {
+		t.Fatal("Orb destination should be selectable for Luna-style hand placement")
+	}
+	for _, text := range []string{"Prototype limits", "Tokens", "Stock", "face-down Exile"} {
 		if !containsTextPart(screen.preview.manualActions, text) {
 			t.Fatalf("manual move panel does not explain %q limitation", text)
 		}

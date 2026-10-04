@@ -25,19 +25,25 @@ import (
 type CardTile struct {
 	widget.BaseWidget
 
-	View            simulatorview.CardView
-	Card            cards.Card
-	baseSize        fyne.Size
-	size            fyne.Size
-	image           *canvas.Image
-	uprightImage    *canvas.Image
-	sidewaysImage   *canvas.Image
-	reversedImage   *canvas.Image
-	selectionBorder *canvas.Rectangle
-	selected        bool
-	OnPreview       func(cards.Card)
-	OnHiddenPreview func()
-	OnActivate      func()
+	View                simulatorview.CardView
+	Card                cards.Card
+	baseSize            fyne.Size
+	size                fyne.Size
+	image               *canvas.Image
+	uprightImage        *canvas.Image
+	sidewaysImage       *canvas.Image
+	reversedImage       *canvas.Image
+	selectionBorder     *canvas.Rectangle
+	statusBadge         *canvas.Text
+	selected            bool
+	OnPreview           func(cards.Card)
+	OnHiddenPreview     func()
+	OnActivate          func()
+	OnSecondaryActivate func(*fyne.PointEvent)
+	OnDragBegin         func()
+	OnDragUpdate        func(fyne.Position)
+	OnDragEnd           func()
+	dragStarted         bool
 }
 
 var _ desktop.Hoverable = (*CardTile)(nil)
@@ -89,9 +95,27 @@ func newOrientedCardTile(
 	tile.selectionBorder.StrokeColor = theme.Color(theme.ColorNamePrimary)
 	tile.selectionBorder.StrokeWidth = 4
 	tile.selectionBorder.Hide()
+	tile.statusBadge = canvas.NewText("DC", color.NRGBA{R: 220, G: 180, B: 60, A: 255})
+	tile.statusBadge.TextStyle = fyne.TextStyle{Bold: true}
+	tile.statusBadge.TextSize = 11
+	tile.statusBadge.Hide()
+	tile.refreshStatusBadge()
 	tile.setSidewaysState(sideways)
 	tile.ExtendBaseWidget(tile)
 	return tile
+}
+
+func (tile *CardTile) refreshStatusBadge() {
+	if tile == nil || tile.statusBadge == nil {
+		return
+	}
+	showDC := tile.View.GrantedDoubleCorrupt ||
+		cardDeclaresDoubleCorruptAbility(tile.Card.Ability)
+	if showDC && tile.View.MatchID != "" {
+		tile.statusBadge.Show()
+		return
+	}
+	tile.statusBadge.Hide()
 }
 
 // SetSelected displays whether this card is included in the pending UI choice.
@@ -311,20 +335,31 @@ func (r *cardTileRenderer) Layout(size fyne.Size) {
 	border := r.tile.selectionBorder
 	inset := min(border.StrokeWidth/2, min(width, height)/2)
 	border.CornerRadius = min(width, height) * 0.06
-	border.Move(fyne.NewPos((size.Width-width)/2+inset, (size.Height-height)/2+inset))
+	artX := (size.Width - width) / 2
+	artY := (size.Height - height) / 2
+	border.Move(fyne.NewPos(artX+inset, artY+inset))
 	border.Resize(fyne.NewSize(max(0, width-2*inset), max(0, height-2*inset)))
+
+	if badge := r.tile.statusBadge; badge != nil {
+		badge.Resize(badge.MinSize())
+		badge.Move(fyne.NewPos(artX+4, artY+2))
+	}
 }
 
 func (r *cardTileRenderer) MinSize() fyne.Size { return r.tile.MinSize() }
 
 func (r *cardTileRenderer) Objects() []fyne.CanvasObject {
-	return []fyne.CanvasObject{r.tile.image, r.tile.selectionBorder}
+	return []fyne.CanvasObject{r.tile.image, r.tile.selectionBorder, r.tile.statusBadge}
 }
 
 func (r *cardTileRenderer) Refresh() {
+	r.tile.refreshStatusBadge()
 	r.Layout(r.tile.Size())
 	r.tile.image.Refresh()
 	r.tile.selectionBorder.Refresh()
+	if r.tile.statusBadge != nil {
+		r.tile.statusBadge.Refresh()
+	}
 }
 
 func (r *cardTileRenderer) Destroy() {}
@@ -337,6 +372,37 @@ func (tile *CardTile) Tapped(_ *fyne.PointEvent) {
 	tile.preview()
 	if tile.OnActivate != nil {
 		tile.OnActivate()
+	}
+}
+
+func (tile *CardTile) TappedSecondary(event *fyne.PointEvent) {
+	if tile.OnSecondaryActivate != nil {
+		tile.OnSecondaryActivate(event)
+	}
+}
+
+func (tile *CardTile) Dragged(event *fyne.DragEvent) {
+	if event == nil {
+		return
+	}
+	if !tile.dragStarted {
+		tile.dragStarted = true
+		if tile.OnDragBegin != nil {
+			tile.OnDragBegin()
+		}
+	}
+	if tile.OnDragUpdate != nil {
+		tile.OnDragUpdate(event.AbsolutePosition)
+	}
+}
+
+func (tile *CardTile) DragEnd() {
+	if !tile.dragStarted {
+		return
+	}
+	tile.dragStarted = false
+	if tile.OnDragEnd != nil {
+		tile.OnDragEnd()
 	}
 }
 
