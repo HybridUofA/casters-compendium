@@ -32,9 +32,9 @@ type MatchView struct {
 // one player. Cards within a zone are individually projected as CardViews so
 // hidden opponent information never needs to reach the user interface.
 type PlayerView struct {
-	ID                   model.PlayerID
-	DeckCount            int
-	Aether               model.AetherPool
+	ID        model.PlayerID
+	DeckCount int
+	Aether    model.AetherPool
 	// Deck is only populated for the viewer's own library so the UI can offer
 	// Cockatrice-style browse/search without revealing the opponent's order.
 	Deck                 []CardView

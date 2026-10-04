@@ -23,11 +23,11 @@ type Host struct {
 }
 
 type wsClient struct {
-	conn       *websocket.Conn
-	roomCode   string
-	playerID   string
-	name       string
-	spectator  bool
+	conn      *websocket.Conn
+	roomCode  string
+	playerID  string
+	name      string
+	spectator bool
 }
 
 func NewHost(lobby *Lobby) *Host {

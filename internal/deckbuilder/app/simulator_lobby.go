@@ -47,8 +47,8 @@ func showOnlineLobby(
 	)
 
 	var (
-		client      *netclient.Client
-		allRooms    []protocol.RoomSummary
+		client       *netclient.Client
+		allRooms     []protocol.RoomSummary
 		visibleRooms []protocol.RoomSummary
 	)
 

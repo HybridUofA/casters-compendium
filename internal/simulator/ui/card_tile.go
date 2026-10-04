@@ -25,17 +25,17 @@ import (
 type CardTile struct {
 	widget.BaseWidget
 
-	View            simulatorview.CardView
-	Card            cards.Card
-	baseSize        fyne.Size
-	size            fyne.Size
-	image           *canvas.Image
-	uprightImage    *canvas.Image
-	sidewaysImage   *canvas.Image
-	reversedImage   *canvas.Image
-	selectionBorder *canvas.Rectangle
-	statusBadge     *canvas.Text
-	selected        bool
+	View                simulatorview.CardView
+	Card                cards.Card
+	baseSize            fyne.Size
+	size                fyne.Size
+	image               *canvas.Image
+	uprightImage        *canvas.Image
+	sidewaysImage       *canvas.Image
+	reversedImage       *canvas.Image
+	selectionBorder     *canvas.Rectangle
+	statusBadge         *canvas.Text
+	selected            bool
 	OnPreview           func(cards.Card)
 	OnHiddenPreview     func()
 	OnActivate          func()

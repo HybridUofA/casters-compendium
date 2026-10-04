@@ -106,20 +106,20 @@ type BoardActions struct {
 // match metadata in place and rebuilds card zones only when projected player
 // data changes.
 type BoardScreen struct {
-	content      fyne.CanvasObject
-	status       *canvas.Text
-	phaseHint    *canvas.Text
-	phaseButtons map[model.Phase]*widget.Button
-	passPriority *widget.Button
-	attackPanel  *fyne.Container
-	boards       *fyne.Container
-	playerBoards [2]*playerBoardController
-	boardArea    fyne.CanvasObject
-	aetherPools  *fyne.Container
-	match        simulatorview.MatchView
-	definitions  cardLookup
-	preview      previewState
-	actions      BoardActions
+	content              fyne.CanvasObject
+	status               *canvas.Text
+	phaseHint            *canvas.Text
+	phaseButtons         map[model.Phase]*widget.Button
+	passPriority         *widget.Button
+	attackPanel          *fyne.Container
+	boards               *fyne.Container
+	playerBoards         [2]*playerBoardController
+	boardArea            fyne.CanvasObject
+	aetherPools          *fyne.Container
+	match                simulatorview.MatchView
+	definitions          cardLookup
+	preview              previewState
+	actions              BoardActions
 	dropTargets          []zoneDropTarget
 	drag                 cardDragSession
 	lastAutoPassRevision model.Revision
