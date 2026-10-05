@@ -12,8 +12,10 @@ import (
 
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/netclient"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/protocol"
+	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
 const (
@@ -21,6 +23,9 @@ const (
 	networkStopPhasesPreferenceKey   = "network.stop_phases"
 	priorityModeFull                 = "full"
 	priorityModeStops                = "stops"
+	// priorityModeEmpty auto-passes empty priority stacks and stops when a Chase
+	// starts. Main/Battle still pause for the turn player so they can act.
+	priorityModeEmpty = "empty"
 )
 
 func showOnlineLobby(
@@ -330,17 +335,22 @@ func joinLobbyAsSpectator(
 
 func showPriorityPreferencesDialog(window fyne.Window) {
 	prefs := fyne.CurrentApp().Preferences()
-	mode := prefs.StringWithFallback(networkPriorityModePreferenceKey, priorityModeFull)
+	mode := prefs.StringWithFallback(networkPriorityModePreferenceKey, priorityModeEmpty)
 	stops := prefs.StringWithFallback(networkStopPhasesPreferenceKey, "Main,Battle")
 
-	modeSelect := widget.NewRadioGroup([]string{
-		"Full control (stop every priority)",
-		"Auto-pass except selected stop phases",
-	}, nil)
-	if mode == priorityModeStops {
-		modeSelect.SetSelected("Auto-pass except selected stop phases")
-	} else {
-		modeSelect.SetSelected("Full control (stop every priority)")
+	const (
+		labelEmpty = "Auto-pass empty priority (stop when Chase starts)"
+		labelStops = "Auto-pass except selected stop phases"
+		labelFull  = "Full control (stop every priority)"
+	)
+	modeSelect := widget.NewRadioGroup([]string{labelEmpty, labelStops, labelFull}, nil)
+	switch mode {
+	case priorityModeStops:
+		modeSelect.SetSelected(labelStops)
+	case priorityModeFull:
+		modeSelect.SetSelected(labelFull)
+	default:
+		modeSelect.SetSelected(labelEmpty)
 	}
 
 	recovery := widget.NewCheck("Recovery", nil)
@@ -367,17 +377,21 @@ func showPriorityPreferencesDialog(window fyne.Window) {
 	form := container.NewVBox(
 		widget.NewLabel("Arena-style priority control"),
 		modeSelect,
-		widget.NewLabel("Stop phases (used when auto-pass is enabled):"),
+		widget.NewLabel("Empty-priority mode keeps Main/Battle for the turn player so they can cast or attack. Chase links always require a manual pass."),
+		widget.NewLabel("Stop phases (used when “except selected stop phases” is enabled):"),
 		recovery, draw, call, main, battle, end,
 	)
 	showScaledCustomConfirm("Priority Preferences", "Save", "Cancel", form, func(ok bool) {
 		if !ok {
 			return
 		}
-		if strings.Contains(modeSelect.Selected, "Auto-pass") {
+		switch modeSelect.Selected {
+		case labelStops:
 			prefs.SetString(networkPriorityModePreferenceKey, priorityModeStops)
-		} else {
+		case labelFull:
 			prefs.SetString(networkPriorityModePreferenceKey, priorityModeFull)
+		default:
+			prefs.SetString(networkPriorityModePreferenceKey, priorityModeEmpty)
 		}
 		selected := make([]string, 0, 6)
 		for name, check := range checks {
@@ -399,17 +413,42 @@ func roomMatchesSearch(room protocol.RoomSummary, query string) bool {
 	return false
 }
 
-func shouldAutoPassPriority(matchPhase string) bool {
-	prefs := fyne.CurrentApp().Preferences()
-	mode := prefs.StringWithFallback(networkPriorityModePreferenceKey, priorityModeFull)
-	if mode != priorityModeStops {
+// shouldAutoPassPriorityForView decides whether the board should auto-pass for
+// this viewer-safe projection. Default is empty-stack auto-pass until a Chase
+// starts; Main/Battle still pause for the turn player.
+func shouldAutoPassPriorityForView(match simulatorview.MatchView) bool {
+	if match.Spectator ||
+		match.MatchStatus != model.StatusInProgress ||
+		!match.PrioritySequenceOpen ||
+		match.PriorityHolder != match.ViewerID ||
+		match.ChaseLinkCount > 0 ||
+		match.Attack.Step != model.BattleStepIdle ||
+		match.PendingDraw.Step != "" ||
+		match.PendingBreak.PlayerID != "" {
 		return false
 	}
-	stops := prefs.StringWithFallback(networkStopPhasesPreferenceKey, "Main,Battle")
-	for _, phase := range strings.Split(stops, ",") {
-		if strings.EqualFold(strings.TrimSpace(phase), matchPhase) {
+	prefs := fyne.CurrentApp().Preferences()
+	mode := prefs.StringWithFallback(networkPriorityModePreferenceKey, priorityModeEmpty)
+	switch mode {
+	case priorityModeFull:
+		return false
+	case priorityModeStops:
+		return !phaseIsConfiguredStop(string(match.Turn.Phase), prefs.StringWithFallback(networkStopPhasesPreferenceKey, "Main,Battle"))
+	default:
+		// Empty-chase default: leave Main/Battle with the turn player.
+		if match.Turn.ActivePlayer == match.ViewerID &&
+			(match.Turn.Phase == model.PhaseMain || match.Turn.Phase == model.PhaseBattle) {
 			return false
 		}
+		return true
 	}
-	return true
+}
+
+func phaseIsConfiguredStop(matchPhase, stopsCSV string) bool {
+	for _, phase := range strings.Split(stopsCSV, ",") {
+		if strings.EqualFold(strings.TrimSpace(phase), matchPhase) {
+			return true
+		}
+	}
+	return false
 }

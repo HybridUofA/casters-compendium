@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/protocol"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/session"
 	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
+
+const peerPushTimeout = 2 * time.Second
 
 type commandResult struct {
 	view    simulatorview.MatchView
@@ -42,16 +45,21 @@ func (host *Host) handleCommand(client *wsClient, raw json.RawMessage) ([]byte, 
 		return encodeError("command_failed", err.Error())
 	}
 
-	// Reply carries the actor's view; notify peers only when state mutated.
-	if result.mutate {
-		host.pushViews(roomCode, playerID)
-	}
-
-	return protocol.Encode(protocol.KindView, protocol.ViewPayload{
+	reply, err := protocol.Encode(protocol.KindView, protocol.ViewPayload{
 		Match:        host.withDisplayNames(roomCode, result.view),
 		Private:      result.private,
 		DisplayNames: host.displayNames(roomCode),
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Reply to the acting player first. Peer fan-out must not block their
+	// command round-trip (a stalled peer write previously froze online play).
+	if result.mutate {
+		go host.pushViews(roomCode, playerID)
+	}
+	return reply, nil
 }
 
 func (host *Host) isSpectator(roomCode, playerID string, client *wsClient) bool {
@@ -391,7 +399,10 @@ func (host *Host) pushViews(roomCode, exceptPlayerID string) {
 	}
 	names := host.displayNames(roomCode)
 	for _, client := range host.clientsInRoom(roomCode) {
-		if client.playerID == "" || client.conn == nil || client.playerID == exceptPlayerID {
+		if client.playerID == "" || client.playerID == exceptPlayerID {
+			continue
+		}
+		if client.conn == nil && client.writeFn == nil {
 			continue
 		}
 		playerSession, err := host.Lobby.Session(roomCode, client.playerID)
@@ -410,6 +421,8 @@ func (host *Host) pushViews(roomCode, exceptPlayerID string) {
 		if err != nil {
 			continue
 		}
-		_ = writeBytes(context.Background(), client.conn, raw)
+		ctx, cancel := context.WithTimeout(context.Background(), peerPushTimeout)
+		_ = client.write(ctx, raw)
+		cancel()
 	}
 }

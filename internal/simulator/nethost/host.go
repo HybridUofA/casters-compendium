@@ -1,6 +1,7 @@
 package nethost
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -23,11 +24,35 @@ type Host struct {
 }
 
 type wsClient struct {
-	conn      *websocket.Conn
+	conn    *websocket.Conn
+	writeMu sync.Mutex
+	// writeFn overrides conn.Write in tests (e.g. to simulate a stalled peer).
+	writeFn   func(ctx context.Context, data []byte) error
 	roomCode  string
 	playerID  string
 	name      string
 	spectator bool
+}
+
+func (client *wsClient) write(ctx context.Context, data []byte) error {
+	if client == nil {
+		return fmt.Errorf("client connection is required")
+	}
+	if len(data) == 0 {
+		return fmt.Errorf("empty websocket write")
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	client.writeMu.Lock()
+	defer client.writeMu.Unlock()
+	if client.writeFn != nil {
+		return client.writeFn(ctx, data)
+	}
+	if client.conn == nil {
+		return fmt.Errorf("client connection is required")
+	}
+	return client.conn.Write(ctx, websocket.MessageText, data)
 }
 
 func NewHost(lobby *Lobby) *Host {
@@ -155,7 +180,8 @@ func (host *Host) handleJoinRoom(client *wsClient, raw json.RawMessage) ([]byte,
 		return nil, err
 	}
 
-	host.pushViews(payload.RoomCode, playerID)
+	// Fan-out after the join reply is ready so a stalled peer cannot block seating.
+	go host.pushViews(payload.RoomCode, playerID)
 	return reply, nil
 }
 

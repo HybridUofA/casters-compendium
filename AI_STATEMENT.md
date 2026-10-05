@@ -260,3 +260,14 @@ DC badges), Break / Sage Advice / Double Corrupt / mandatory-attack
 presentation and tests, release metadata, and this disclosure. Hybrid owns
 future simulator engine rules work; assistance defaults to tests, UI, bug
 fixes, and mentorship unless Hybrid explicitly requests engine implementation.
+
+## Disclosed v1.1.0 assistance
+
+Hybrid directed the v1.1.0 playability pass (Call / Level Up freeze reports,
+clipped Level Up prompt, priority click fatigue, and shipping as a minor
+release) and remains responsible for acceptance and publication.
+
+Under that authorization, Cursor assistance implemented the UI-thread
+deferrals, host reply-before-peer-push path, Level Up preview-panel layout,
+Space-to-pass and empty-Chase auto-pass defaults, regression tests, and this
+release metadata under maintainer review.

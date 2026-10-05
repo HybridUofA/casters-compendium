@@ -85,14 +85,19 @@ func compareVersions(left, right string) int {
 			return -1
 		}
 	}
-	if len(leftVersion.prerelease) == 0 || len(rightVersion.prerelease) == 0 {
-		if len(leftVersion.prerelease) == len(rightVersion.prerelease) {
-			return 0
-		}
-		if len(leftVersion.prerelease) == 0 {
+	leftRank := releaseChannelRank(leftVersion.prerelease)
+	rightRank := releaseChannelRank(rightVersion.prerelease)
+	if leftRank != rightRank {
+		if leftRank > rightRank {
 			return 1
 		}
 		return -1
+	}
+	if len(leftVersion.prerelease) == 0 && len(rightVersion.prerelease) == 0 {
+		return 0
+	}
+	if len(leftVersion.prerelease) == 0 || len(rightVersion.prerelease) == 0 {
+		return 0
 	}
 	limit := min(len(leftVersion.prerelease), len(rightVersion.prerelease))
 	for index := 0; index < limit; index++ {
@@ -127,4 +132,16 @@ func compareVersions(left, right string) int {
 func numericIdentifier(value string) (int, bool) {
 	number, err := strconv.Atoi(value)
 	return number, err == nil
+}
+
+// releaseChannelRank orders bundled changelog entries for the same core version.
+// Hotfix lines ship after the stable tag and should appear first in the UI list.
+func releaseChannelRank(prerelease []string) int {
+	if len(prerelease) == 0 {
+		return 2
+	}
+	if prerelease[0] == "hotfix" {
+		return 3
+	}
+	return 1
 }
