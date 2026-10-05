@@ -28,7 +28,8 @@ v0.1.6's selectable bundled backgrounds, its first rendering hotfix, and
 v0.1.8-hotfix.2's card-art recovery fix. The statement also records that Hybrid
 explicitly authorized OpenAI assistance to implement the v0.3.2 networked
 playtest stack and Host/Join UI under maintainer direction, and later the
-v1.0.0 manual-playable simulator skeleton under the same review model.
+v1.0.0 manual-playable simulator skeleton under the same review model, plus
+v1.0.0-hotfix.1's Call / Level Up freeze repair.
 
 ## Features
 
@@ -83,6 +84,12 @@ v1.0.0 manual-playable simulator skeleton under the same review model.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's fixed in v1.0.0-hotfix.1
+
+- Stop Call / Level Up from freezing hotseat and online matches (UI deferral
+  plus host reply-before-peer-push).
+- Redeploy `simhost` from this tag so the online host path is live.
 
 ### What's new in v1.0.0
 
@@ -359,13 +366,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_1.0.0_amd64.deb
+sudo apt install ./casters-compendium_1.0.0-hotfix.1_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-1.0.0-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-1.0.0_hotfix.1-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

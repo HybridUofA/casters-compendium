@@ -260,3 +260,10 @@ DC badges), Break / Sage Advice / Double Corrupt / mandatory-attack
 presentation and tests, release metadata, and this disclosure. Hybrid owns
 future simulator engine rules work; assistance defaults to tests, UI, bug
 fixes, and mentorship unless Hybrid explicitly requests engine implementation.
+
+## Disclosed v1.0.0-hotfix.1 exception
+
+Hybrid reported Call / Level Up freezes in hotseat and online matches and
+authorized Cursor assistance to implement the UI-thread deferrals, host
+reply-before-peer-push path, regression test, and this hotfix release
+metadata under maintainer review.

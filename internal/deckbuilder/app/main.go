@@ -1605,6 +1605,13 @@ func showApplication(
 
 					var renderPlayers func()
 					var renderPlayersWithView func(int, simulatorview.MatchView)
+					// Defer board refreshes so Call/Level Up buttons are not destroyed
+					// while Fyne is still dispatching their tap handlers (UI freeze).
+					scheduleBoardRefresh := func(updatedIndex int, updatedView simulatorview.MatchView) {
+						fyne.Do(func() {
+							renderPlayersWithView(updatedIndex, updatedView)
+						})
+					}
 					renderPlayersWithView = func(updatedIndex int, updatedView simulatorview.MatchView) {
 						for index, playerSession := range playerSessions {
 							matchView := updatedView
@@ -1645,7 +1652,7 @@ func showApplication(
 												dialog.ShowError(tokenErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										GenerateCasterAether: func(
 											cardID model.MatchCardID,
@@ -1657,7 +1664,7 @@ func showApplication(
 												dialog.ShowError(aetherErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										GenerateNonElementalAether: func(
 											cardID model.MatchCardID,
@@ -1669,7 +1676,7 @@ func showApplication(
 												dialog.ShowError(aetherErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CallFaceDownLevelOne: func(
 											cardID model.MatchCardID,
@@ -1681,7 +1688,7 @@ func showApplication(
 												dialog.ShowError(callErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CallFaceUpLevelOne: func(
 											cardID model.MatchCardID,
@@ -1693,7 +1700,7 @@ func showApplication(
 												dialog.ShowError(callErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										LevelUpCaster: func(
 											upperCardID model.MatchCardID,
@@ -1706,7 +1713,7 @@ func showApplication(
 												dialog.ShowError(levelErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CastServant: func(
 											cardID model.MatchCardID,
@@ -1720,7 +1727,7 @@ func showApplication(
 												dialog.ShowError(castErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CastConjure: func(
 											cardID model.MatchCardID,
@@ -1733,7 +1740,7 @@ func showApplication(
 												dialog.ShowError(castErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CastBarrier: func(
 											cardID model.MatchCardID,
@@ -1746,7 +1753,7 @@ func showApplication(
 												dialog.ShowError(castErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CastServantWithPlan: func(
 											cardID model.MatchCardID,
@@ -1760,7 +1767,7 @@ func showApplication(
 												dialog.ShowError(castErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CastConjureWithPlan: func(cardID model.MatchCardID, plan model.CastPaymentPlan, expectedRevision model.Revision) {
 											updatedView, castErr := playerSessions[playerIndex].CastConjureWithPlan(cardID, plan, expectedRevision)
@@ -1768,7 +1775,7 @@ func showApplication(
 												dialog.ShowError(castErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CastBarrierWithPlan: func(cardID model.MatchCardID, plan model.CastPaymentPlan, expectedRevision model.Revision) {
 											updatedView, castErr := playerSessions[playerIndex].CastBarrierWithPlan(cardID, plan, expectedRevision)
@@ -1776,7 +1783,7 @@ func showApplication(
 												dialog.ShowError(castErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										MoveCard: func(command model.MoveCardCommand, expectedRevision model.Revision) {
 											updatedView, moveErr := playerSessions[playerIndex].MoveCard(command, expectedRevision)
@@ -1784,7 +1791,7 @@ func showApplication(
 												dialog.ShowError(moveErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										DrawCards: func(count int, expectedRevision model.Revision) {
 											updatedView, drawErr := playerSessions[playerIndex].DrawCards(count, expectedRevision)
@@ -1792,7 +1799,7 @@ func showApplication(
 												dialog.ShowError(drawErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										ShuffleDeck: func(expectedRevision model.Revision) {
 											updatedView, shuffleErr := playerSessions[playerIndex].ShuffleDeck(expectedRevision)
@@ -1800,7 +1807,7 @@ func showApplication(
 												dialog.ShowError(shuffleErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										PeekDeckTops: func(
 											ownerID model.PlayerID,
@@ -1814,7 +1821,7 @@ func showApplication(
 												}
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 											if done != nil {
 												done(peeked, nil)
 											}
@@ -1825,7 +1832,7 @@ func showApplication(
 												dialog.ShowError(moveErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										ResolveDeckDig: func(
 											keep model.MatchCardID,
@@ -1841,7 +1848,7 @@ func showApplication(
 												dialog.ShowError(digErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										PassPriority: func(expectedRevision model.Revision) {
 											updatedView, priorityErr := playerSessions[playerIndex].
@@ -1850,7 +1857,7 @@ func showApplication(
 												dialog.ShowError(priorityErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										DeclareAttack: func(
 											attackerID model.MatchCardID,
@@ -1868,7 +1875,7 @@ func showApplication(
 												dialog.ShowError(attackErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CorruptOrbs: func(orbIndexes []int, expectedRevision model.Revision) {
 											updatedView, corruptErr := playerSessions[playerIndex].CorruptOrbs(
@@ -1879,7 +1886,7 @@ func showApplication(
 												dialog.ShowError(corruptErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										SetGrantedDoubleCorrupt: func(
 											cardID model.MatchCardID,
@@ -1895,7 +1902,7 @@ func showApplication(
 												dialog.ShowError(grantErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										PlayBreak: func(
 											cardID model.MatchCardID,
@@ -1911,7 +1918,7 @@ func showApplication(
 												dialog.ShowError(playErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										DeclineBreak: func(expectedRevision model.Revision) {
 											updatedView, declineErr := playerSessions[playerIndex].DeclineBreak(
@@ -1921,7 +1928,7 @@ func showApplication(
 												dialog.ShowError(declineErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										AcceptSageAdvice: func(expectedRevision model.Revision) {
 											updatedView, acceptErr := playerSessions[playerIndex].AcceptSageAdvice(
@@ -1931,7 +1938,7 @@ func showApplication(
 												dialog.ShowError(acceptErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										DeclineDrawReplacement: func(expectedRevision model.Revision) {
 											updatedView, declineErr := playerSessions[playerIndex].DeclineDrawReplacement(
@@ -1941,7 +1948,7 @@ func showApplication(
 												dialog.ShowError(declineErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										PeekOrb: func(
 											ownerID model.PlayerID,
@@ -1960,7 +1967,7 @@ func showApplication(
 												}
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 											if done != nil {
 												done(peeked, nil)
 											}
@@ -1974,7 +1981,7 @@ func showApplication(
 												dialog.ShowError(revealErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										CompleteCurrentPhase: func(expectedRevision model.Revision) {
 											updatedView, phaseErr := playerSessions[playerIndex].
@@ -1983,7 +1990,7 @@ func showApplication(
 												dialog.ShowError(phaseErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 										SubmitOpeningHand: func(
 											replace []model.MatchCardID,
@@ -1995,7 +2002,7 @@ func showApplication(
 												dialog.ShowError(submitErr, playerWindows[playerIndex])
 												return
 											}
-											renderPlayersWithView(playerIndex, updatedView)
+											scheduleBoardRefresh(playerIndex, updatedView)
 										},
 									},
 									back,

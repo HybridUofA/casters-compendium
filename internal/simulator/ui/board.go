@@ -387,7 +387,14 @@ func (screen *BoardScreen) maybeAutoPassPriority() {
 		return
 	}
 	screen.lastAutoPassRevision = match.Revision
-	screen.actions.PassPriority(match.Revision)
+	revision := match.Revision
+	// Run after the current view apply finishes so Call/Level Up hand rebuilds
+	// are not interleaved with a follow-up priority command on the same tick.
+	fyne.Do(func() {
+		if screen.actions.PassPriority != nil {
+			screen.actions.PassPriority(revision)
+		}
+	})
 }
 
 func canViewerCallFaceDownLevelOne(match simulatorview.MatchView) bool {

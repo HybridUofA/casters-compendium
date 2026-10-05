@@ -1,8 +1,6 @@
 package nethost
 
 import (
-	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -39,10 +37,10 @@ func (host *Host) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		}
 		reply, err := host.dispatch(client, data)
 		if err != nil {
-			_ = writeBytes(ctx, conn, mustEncodeError("internal", err.Error()))
+			_ = client.write(ctx, mustEncodeError("internal", err.Error()))
 			continue
 		}
-		if err := writeBytes(ctx, conn, reply); err != nil {
+		if err := client.write(ctx, reply); err != nil {
 			return
 		}
 	}
@@ -72,13 +70,6 @@ func (host *Host) Listen(addr string) (net.Addr, *http.Server, error) {
 		_ = server.Serve(listener)
 	}()
 	return listener.Addr(), server, nil
-}
-
-func writeBytes(ctx context.Context, conn *websocket.Conn, data []byte) error {
-	if len(data) == 0 {
-		return fmt.Errorf("empty websocket write")
-	}
-	return conn.Write(ctx, websocket.MessageText, data)
 }
 
 func mustEncodeError(code, message string) []byte {
