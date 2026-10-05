@@ -261,10 +261,13 @@ presentation and tests, release metadata, and this disclosure. Hybrid owns
 future simulator engine rules work; assistance defaults to tests, UI, bug
 fixes, and mentorship unless Hybrid explicitly requests engine implementation.
 
-## Disclosed v1.0.0-hotfix.1 exception
+## Disclosed v1.1.0 assistance
 
-Hybrid reported Call / Level Up freezes in hotseat and online matches and a
-clipped Level Up prompt when selecting Level 2+ Casters, and authorized Cursor
-assistance to implement the UI-thread deferrals, host reply-before-peer-push
-path, Level Up preview-panel layout, regression tests, and this hotfix release
-metadata under maintainer review.
+Hybrid directed the v1.1.0 playability pass (Call / Level Up freeze reports,
+clipped Level Up prompt, priority click fatigue, and shipping as a minor
+release) and remains responsible for acceptance and publication.
+
+Under that authorization, Cursor assistance implemented the UI-thread
+deferrals, host reply-before-peer-push path, Level Up preview-panel layout,
+Space-to-pass and empty-Chase auto-pass defaults, regression tests, and this
+release metadata under maintainer review.

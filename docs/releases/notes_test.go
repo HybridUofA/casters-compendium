@@ -13,10 +13,10 @@ func TestAllReturnsBundledNotesNewestFirst(t *testing.T) {
 	if len(notes) < 1 {
 		t.Fatal("All() returned no bundled release notes")
 	}
-	if notes[0].Version != "v1.0.0-hotfix.1" {
-		t.Fatalf("newest bundled version = %q, want v1.0.0-hotfix.1", notes[0].Version)
+	if notes[0].Version != "v1.1.0" {
+		t.Fatalf("newest bundled version = %q, want v1.1.0", notes[0].Version)
 	}
-	if !strings.Contains(notes[0].Markdown, "Caster's Compendium v1.0.0-hotfix.1") {
+	if !strings.Contains(notes[0].Markdown, "Caster's Compendium v1.1.0") {
 		t.Fatal("newest bundled note does not contain its release heading")
 	}
 }
