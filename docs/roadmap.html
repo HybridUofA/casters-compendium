@@ -31,7 +31,7 @@
       <div class="page-hero">
         <p class="eyebrow">Project roadmap</p>
         <h1>The deckbuilder is the foundation.</h1>
-        <p class="intro">Follow each release from the first packaged deckbuilder through the planned simulator, with dates and a summary of what changed along the way.</p>
+        <p class="intro">Follow each release from the first packaged deckbuilder through today's manual-playable simulator, with tag dates and a summary of what changed along the way.</p>
       </div>
     </header>
 
@@ -208,7 +208,7 @@
             </article>
           </li>
 
-          <li class="release-complete release-current">
+          <li class="release-complete">
             <article class="release-card">
               <div class="release-card-heading">
                 <div>
@@ -228,6 +228,40 @@
                 <li>Add regression coverage for the renderer-compatible container type.</li>
               </ul>
               <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.1.6-hotfix.1">View the hotfix prerelease <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.1.7-rc.1</p>
+                  <h2>TTS and release-process candidate</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Release candidate</span>
+                  <time datetime="2026-07-25">July 25, 2026</time>
+                </div>
+              </div>
+              <p>First installation candidate for sharper Tabletop Simulator exports, hosted catalog v2, and the candidate-to-stable release checklist.</p>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.1.7-rc.1">View the v0.1.7-rc.1 candidate <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.1.7-rc.2</p>
+                  <h2>Packaging follow-up candidate</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Release candidate</span>
+                  <time datetime="2026-07-25">July 25, 2026</time>
+                </div>
+              </div>
+              <p>Second candidate on the path to stable v0.1.7 after packaging and smoke-test feedback on rc.1.</p>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.1.7-rc.2">View the v0.1.7-rc.2 candidate <span aria-hidden="true">→</span></a>
             </article>
           </li>
 
@@ -255,7 +289,7 @@
             </article>
           </li>
 
-          <li class="release-current">
+          <li class="release-complete">
             <article class="release-card">
               <div class="release-card-heading">
                 <div>
@@ -267,7 +301,7 @@
                   <time datetime="2026-07-26">July 26, 2026</time>
                 </div>
               </div>
-              <p>The editor will make saved decks easier to revisit and provide an offline starting point for every launch-wave Duel Deck published by Speedrobo Games.</p>
+              <p>The editor makes saved decks easier to revisit and provides an offline starting point for every launch-wave Duel Deck published by Speedrobo Games.</p>
               <ul class="release-highlights">
                 <li>Create a default personal Decks folder under Documents.</li>
                 <li>Switch between saved JSON decks and compatible text decklists in the editor.</li>
@@ -280,11 +314,93 @@
             </article>
           </li>
 
-          <li class="release-current">
+          <li class="release-complete">
             <article class="release-card">
               <div class="release-card-heading">
                 <div>
-                  <p class="version">v0.3.2</p>
+                  <p class="version">v0.1.8-hotfix.2</p>
+                  <h2>Stable catalog artwork recovery</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Hotfix prerelease</span>
+                  <time datetime="2026-08-10">August 10, 2026</time>
+                </div>
+              </div>
+              <p>This hotfix keeps card setup working when upstream artwork links disappear and publishes hosted catalog v3 with immutable artwork URLs.</p>
+              <ul class="release-highlights">
+                <li>Fall back to version-controlled card images when an upstream request fails.</li>
+                <li>Publish normalized databases with catalog-owned artwork URLs.</li>
+                <li>Repair existing v0.1.8 installs automatically without changing deck files.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.1.8-hotfix.2">View the hotfix prerelease <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.2.0-rc.1</p>
+                  <h2>Expanded catalog and simulator groundwork</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Release candidate</span>
+                  <time datetime="2026-09-11">September 11, 2026</time>
+                </div>
+              </div>
+              <p>The first v0.2 candidate refreshes the card catalog to 379 publisher records, adds alternate-art browsing, and lays groundwork for the local simulator prototype.</p>
+              <ul class="release-highlights">
+                <li>Scale hosted Tabletop Simulator sheets and refresh Duel Deck artwork.</li>
+                <li>Browse gameplay-identical printings and historical deck compatibility.</li>
+                <li>Introduce early hotseat simulator scaffolding with documented limits.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.2.0-rc.1">View the v0.2.0-rc.1 candidate <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.2.0-rc.2</p>
+                  <h2>Arch packaging correction</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Release candidate</span>
+                  <time datetime="2026-09-11">September 11, 2026</time>
+                </div>
+              </div>
+              <p>Replaces rc.1 after correcting the Arch Linux manpage checksum used by the packaging workflow. Application behavior matches rc.1.</p>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.2.0-rc.2">View the v0.2.0-rc.2 candidate <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.2.0-rc.3</p>
+                  <h2>Text decklist and copy-limit fixes</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Release candidate</span>
+                  <time datetime="2026-09-15">September 15, 2026</time>
+                </div>
+              </div>
+              <p>Fixes caster-level identity in Speedrobo text import/export and gives each caster level its own four-copy allowance.</p>
+              <ul class="release-highlights">
+                <li>Import and export <code>Lv2</code> / <code>Lv3</code> caster suffixes correctly.</li>
+                <li>Reject impossible level requests instead of silently substituting cards.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.2.0-rc.3">View the v0.2.0-rc.3 candidate <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.2.0-rc.4</p>
                   <h2>Local simulator interaction candidate</h2>
                 </div>
                 <div class="release-meta">
@@ -292,14 +408,119 @@
                   <time datetime="2026-10-03">October 3, 2026</time>
                 </div>
               </div>
-              <p>This candidate makes the local simulator easier to operate while preserving explicit prototype boundaries for effects that are not automated yet.</p>
+              <p>Makes planned Aether payments and manual card effects easier to operate while keeping unsupported rules explicit.</p>
               <ul class="release-highlights">
-                <li>Select recovered Caster-zone Aether sources while planning Servant, Conjure, and Barrier casts.</li>
+                <li>Select recovered Caster-zone Aether sources while planning casts.</li>
                 <li>Move controlled printed cards manually between supported zones.</li>
-                <li>Keep rejected commands atomic and protect hidden information in each player's view.</li>
-                <li>Refine the two-player board, reversed cards, and selection visuals.</li>
+                <li>Refresh hosted catalog v6 with publisher-approved EX02 printings in normal search.</li>
+                <li>Remove stale Tabletop Simulator saved objects after a successful deck rename export.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.2.0-rc.4">View the v0.2.0-rc.4 candidate <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.3.0</p>
+                  <h2>First public networked simulator</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Released</span>
+                  <time datetime="2026-10-03">October 3, 2026</time>
+                </div>
+              </div>
+              <p>Introduces authoritative-host online play and packaged <code>simhost</code> alongside the existing hotseat path. Superseded by v0.3.2 for clean versioning.</p>
+              <ul class="release-highlights">
+                <li>Host or join rooms over WebSocket with player-chosen decks.</li>
+                <li>Ship Linux amd64 host tarball, systemd unit, and Docker recipe.</li>
+                <li>Add Host Online Game and Join Online Game to the main menu.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.3.0">View the v0.3.0 release <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.3.1</p>
+                  <h2>Network implementation milestone</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Superseded tag</span>
+                  <time datetime="2026-10-03">October 3, 2026</time>
+                </div>
+              </div>
+              <p>Intermediate tag on the path to v0.3.2; use v0.3.2 or later for the supported public networked release.</p>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.3.1">View the v0.3.1 tag <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v0.3.2</p>
+                  <h2>Clean public networked simulator</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Released</span>
+                  <time datetime="2026-10-03">October 3, 2026</time>
+                </div>
+              </div>
+              <p>Supersedes the mislabeled v0.3.0 / v0.3.1 tags and ships the authoritative-host online path with player-chosen decks and Discord release announcements.</p>
+              <ul class="release-highlights">
+                <li>Online lobby with decks submitted on create/join.</li>
+                <li>Packaged <code>simhost</code> for LAN or cloud playtests.</li>
+                <li>Inherits rc.4 local casting, manual moves, and catalog v6.</li>
               </ul>
               <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v0.3.2">View the v0.3.2 release <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v1.0.0</p>
+                  <h2>Manual-playable networked simulator</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Released</span>
+                  <time datetime="2026-10-04">October 4, 2026</time>
+                </div>
+              </div>
+              <p>The first stable rules-assisted simulator skeleton: turn structure, battle, Orb corruption, Break, and online lobby play are enforced enough for real playtests while most printed effects stay manual.</p>
+              <ul class="release-highlights">
+                <li>Named rooms, search, optional passwords, and spectators (protocol v3).</li>
+                <li>Battle judgment, Double Corrupt, Break queues, and mandatory-attack completion.</li>
+                <li>Cockatrice-style drag/move, deck dig/browse, Orb peek/reveal, and Sage Advice dig-on-draw.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v1.0.0">View the v1.0.0 release <span aria-hidden="true">→</span></a>
+            </article>
+          </li>
+
+          <li class="release-complete release-current">
+            <article class="release-card">
+              <div class="release-card-heading">
+                <div>
+                  <p class="version">v1.1.0</p>
+                  <h2>Simulator playability and priority QoL</h2>
+                </div>
+                <div class="release-meta">
+                  <span class="release-status">Released</span>
+                  <time datetime="2026-10-05">October 5, 2026</time>
+                </div>
+              </div>
+              <p>Fixes Call and Level Up freezes in hotseat and online, restores a usable Level Up prompt, and reduces empty priority click fatigue.</p>
+              <ul class="release-highlights">
+                <li>Host replies to the acting player before fanning views to peers.</li>
+                <li>Level Up selection in the preview action panel; Call row stays under the Hand.</li>
+                <li>Press Space to pass priority; auto-pass empty stacks until a Chase starts.</li>
+              </ul>
+              <a class="text-link release-link" href="https://github.com/HybridUofA/casters-compendium/releases/tag/v1.1.0">View the v1.1.0 release <span aria-hidden="true">→</span></a>
             </article>
           </li>
 
@@ -307,15 +528,15 @@
             <article class="release-card">
               <div class="release-card-heading">
                 <div>
-                  <p class="version">v0.2.0</p>
-                  <h2>Accept the first simulator foundation</h2>
+                  <p class="version">Next</p>
+                  <h2>Deckbuilder updates and deeper automation</h2>
                 </div>
                 <div class="release-meta">
-                  <span class="release-status">Future stable release</span>
+                  <span class="release-status">Planned</span>
                   <span>Date not set</span>
                 </div>
               </div>
-              <p>The stable release remains gated on packaged candidate testing, documented limitations, and hands-on acceptance across supported desktops.</p>
+              <p>In-app release checks, continued Speedrobo art collaboration, optional element and Caster backgrounds, and incremental simulator effect automation as rules and testing allow.</p>
             </article>
           </li>
         </ol>
