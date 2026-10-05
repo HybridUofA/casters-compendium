@@ -1641,7 +1641,8 @@ func showApplication(
 									matchView,
 									cardDefinitions,
 									simulatorui.BoardActions{
-										BackLabel: backLabel,
+										BackLabel:              backLabel,
+										ShouldAutoPassPriority: shouldAutoPassPriorityForView,
 										UseCasterToken: func(
 											tokenID model.MatchCardID,
 											expectedRevision model.Revision,

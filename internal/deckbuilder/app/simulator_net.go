@@ -364,19 +364,7 @@ func openNetworkBoard(
 	actions := simulatorui.BoardActions{BackLabel: "Leave Match"}
 	if !spectator {
 		actions = networkBoardActions(runCommand, runCommandWithPrivate)
-		actions.ShouldAutoPassPriority = func(match simulatorview.MatchView) bool {
-			if match.Spectator ||
-				match.MatchStatus != model.StatusInProgress ||
-				!match.PrioritySequenceOpen ||
-				match.PriorityHolder != match.ViewerID ||
-				match.ChaseLinkCount > 0 ||
-				match.Attack.Step != model.BattleStepIdle ||
-				match.PendingDraw.Step != "" ||
-				match.PendingBreak.PlayerID != "" {
-				return false
-			}
-			return shouldAutoPassPriority(string(match.Turn.Phase))
-		}
+		actions.ShouldAutoPassPriority = shouldAutoPassPriorityForView
 	}
 
 	screen = simulatorui.NewBoardController(
