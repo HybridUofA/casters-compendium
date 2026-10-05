@@ -89,6 +89,8 @@ v1.0.0-hotfix.1's Call / Level Up freeze repair.
 
 - Stop Call / Level Up from freezing hotseat and online matches (UI deferral
   plus host reply-before-peer-push).
+- Show Level Up in the preview panel so Level 2+ selection is usable (no more
+  clipped Hand-row Select).
 - Redeploy `simhost` from this tag so the online host path is live.
 
 ### What's new in v1.0.0

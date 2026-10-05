@@ -776,12 +776,7 @@ func TestLevelUpCasterSelectsUpperAndTargetAtCurrentRevision(t *testing.T) {
 		}},
 		nil,
 	)
-	levelButton := findButton(screen, "Level Up Selected")
-	targetSelect := findSelect(screen)
-	if levelButton == nil || targetSelect == nil {
-		t.Fatal("level-up controls were not rendered")
-	}
-	if levelButton.Visible() || targetSelect.Visible() {
+	if findButton(screen, "Level Up Selected") != nil {
 		t.Fatal("level-up controls appeared before selecting an upper Caster")
 	}
 	upper := findCardTile(screen, "level-three-aria")
@@ -790,8 +785,13 @@ func TestLevelUpCasterSelectsUpperAndTargetAtCurrentRevision(t *testing.T) {
 	}
 
 	test.Tap(upper)
-	if !levelButton.Visible() || !targetSelect.Visible() || len(targetSelect.Options) != 1 {
-		t.Fatalf("eligible upper selection produced button/select/options = %t/%t/%v", levelButton.Visible(), targetSelect.Visible(), targetSelect.Options)
+	levelButton := findButton(screen, "Level Up Selected")
+	targetSelect := findSelectWithPlaceholder(screen, "Choose Caster to level up")
+	if levelButton == nil || targetSelect == nil {
+		t.Fatal("level-up controls were not shown in the preview panel after selecting an eligible upper")
+	}
+	if len(targetSelect.Options) != 1 {
+		t.Fatalf("eligible upper selection produced options = %v", targetSelect.Options)
 	}
 	if !levelButton.Disabled() {
 		t.Fatal("level-up button enabled before choosing a target")
@@ -804,6 +804,68 @@ func TestLevelUpCasterSelectsUpperAndTargetAtCurrentRevision(t *testing.T) {
 
 	if gotUpper != "upper-in-hand" || gotTarget != "target-on-field" || gotRevision != 21 {
 		t.Fatalf("Level Up submitted %q/%q/%d; want upper-in-hand/target-on-field/21", gotUpper, gotTarget, gotRevision)
+	}
+}
+
+func TestLevelUpCasterShowsPromptForLevelTwoUpperOntoLevelOne(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 22
+	match.Turn.Number = 2
+	match.Turn.Phase = model.PhaseCall
+	match.Players[0].OpeningHandFinalized = true
+	match.Players[0].Hand = []simulatorview.CardView{
+		{MatchID: "l2-in-hand", CardID: "level-two-aria", ShowFace: true},
+	}
+	match.Players[0].CasterZone = []simulatorview.CardView{{
+		MatchID: "l1-on-field", CardID: "level-one-aria", Face: model.CardFaceUp,
+		Orientation: model.OrientationRecovered, ShowFace: true,
+	}}
+	screen := NewBoardScreen(
+		match,
+		testDefinitions(),
+		BoardActions{LevelUpCaster: func(model.MatchCardID, model.MatchCardID, model.Revision) {}},
+		nil,
+	)
+	upper := findCardTile(screen, "level-two-aria")
+	if upper == nil {
+		t.Fatal("Level 2 Caster was not rendered in hand")
+	}
+	test.Tap(upper)
+	if findButton(screen, "Level Up Selected") == nil {
+		t.Fatal("Level Up prompt missing after selecting a Level 2 Caster with a Level 1 target")
+	}
+	targetSelect := findSelectWithPlaceholder(screen, "Choose Caster to level up")
+	if targetSelect == nil || len(targetSelect.Options) != 1 {
+		t.Fatalf("Level Up target select = %#v", targetSelect)
+	}
+}
+
+func TestCallHandRebuildsWhenCasterZoneChanges(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Turn.Number = 2
+	match.Turn.Phase = model.PhaseCall
+	match.Players[0].OpeningHandFinalized = true
+	match.Players[0].Hand = []simulatorview.CardView{
+		{MatchID: "l2-in-hand", CardID: "level-two-aria", ShowFace: true},
+	}
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{LevelUpCaster: func(model.MatchCardID, model.MatchCardID, model.Revision) {}},
+		nil,
+	)
+	firstHand := controller.playerBoards[1].hand.Objects[0]
+	updated := match
+	updated.Revision++
+	updated.Players[0].CasterZone = append(updated.Players[0].CasterZone, simulatorview.CardView{
+		MatchID: "l1-on-field", CardID: "level-one-aria", Face: model.CardFaceUp,
+		Orientation: model.OrientationRecovered, ShowFace: true,
+	})
+	controller.Update(updated)
+	if controller.playerBoards[1].hand.Objects[0] == firstHand {
+		t.Fatal("Call hand did not rebuild when Caster Zone gained a Level Up target")
 	}
 }
 
@@ -1898,6 +1960,13 @@ func testDefinitions() []cards.Card {
 			Type:      " CASTER ",
 			CostLevel: " 1 ",
 			Ability:   "Eligible face-up Call.",
+		},
+		{
+			ID:        "level-one-aria",
+			Name:      "Aria",
+			Subname:   "Spark",
+			Type:      "Caster",
+			CostLevel: "1",
 		},
 		{
 			ID:        "level-two-aria",

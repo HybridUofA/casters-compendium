@@ -263,7 +263,8 @@ fixes, and mentorship unless Hybrid explicitly requests engine implementation.
 
 ## Disclosed v1.0.0-hotfix.1 exception
 
-Hybrid reported Call / Level Up freezes in hotseat and online matches and
-authorized Cursor assistance to implement the UI-thread deferrals, host
-reply-before-peer-push path, regression test, and this hotfix release
+Hybrid reported Call / Level Up freezes in hotseat and online matches and a
+clipped Level Up prompt when selecting Level 2+ Casters, and authorized Cursor
+assistance to implement the UI-thread deferrals, host reply-before-peer-push
+path, Level Up preview-panel layout, regression tests, and this hotfix release
 metadata under maintainer review.

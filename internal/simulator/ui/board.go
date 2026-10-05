@@ -232,10 +232,9 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 		screen.updateManualMoves()
 	}
 	screen.updateMetadata()
-	if previous.Revision != match.Revision && screen.preview.actions != nil && len(screen.preview.actions.Objects) > 0 {
-		screen.preview.actions.Objects = nil
-		refreshContainerStructure(screen.preview.actions)
-	}
+	// Preview action panels (Cast payment / Level Up) are cleared when the
+	// viewer's Hand is rebuilt, not on every revision bump — otherwise a peer
+	// view push or auto-pass can wipe the Level Up prompt mid-selection.
 	if previous.ViewerID != match.ViewerID ||
 		previous.Players[0].Aether != match.Players[0].Aether ||
 		previous.Players[1].Aether != match.Players[1].Aether {
@@ -1441,10 +1440,18 @@ func (board *playerBoardController) update(
 		))
 	}
 	aetherChangedForCasting := (canCast || board.canCast) && previous.Aether != player.Aether
+	// Caster Zone changes must rebuild Call hand so Level Up target options
+	// stay current (eligibleLevelUpTargets captures the zone at build time).
+	casterChangedForCall := (canCall || board.canCall) && !reflect.DeepEqual(previous.CasterZone, player.CasterZone)
 	if !reflect.DeepEqual(previous.Hand, player.Hand) ||
 		previous.OpeningHandFinalized != player.OpeningHandFinalized ||
 		aetherChangedForCasting ||
+		casterChangedForCall ||
 		board.canCall != canCall || board.canCast != canCast {
+		if board.isViewer && board.preview.actions != nil && len(board.preview.actions.Objects) > 0 {
+			board.preview.actions.Objects = nil
+			refreshContainerStructure(board.preview.actions)
+		}
 		replaceZone(board.hand, board.newHandZone(player, canCall, canCast))
 	}
 	if !reflect.DeepEqual(previous.CasterZone, player.CasterZone) ||
@@ -1631,31 +1638,71 @@ func newLevelOneCallHandZone(
 	objects := make([]fyne.CanvasObject, 0, len(player.Hand))
 	var faceDownButton *widget.Button
 	var faceUpButton *widget.Button
-	var levelUpTarget *widget.Select
-	var levelUpButton *widget.Button
-	levelUpTargetsByLabel := make(map[string]model.MatchCardID)
-	selectedTargetID := model.MatchCardID("")
-	updateLevelUpTargets := func(definition cards.Card) {
-		if levelUpTarget == nil || levelUpButton == nil {
+
+	clearLevelUpPanel := func() {
+		if preview.actions == nil {
 			return
 		}
-		clear(levelUpTargetsByLabel)
-		selectedTargetID = ""
-		options := make([]string, 0)
-		for _, candidate := range eligibleLevelUpTargets(definition, player.CasterZone, definitions) {
+		if len(preview.actions.Objects) == 0 {
+			return
+		}
+		preview.actions.Objects = nil
+		refreshContainerStructure(preview.actions)
+	}
+	// Level Up lives in the preview action strip (same place as Cast payment).
+	// The 82px Hand row cannot fit a Select + button without clipping them.
+	showLevelUpPanel := func(definition cards.Card) {
+		if preview.actions == nil || actions.LevelUpCaster == nil {
+			clearLevelUpPanel()
+			return
+		}
+		candidates := eligibleLevelUpTargets(definition, player.CasterZone, definitions)
+		if len(candidates) == 0 {
+			clearLevelUpPanel()
+			return
+		}
+		targetsByLabel := make(map[string]model.MatchCardID, len(candidates))
+		options := make([]string, 0, len(candidates))
+		for _, candidate := range candidates {
 			options = append(options, candidate.label)
-			levelUpTargetsByLabel[candidate.label] = candidate.matchID
+			targetsByLabel[candidate.label] = candidate.matchID
 		}
-		levelUpTarget.SetOptions(options)
-		levelUpTarget.ClearSelected()
+		selectedTargetID := model.MatchCardID("")
+		var levelUpButton *widget.Button
+		levelUpTarget := widget.NewSelect(options, func(label string) {
+			selectedTargetID = targetsByLabel[label]
+			if levelUpButton == nil {
+				return
+			}
+			if selectedID == "" || selectedTargetID == "" {
+				levelUpButton.Disable()
+				return
+			}
+			levelUpButton.Enable()
+		})
+		levelUpTarget.PlaceHolder = "Choose Caster to level up"
+		levelUpButton = widget.NewButton("Level Up Selected", func() {
+			if selectedID == "" || selectedTargetID == "" {
+				return
+			}
+			revision := model.Revision(0)
+			if currentRevision != nil {
+				revision = currentRevision()
+			}
+			actions.LevelUpCaster(selectedID, selectedTargetID, revision)
+		})
 		levelUpButton.Disable()
-		if len(options) == 0 {
-			levelUpTarget.Hide()
-			levelUpButton.Hide()
-			return
+		heading := widget.NewLabel("Level Up")
+		heading.TextStyle = fyne.TextStyle{Bold: true}
+		preview.actions.Objects = []fyne.CanvasObject{
+			container.NewVBox(
+				heading,
+				widget.NewLabel("Place the selected hand Caster onto a matching lower-level Caster."),
+				levelUpTarget,
+				levelUpButton,
+			),
 		}
-		levelUpTarget.Show()
-		levelUpButton.Show()
+		refreshContainerStructure(preview.actions)
 	}
 
 	for _, projectedCard := range player.Hand {
@@ -1684,11 +1731,12 @@ func newLevelOneCallHandZone(
 				if faceUpButton != nil {
 					faceUpButton.Disable()
 				}
-				updateLevelUpTargets(cards.Card{})
+				clearLevelUpPanel()
 				return
 			}
 			selectedID = projectedCard.MatchID
 			tile.SetSelected(true)
+			preview.showCard(definition)
 			if faceDownButton != nil {
 				faceDownButton.Enable()
 			}
@@ -1699,13 +1747,13 @@ func newLevelOneCallHandZone(
 					faceUpButton.Disable()
 				}
 			}
-			updateLevelUpTargets(definition)
+			showLevelUpPanel(definition)
 		}
 		tiles = append(tiles, tile)
 		objects = append(objects, tile)
 	}
 
-	actionButtons := make([]fyne.CanvasObject, 0, 4)
+	actionButtons := make([]fyne.CanvasObject, 0, 2)
 	if actions.CallFaceUpLevelOne != nil {
 		faceUpButton = widget.NewButton("Call Selected Face Up", func() {
 			if selectedID == "" {
@@ -1734,44 +1782,24 @@ func newLevelOneCallHandZone(
 		faceDownButton.Disable()
 		actionButtons = append(actionButtons, faceDownButton)
 	}
-	if actions.LevelUpCaster != nil {
-		levelUpTarget = widget.NewSelect(nil, func(label string) {
-			selectedTargetID = levelUpTargetsByLabel[label]
-			if selectedID == "" || selectedTargetID == "" {
-				levelUpButton.Disable()
-				return
-			}
-			levelUpButton.Enable()
-		})
-		levelUpTarget.PlaceHolder = "Choose Caster to level up"
-		levelUpTarget.Hide()
-		levelUpButton = widget.NewButton("Level Up Selected", func() {
-			if selectedID == "" || selectedTargetID == "" {
-				return
-			}
-			revision := model.Revision(0)
-			if currentRevision != nil {
-				revision = currentRevision()
-			}
-			actions.LevelUpCaster(selectedID, selectedTargetID, revision)
-		})
-		levelUpButton.Disable()
-		levelUpButton.Hide()
-		actionButtons = append(actionButtons, levelUpTarget, levelUpButton)
-	}
 
 	cardRow := container.NewHScroll(container.NewHBox(objects...))
-	content := container.NewBorder(
-		nil,
-		nil,
-		nil,
-		container.NewVBox(actionButtons...),
-		cardRow,
-	)
+	var content fyne.CanvasObject = cardRow
+	if len(actionButtons) > 0 {
+		// Horizontal Call buttons under the cards — keeps the 82px strip usable
+		// without stacking Level Up controls that need the preview panel.
+		content = container.NewBorder(
+			nil,
+			container.NewHBox(actionButtons...),
+			nil,
+			nil,
+			cardRow,
+		)
+	}
 	return newZone(
 		playerName,
 		"Hand",
-		"Select one card to Call as Level 1 or use it to level up a matching Caster.",
+		"Select one card to Call as Level 1, or select a higher Caster to Level Up from the preview panel.",
 		content,
 		preview,
 	)
@@ -2341,6 +2369,7 @@ func eligibleLevelUpTargets(
 		return nil
 	}
 	result := make([]levelUpTargetOption, 0)
+	labelsTaken := make(map[string]struct{})
 	for _, target := range casterZone {
 		if target.MatchID == "" || target.Face != model.CardFaceUp || target.CardID == model.CasterTokenCardID {
 			continue
@@ -2358,8 +2387,13 @@ func eligibleLevelUpTargets(
 		if subname := strings.TrimSpace(definition.Subname); subname != "" {
 			identity += " — " + subname
 		}
+		label := fmt.Sprintf("%s (Level %d)", identity, targetLevel)
+		if _, taken := labelsTaken[label]; taken {
+			label = fmt.Sprintf("%s · %s", label, target.MatchID)
+		}
+		labelsTaken[label] = struct{}{}
 		result = append(result, levelUpTargetOption{
-			label:   fmt.Sprintf("%s (Level %d, %s)", identity, targetLevel, target.MatchID),
+			label:   label,
 			matchID: target.MatchID,
 		})
 	}
