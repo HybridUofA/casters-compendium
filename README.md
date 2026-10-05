@@ -91,6 +91,7 @@ v1.0.0-hotfix.1's Call / Level Up freeze repair.
   plus host reply-before-peer-push).
 - Show Level Up in the preview panel so Level 2+ selection is usable (no more
   clipped Hand-row Select).
+- Press Space to Pass Priority when you hold priority.
 - Redeploy `simhost` from this tag so the online host path is live.
 
 ### What's new in v1.0.0

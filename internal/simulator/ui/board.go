@@ -458,10 +458,8 @@ func (screen *BoardScreen) newPhaseBar() fyne.CanvasObject {
 	screen.phaseHint.Alignment = fyne.TextAlignCenter
 	screen.phaseHint.TextStyle = fyne.TextStyle{Bold: true}
 	screen.updatePhaseButtons()
-	screen.passPriority = widget.NewButton("Pass Priority", func() {
-		if screen.actions.PassPriority != nil {
-			screen.actions.PassPriority(screen.match.Revision)
-		}
+	screen.passPriority = widget.NewButton("Pass Priority (Space)", func() {
+		screen.passPriorityAction()
 	})
 	screen.attackPanel = container.NewVBox()
 	screen.updatePriorityButton()
@@ -474,14 +472,58 @@ func (screen *BoardScreen) newPhaseBar() fyne.CanvasObject {
 	)
 }
 
+func (screen *BoardScreen) passPriorityAction() {
+	if screen == nil || screen.actions.PassPriority == nil {
+		return
+	}
+	if !screen.canViewerPassPriority() {
+		return
+	}
+	screen.actions.PassPriority(screen.match.Revision)
+}
+
+func (screen *BoardScreen) canViewerPassPriority() bool {
+	if screen == nil {
+		return false
+	}
+	return screen.actions.PassPriority != nil &&
+		screen.match.MatchStatus == model.StatusInProgress &&
+		screen.match.PrioritySequenceOpen &&
+		screen.match.PriorityHolder == screen.match.ViewerID
+}
+
+// HandleTypedKey handles board shortcuts. Space passes priority when the viewer
+// holds an open priority sequence (same gate as the Pass Priority button).
+func (screen *BoardScreen) HandleTypedKey(event *fyne.KeyEvent) {
+	if screen == nil || event == nil {
+		return
+	}
+	if event.Name == fyne.KeySpace {
+		screen.passPriorityAction()
+	}
+}
+
+// BindBoardKeyboard routes window key events to the board shortcuts. Typing in
+// an Entry is left alone so Space still inserts a space character there.
+func BindBoardKeyboard(window fyne.Window, screen *BoardScreen) {
+	if window == nil || screen == nil {
+		return
+	}
+	window.Canvas().SetOnTypedKey(func(event *fyne.KeyEvent) {
+		if focused := window.Canvas().Focused(); focused != nil {
+			if _, isEntry := focused.(*widget.Entry); isEntry {
+				return
+			}
+		}
+		screen.HandleTypedKey(event)
+	})
+}
+
 func (screen *BoardScreen) updatePriorityButton() {
 	if screen == nil || screen.passPriority == nil {
 		return
 	}
-	if screen.actions.PassPriority != nil &&
-		screen.match.MatchStatus == model.StatusInProgress &&
-		screen.match.PrioritySequenceOpen &&
-		screen.match.PriorityHolder == screen.match.ViewerID {
+	if screen.canViewerPassPriority() {
 		screen.passPriority.Enable()
 		return
 	}

@@ -395,6 +395,7 @@ func openNetworkBoard(
 	}
 	window.SetTitle(fmt.Sprintf("%s — Online (%s) Room %s", applicationName, role, roomCode))
 	setWindowContent(window, screen.Content())
+	simulatorui.BindBoardKeyboard(window, screen)
 }
 
 func networkBoardActions(

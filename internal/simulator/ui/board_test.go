@@ -1246,7 +1246,7 @@ func TestPassPriorityButtonRequiresPriorityAndUsesCurrentRevision(t *testing.T) 
 		nil,
 	)
 
-	passButton := findButton(controller.Content(), "Pass Priority")
+	passButton := findButton(controller.Content(), "Pass Priority (Space)")
 	if passButton == nil || passButton.Disabled() {
 		t.Fatal("Pass Priority is not enabled for the priority holder")
 	}
@@ -1261,6 +1261,36 @@ func TestPassPriorityButtonRequiresPriorityAndUsesCurrentRevision(t *testing.T) 
 	controller.Update(updated)
 	if !passButton.Disabled() {
 		t.Fatal("Pass Priority remained enabled after priority transferred")
+	}
+}
+
+func TestPassPrioritySpaceShortcutUsesCurrentRevision(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 24
+	match.PriorityHolder = match.ViewerID
+	match.PrioritySequenceOpen = true
+	passedRevision := model.Revision(0)
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{PassPriority: func(revision model.Revision) { passedRevision = revision }},
+		nil,
+	)
+
+	controller.HandleTypedKey(&fyne.KeyEvent{Name: fyne.KeySpace})
+	if passedRevision != 24 {
+		t.Fatalf("Space pass revision = %d; want 24", passedRevision)
+	}
+
+	passedRevision = 0
+	updated := match
+	updated.Revision = 25
+	updated.PriorityHolder = updated.Players[1].ID
+	controller.Update(updated)
+	controller.HandleTypedKey(&fyne.KeyEvent{Name: fyne.KeySpace})
+	if passedRevision != 0 {
+		t.Fatalf("Space passed while viewer lacked priority: %d", passedRevision)
 	}
 }
 

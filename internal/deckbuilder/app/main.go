@@ -2008,6 +2008,7 @@ func showApplication(
 									back,
 								)
 								setWindowContent(playerWindows[index], playerScreens[index].Content())
+								simulatorui.BindBoardKeyboard(playerWindows[index], playerScreens[index])
 								continue
 							}
 							playerScreens[index].Update(matchView)
