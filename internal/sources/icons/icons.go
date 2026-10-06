@@ -1,4 +1,6 @@
-// Package icons embeds the elemental symbols used by simulator presentation.
+// Package icons embeds the Aether symbols used by simulator presentation.
+// The eight elemental icons were supplied by Hybrid; non_elemental.png is
+// official artwork from Speedrobo Games.
 package icons
 
 import _ "embed"
