@@ -20,8 +20,7 @@ func TestDoubleCorruptRequiresTwoOrbChoices(t *testing.T) {
 		Ability: "• Double Corrupt",
 	}
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -55,8 +54,7 @@ func TestDoubleCorruptAgainstOneOrbDoesNotWin(t *testing.T) {
 	attacker.GrantedDoubleCorrupt = true
 	state.CardInstances["p1-attacker"] = attacker
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)

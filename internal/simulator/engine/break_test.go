@@ -11,8 +11,7 @@ func TestCorruptOrbOffersBreakWhenCardDeclaresIt(t *testing.T) {
 	state, catalog := breakBattleStateForTest()
 	state.Players[1].ServantZone = nil
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -36,8 +35,7 @@ func TestCorruptOrbOffersBreakWhenCardDeclaresIt(t *testing.T) {
 func TestDeclineBreakReopensPriorityForActivePlayer(t *testing.T) {
 	state, catalog := breakBattleStateForTest()
 	state.Players[1].ServantZone = nil
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -62,8 +60,7 @@ func TestDeclineBreakReopensPriorityForActivePlayer(t *testing.T) {
 func TestPlayBreakPutsCardOnChaseWithoutCost(t *testing.T) {
 	state, catalog := breakBattleStateForTest()
 	state.Players[1].ServantZone = nil
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -91,8 +88,7 @@ func TestPlayBreakPutsCardOnChaseWithoutCost(t *testing.T) {
 func TestDeclineBreakRejectsWrongPlayer(t *testing.T) {
 	state, catalog := breakBattleStateForTest()
 	state.Players[1].ServantZone = nil
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)

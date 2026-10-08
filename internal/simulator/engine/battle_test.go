@@ -258,8 +258,7 @@ func TestPassPriorityLeavesEqualServantAlive(t *testing.T) {
 		ID: "definition-p2-defender", Type: "Servant", Attack: "3000", Defense: "1000",
 	}
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetServant, "p2-defender", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetServant, "p2-defender", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -279,8 +278,7 @@ func TestPassPriorityUsesDefenseAgainstReversedServant(t *testing.T) {
 		ID: "definition-p2-defender", Type: "Servant", Attack: "1000", Defense: "4000",
 	}
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetServant, "p2-defender", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetServant, "p2-defender", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -294,8 +292,7 @@ func TestPassPriorityAwaitsOrbChoiceOnPlayerAttack(t *testing.T) {
 	state, catalog := battleJudgmentStateForTest()
 	state.Players[1].ServantZone = nil
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -318,8 +315,7 @@ func TestCorruptOrbChoosesSelectedEnemyOrb(t *testing.T) {
 	state, catalog := battleJudgmentStateForTest()
 	state.Players[1].ServantZone = nil
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -348,8 +344,7 @@ func TestCorruptOrbChoosesSelectedEnemyOrb(t *testing.T) {
 func TestCorruptOrbRejectsInvalidChoiceWithoutMutation(t *testing.T) {
 	state, catalog := battleJudgmentStateForTest()
 	state.Players[1].ServantZone = nil
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -370,8 +365,7 @@ func TestPassPriorityWinsWhenPlayerAttackFindsZeroOrbs(t *testing.T) {
 	state.Players[1].ServantZone = nil
 	state.Players[1].Orbs = nil
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	passTwiceForTest(t, &state, catalog)
@@ -395,8 +389,7 @@ func TestPassPriorityWinsWhenPlayerAttackFindsZeroOrbs(t *testing.T) {
 func TestPassPriorityClearsInterruptedAttackWithoutJudgment(t *testing.T) {
 	state, catalog := battleJudgmentStateForTest()
 
-	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetServant, "p2-defender", state.Revision,
-	); err != nil {
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetServant, "p2-defender", state.Revision); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
 	attacker := state.CardInstances["p1-attacker"]
