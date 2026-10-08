@@ -469,6 +469,9 @@ func networkBoardActions(
 		MoveCard: func(command model.MoveCardCommand, expectedRevision model.Revision) {
 			runCommand("move_card", expectedRevision, command)
 		},
+		AdjustAether: func(command model.AdjustAetherCommand, expectedRevision model.Revision) {
+			runCommand("adjust_aether", expectedRevision, command)
+		},
 		DrawCards: func(count int, expectedRevision model.Revision) {
 			runCommand("draw_cards", expectedRevision, map[string]any{"count": count})
 		},

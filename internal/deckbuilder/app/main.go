@@ -1794,6 +1794,14 @@ func showApplication(
 											}
 											scheduleBoardRefresh(playerIndex, updatedView)
 										},
+										AdjustAether: func(command model.AdjustAetherCommand, expectedRevision model.Revision) {
+											updatedView, adjustErr := playerSessions[playerIndex].AdjustAether(command, expectedRevision)
+											if adjustErr != nil {
+												dialog.ShowError(adjustErr, playerWindows[playerIndex])
+												return
+											}
+											scheduleBoardRefresh(playerIndex, updatedView)
+										},
 										DrawCards: func(count int, expectedRevision model.Revision) {
 											updatedView, drawErr := playerSessions[playerIndex].DrawCards(count, expectedRevision)
 											if drawErr != nil {

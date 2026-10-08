@@ -151,12 +151,13 @@ func completeMainPhase(
 
 func completeBattlePhase(
 	state *model.MatchState,
+	catalog rules.CardCatalog,
 	actingPlayerID model.PlayerID,
 ) error {
 	if err := validatePhaseCompletion(state, actingPlayerID, model.PhaseBattle); err != nil {
 		return fmt.Errorf("error validating phase: %w", err)
 	}
-	if hasMandatoryEligibleAttacker(state, actingPlayerID) {
+	if hasMandatoryEligibleAttacker(state, catalog, actingPlayerID) {
 		return fmt.Errorf("cannot finish battle while a servant is able to attack")
 	}
 	state.Turn.Phase = model.PhaseEnd
@@ -166,7 +167,11 @@ func completeBattlePhase(
 // hasMandatoryEligibleAttacker reports whether the active player still controls
 // a Recovered Servant that has at least one legal attack target. Attack costs
 // and Slow Start are not auto-enforced yet; those remain manual.
-func hasMandatoryEligibleAttacker(state *model.MatchState, actingPlayerID model.PlayerID) bool {
+func hasMandatoryEligibleAttacker(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	actingPlayerID model.PlayerID,
+) bool {
 	if state == nil {
 		return false
 	}
@@ -178,11 +183,11 @@ func hasMandatoryEligibleAttacker(state *model.MatchState, actingPlayerID model.
 		if err := validateAttacker(state, actingIndex, cardID); err != nil {
 			continue
 		}
-		if validateAttackTarget(state, opponentIndex, model.AttackTargetPlayer, "") == nil {
+		if validateAttackTarget(state, catalog, cardID, opponentIndex, model.AttackTargetPlayer, "") == nil {
 			return true
 		}
 		for _, targetID := range state.Players[opponentIndex].ServantZone {
-			if validateAttackTarget(state, opponentIndex, model.AttackTargetServant, targetID) == nil {
+			if validateAttackTarget(state, catalog, cardID, opponentIndex, model.AttackTargetServant, targetID) == nil {
 				return true
 			}
 		}
@@ -255,7 +260,7 @@ func CompleteCurrentPhase(
 			return fmt.Errorf("transition from %q: %w", state.Turn.Phase, err)
 		}
 	case model.PhaseBattle:
-		if err := completeBattlePhase(state, actingPlayerID); err != nil {
+		if err := completeBattlePhase(state, catalog, actingPlayerID); err != nil {
 			return fmt.Errorf("transition from %q: %w", state.Turn.Phase, err)
 		}
 	case model.PhaseEnd:

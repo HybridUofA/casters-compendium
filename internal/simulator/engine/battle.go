@@ -12,6 +12,7 @@ import (
 
 func DeclareAttack(
 	state *model.MatchState,
+	catalog rules.CardCatalog,
 	actingPlayerID model.PlayerID,
 	attackerID model.MatchCardID,
 	targetKind model.AttackTargetKind,
@@ -62,7 +63,7 @@ func DeclareAttack(
 	if err := validateAttacker(state, actingIndex, attackerID); err != nil {
 		return err
 	}
-	if err := validateAttackTarget(state, opponentIndex, targetKind, targetCardID); err != nil {
+	if err := validateAttackTarget(state, catalog, attackerID, opponentIndex, targetKind, targetCardID); err != nil {
 		return err
 	}
 
@@ -122,6 +123,8 @@ func validateAttacker(
 
 func validateAttackTarget(
 	state *model.MatchState,
+	catalog rules.CardCatalog,
+	attackerID model.MatchCardID,
 	opponentIndex int,
 	targetKind model.AttackTargetKind,
 	targetCardID model.MatchCardID,
@@ -131,6 +134,9 @@ func validateAttackTarget(
 	case model.AttackTargetPlayer:
 		if targetCardID != "" {
 			return fmt.Errorf("player attacks cannot name a target card")
+		}
+		if attackerHasPrintedHubris(state, catalog, attackerID) {
+			return nil
 		}
 		for _, cardID := range opponent.ServantZone {
 			instance, ok := state.CardInstances[cardID]
@@ -156,6 +162,30 @@ func validateAttackTarget(
 	default:
 		return fmt.Errorf("invalid target kind %q", targetKind)
 	}
+}
+
+func attackerHasPrintedHubris(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	attackerID model.MatchCardID,
+) bool {
+	if state == nil || catalog == nil {
+		return false
+	}
+	instance, ok := state.CardInstances[attackerID]
+	if !ok {
+		return false
+	}
+	definition, found := catalog.FindByID(string(instance.CardID))
+	if !found {
+		return false
+	}
+	return abilityHasPrintedHubris(definition.Ability)
+}
+
+func abilityHasPrintedHubris(ability string) bool {
+	normalized := strings.ToLower(ability)
+	return strings.Contains(normalized, "[hubris]") || strings.Contains(normalized, "hubris")
 }
 
 // resolveDeclaredAttack applies battle judgment for the current declared attack.

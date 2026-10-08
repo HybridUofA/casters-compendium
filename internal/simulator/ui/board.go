@@ -67,6 +67,7 @@ type cardLookup map[model.CardID]cards.Card
 // BoardActions translates presentation choices into session-owned commands.
 type BoardActions struct {
 	MoveCard                   func(model.MoveCardCommand, model.Revision)
+	AdjustAether               func(model.AdjustAetherCommand, model.Revision)
 	DrawCards                  func(count int, revision model.Revision)
 	ShuffleDeck                func(revision model.Revision)
 	PeekDeckTops               func(ownerID model.PlayerID, count int, done func([]simulatorview.CardView, error))
@@ -606,7 +607,8 @@ func (screen *BoardScreen) updateAttackPanel() {
 			targetIDs[label] = card.MatchID
 		}
 	}
-	if viewerHasReversedEnemy {
+	pendingCanAttackPlayer := screen.canPendingAttackerTargetPlayer(viewerHasReversedEnemy)
+	if viewerHasReversedEnemy && !pendingCanAttackPlayer {
 		targetLabels = targetLabels[1:] // remove "Enemy player"
 	}
 
@@ -664,7 +666,10 @@ func (screen *BoardScreen) updateAttackPanel() {
 		if attackerID == "" {
 			attackerID = attackerIDs[attackerSelect.Selected]
 		}
-		if attackerID == "" || screen.actions.DeclareAttack == nil || viewerHasReversedEnemy {
+		if attackerID == "" || screen.actions.DeclareAttack == nil {
+			return
+		}
+		if viewerHasReversedEnemy && !cardDefinitionHasPrintedHubris(screen.definitions[screen.attackerDefinitionID(attackerID)]) {
 			return
 		}
 		screen.actions.DeclareAttack(
@@ -676,8 +681,15 @@ func (screen *BoardScreen) updateAttackPanel() {
 		screen.clearPendingAttacker()
 	})
 	updateAttackPlayer := func() {
-		attackerReady := screen.pendingAttackerID != "" || attackerSelect.Selected != ""
-		if viewerHasReversedEnemy || !attackerReady {
+		attackerID := screen.pendingAttackerID
+		if attackerID == "" {
+			attackerID = attackerIDs[attackerSelect.Selected]
+		}
+		if attackerID == "" {
+			attackPlayer.Disable()
+			return
+		}
+		if viewerHasReversedEnemy && !cardDefinitionHasPrintedHubris(screen.definitions[screen.attackerDefinitionID(attackerID)]) {
 			attackPlayer.Disable()
 			return
 		}
@@ -691,9 +703,12 @@ func (screen *BoardScreen) updateAttackPanel() {
 		}
 		updateAttackPlayer()
 	}
-	hintText := "Battle: left-click your Servant, then left-click a target (or Attack Enemy Player). Right-click a Servant to grant/clear Double Corrupt."
+	hintText := "Battle: left-click your Servant, then left-click an enemy Servant or Orb zone. Right-click a Servant to grant/clear Double Corrupt."
 	if screen.pendingAttackerID != "" {
-		hintText = "Attacker selected. Left-click an enemy Servant, or Attack Enemy Player. Right-click grants Double Corrupt."
+		hintText = "Attacker selected. Left-click an enemy Servant, or an enemy Orb zone to attack the player."
+		if viewerHasReversedEnemy && !pendingCanAttackPlayer {
+			hintText = "Attacker selected. Left-click an enemy Servant (player attack blocked by a Reversed Servant; Hubris bypasses this)."
+		}
 	}
 	hint := widget.NewLabel(hintText)
 	hint.Wrapping = fyne.TextWrapWord
@@ -706,6 +721,38 @@ func (screen *BoardScreen) updateAttackPanel() {
 	}
 	refreshContainerStructure(screen.attackPanel)
 	screen.refreshAttackSelectionHighlights()
+}
+
+func (screen *BoardScreen) attackerDefinitionID(attackerID model.MatchCardID) model.CardID {
+	if screen == nil {
+		return ""
+	}
+	for _, player := range screen.match.Players {
+		if player.ID != screen.match.ViewerID {
+			continue
+		}
+		for _, card := range player.ServantZone {
+			if card.MatchID == attackerID {
+				return card.CardID
+			}
+		}
+	}
+	return ""
+}
+
+func (screen *BoardScreen) canPendingAttackerTargetPlayer(viewerHasReversedEnemy bool) bool {
+	if screen == nil || screen.pendingAttackerID == "" {
+		return !viewerHasReversedEnemy
+	}
+	if !viewerHasReversedEnemy {
+		return true
+	}
+	return cardDefinitionHasPrintedHubris(screen.definitions[screen.attackerDefinitionID(screen.pendingAttackerID)])
+}
+
+func cardDefinitionHasPrintedHubris(definition cards.Card) bool {
+	normalized := strings.ToLower(definition.Ability)
+	return strings.Contains(normalized, "[hubris]") || strings.Contains(normalized, "hubris")
 }
 
 func (screen *BoardScreen) clearPendingAttacker() {
@@ -763,6 +810,39 @@ func (screen *BoardScreen) handleServantPrimaryTap(
 		screen.match.Revision,
 	)
 	screen.clearPendingAttacker()
+}
+
+func (screen *BoardScreen) handleOpponentOrbPrimaryTap() {
+	if screen == nil || screen.actions.DeclareAttack == nil || !canViewerDeclareAttack(screen.match) {
+		return
+	}
+	if screen.pendingAttackerID == "" {
+		return
+	}
+	if !screen.canPendingAttackerTargetPlayer(viewerHasReversedEnemyServant(screen.match)) {
+		return
+	}
+	screen.actions.DeclareAttack(
+		screen.pendingAttackerID,
+		model.AttackTargetPlayer,
+		"",
+		screen.match.Revision,
+	)
+	screen.clearPendingAttacker()
+}
+
+func viewerHasReversedEnemyServant(match simulatorview.MatchView) bool {
+	for _, player := range match.Players {
+		if player.ID == match.ViewerID {
+			continue
+		}
+		for _, card := range player.ServantZone {
+			if card.Orientation == model.OrientationReversed {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func canViewerCorruptOrb(match simulatorview.MatchView) bool {
@@ -1242,19 +1322,28 @@ func (screen *BoardScreen) updateAetherPools() {
 	}
 	viewerIndex := screen.viewerIndex()
 	opponentIndex := 1 - viewerIndex
-	newPool := func(label string, player simulatorview.PlayerView) fyne.CanvasObject {
+	newPool := func(label string, player simulatorview.PlayerView, editable bool) fyne.CanvasObject {
 		heading := widget.NewLabelWithStyle(
 			fmt.Sprintf("%s — %s", label, player.ID),
 			fyne.TextAlignLeading,
 			fyne.TextStyle{Bold: true},
 		)
-		display := container.NewHScroll(newAetherPoolDisplay(player.Aether))
+		var onAdjust func(string, int)
+		if editable && screen.actions.AdjustAether != nil {
+			onAdjust = func(element string, delta int) {
+				screen.actions.AdjustAether(
+					model.AdjustAetherCommand{Element: element, Delta: delta},
+					screen.match.Revision,
+				)
+			}
+		}
+		display := container.NewHScroll(newAetherPoolDisplay(player.Aether, editable && onAdjust != nil, onAdjust))
 		display.SetMinSize(fyne.NewSize(0, aetherIconSize+8))
 		return container.NewVBox(heading, display)
 	}
 	screen.aetherPools.Objects = []fyne.CanvasObject{
-		newPool("Opponent", screen.match.Players[opponentIndex]),
-		newPool("You", screen.match.Players[viewerIndex]),
+		newPool("Opponent", screen.match.Players[opponentIndex], false),
+		newPool("You", screen.match.Players[viewerIndex], true),
 	}
 	refreshContainerStructure(screen.aetherPools)
 }
@@ -2571,6 +2660,7 @@ func (stack *verticalCardStackLayout) Layout(objects []fyne.CanvasObject, size f
 }
 
 func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) fyne.CanvasObject {
+	var onPrimary func()
 	var onSecondary func(*fyne.PointEvent)
 	canPeek := !board.isViewer && board.actions.PeekOrb != nil && len(cards) > 0
 	canReveal := board.isViewer && board.actions.RevealOrb != nil && len(cards) > 0
@@ -2579,12 +2669,18 @@ func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) f
 			board.showOrbContextMenu(event)
 		}
 	}
+	if !board.isViewer && board.host != nil {
+		onPrimary = func() {
+			board.host.handleOpponentOrbPrimaryTap()
+		}
+	}
 	return newLayeredOrbZone(
 		board.playerName,
 		cards,
 		board.definitions,
 		board.preview,
 		!board.isViewer,
+		onPrimary,
 		onSecondary,
 	)
 }
@@ -2616,6 +2712,7 @@ func newLayeredOrbZone(
 	definitions cardLookup,
 	preview previewState,
 	alignBottom bool,
+	onPrimary func(),
 	onSecondary func(*fyne.PointEvent),
 ) fyne.CanvasObject {
 	objects := make([]fyne.CanvasObject, 0, len(cardViews))
@@ -2635,6 +2732,9 @@ func newLayeredOrbZone(
 			onHidden,
 			true,
 		)
+		if onPrimary != nil {
+			tile.OnActivate = onPrimary
+		}
 		objects = append(objects, tile)
 	}
 
@@ -2653,8 +2753,8 @@ func newLayeredOrbZone(
 		preview,
 		fyne.Size{},
 	)
-	if onSecondary != nil {
-		return newZoneInteractLayer(zone, nil, onSecondary)
+	if onPrimary != nil || onSecondary != nil {
+		return newZoneInteractLayer(zone, onPrimary, onSecondary)
 	}
 	return zone
 }

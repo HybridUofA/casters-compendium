@@ -29,6 +29,22 @@ type PlayerSession struct {
 	playerID model.PlayerID
 }
 
+// AdjustAether manually adds or removes one unit from the bound player's pool.
+func (session *PlayerSession) AdjustAether(
+	command model.AdjustAetherCommand,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.AdjustAether(&session.match.state, session.playerID, command, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("adjust aether: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
 // MoveCard binds manual movement to the authenticated local player and returns
 // only that player's projection. Hidden Exile needs explicit viewing grants.
 func (session *PlayerSession) MoveCard(command model.MoveCardCommand, expectedRevision model.Revision) (view.MatchView, error) {
@@ -730,6 +746,7 @@ func (session *PlayerSession) DeclareAttack(
 	defer session.match.mu.Unlock()
 	if err := engine.DeclareAttack(
 		&session.match.state,
+		session.match.catalog,
 		session.playerID,
 		attackerID,
 		targetKind,

@@ -240,6 +240,7 @@ func TestOrbZoneUsesUnscrolledVerticalCardLayers(t *testing.T) {
 		newPreviewPanel(),
 		false,
 		nil,
+		nil,
 	)
 	if scroll := findScroll(zone); scroll != nil {
 		t.Fatal("Orb zone contains a scrollbar")
@@ -320,7 +321,7 @@ func TestAetherPoolRenderingOnlyIncludesPositiveTypes(t *testing.T) {
 }
 
 func TestEmptyAetherPoolUsesCompactZeroState(t *testing.T) {
-	display := newAetherPoolDisplay(model.AetherPool{})
+	display := newAetherPoolDisplay(model.AetherPool{}, false, nil)
 	if !containsText(display, "Aether: 0") {
 		t.Fatal("empty Aether pool did not render its compact zero state")
 	}
