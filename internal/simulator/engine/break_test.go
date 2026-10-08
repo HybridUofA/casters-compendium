@@ -11,8 +11,7 @@ func TestCorruptOrbOffersBreakWhenCardDeclaresIt(t *testing.T) {
 	state, catalog := breakBattleStateForTest()
 	state.Players[1].ServantZone = nil
 
-	if err := DeclareAttack(
-		&state, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
 	); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
@@ -37,8 +36,7 @@ func TestCorruptOrbOffersBreakWhenCardDeclaresIt(t *testing.T) {
 func TestDeclineBreakReopensPriorityForActivePlayer(t *testing.T) {
 	state, catalog := breakBattleStateForTest()
 	state.Players[1].ServantZone = nil
-	if err := DeclareAttack(
-		&state, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
 	); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
@@ -64,8 +62,7 @@ func TestDeclineBreakReopensPriorityForActivePlayer(t *testing.T) {
 func TestPlayBreakPutsCardOnChaseWithoutCost(t *testing.T) {
 	state, catalog := breakBattleStateForTest()
 	state.Players[1].ServantZone = nil
-	if err := DeclareAttack(
-		&state, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
 	); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
@@ -94,8 +91,7 @@ func TestPlayBreakPutsCardOnChaseWithoutCost(t *testing.T) {
 func TestDeclineBreakRejectsWrongPlayer(t *testing.T) {
 	state, catalog := breakBattleStateForTest()
 	state.Players[1].ServantZone = nil
-	if err := DeclareAttack(
-		&state, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
 	); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}

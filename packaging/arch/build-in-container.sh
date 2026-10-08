@@ -26,7 +26,7 @@ install -m644 \
 	/build/arch/
 chown -R builder:builder /build
 
-source_fragment="${CASTERS_COMPENDIUM_SOURCE_FRAGMENT:-tag=v1.1.0}"
+source_fragment="${CASTERS_COMPENDIUM_SOURCE_FRAGMENT:-tag=v1.1.1}"
 
 runuser -u builder -- env \
 	HOME=/home/builder \

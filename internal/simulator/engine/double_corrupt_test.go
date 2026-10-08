@@ -20,8 +20,7 @@ func TestDoubleCorruptRequiresTwoOrbChoices(t *testing.T) {
 		Ability: "• Double Corrupt",
 	}
 
-	if err := DeclareAttack(
-		&state, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
 	); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
@@ -56,8 +55,7 @@ func TestDoubleCorruptAgainstOneOrbDoesNotWin(t *testing.T) {
 	attacker.GrantedDoubleCorrupt = true
 	state.CardInstances["p1-attacker"] = attacker
 
-	if err := DeclareAttack(
-		&state, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision,
 	); err != nil {
 		t.Fatalf("DeclareAttack() error = %v", err)
 	}
@@ -97,7 +95,7 @@ func TestCompleteBattlePhaseRejectsMandatoryEligibleAttacker(t *testing.T) {
 	state.PassCount = 0
 	before := state.Revision
 
-	err := completeBattlePhase(&state, "player-one")
+	err := completeBattlePhase(&state, nil, "player-one")
 	if err == nil || !strings.Contains(err.Error(), "able to attack") {
 		t.Fatalf("completeBattlePhase() error = %v; want mandatory-attack error", err)
 	}
@@ -110,7 +108,7 @@ func TestCompleteBattlePhaseRejectsMandatoryEligibleAttacker(t *testing.T) {
 		instance.Orientation = model.OrientationRested
 		state.CardInstances[cardID] = instance
 	}
-	if err := completeBattlePhase(&state, "player-one"); err != nil {
+	if err := completeBattlePhase(&state, nil, "player-one"); err != nil {
 		t.Fatalf("completeBattlePhase() after resting attackers error = %v", err)
 	}
 	if state.Turn.Phase != model.PhaseEnd {

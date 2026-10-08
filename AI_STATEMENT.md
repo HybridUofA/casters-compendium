@@ -272,3 +272,14 @@ Under that authorization, Cursor assistance implemented the UI-thread
 deferrals, host reply-before-peer-push path, Level Up preview-panel layout,
 Space-to-pass and empty-Chase auto-pass defaults, regression tests, and this
 release metadata under maintainer review.
+
+## Disclosed v1.1.1 assistance
+
+Hybrid directed the v1.1.1 playability pass (manual Aether pool editing for
+effect resolution, Orb-zone player-attack clicks with printed Hubris, official
+non-elemental Aether artwork from Speedrobo, and shipping as a patch release)
+and remains responsible for acceptance and publication.
+
+Under that authorization, Cursor assistance implemented AdjustAether through
+engine/session/nethost/UI, battle click targeting and printed Hubris checks,
+tests, transparency updates, and release metadata under maintainer review.

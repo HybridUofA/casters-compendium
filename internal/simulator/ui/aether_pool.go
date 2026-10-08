@@ -15,6 +15,7 @@ const aetherIconSize float32 = 28
 
 type aetherDisplayEntry struct {
 	name     string
+	element  string
 	amount   int
 	resource fyne.Resource
 }
@@ -41,18 +42,22 @@ var aetherIconResources = struct {
 	nonElemental: fyne.NewStaticResource("aether-non-elemental.png", sourceicons.NonElementalPNG),
 }
 
-func visibleAetherEntries(pool model.AetherPool) []aetherDisplayEntry {
-	entries := []aetherDisplayEntry{
-		{name: "Aes", amount: pool.Aes, resource: aetherIconResources.aes},
-		{name: "Aqua", amount: pool.Aqua, resource: aetherIconResources.aqua},
-		{name: "Ignus", amount: pool.Ignus, resource: aetherIconResources.ignus},
-		{name: "Luna", amount: pool.Luna, resource: aetherIconResources.luna},
-		{name: "Silva", amount: pool.Silva, resource: aetherIconResources.silva},
-		{name: "Solis", amount: pool.Solis, resource: aetherIconResources.solis},
-		{name: "Terra", amount: pool.Terra, resource: aetherIconResources.terra},
-		{name: "Void", amount: pool.Void, resource: aetherIconResources.void},
-		{name: "Non-elemental", amount: pool.NonElemental, resource: aetherIconResources.nonElemental},
+func allAetherEntries(pool model.AetherPool) []aetherDisplayEntry {
+	return []aetherDisplayEntry{
+		{name: "Aes", element: "Aes", amount: pool.Aes, resource: aetherIconResources.aes},
+		{name: "Aqua", element: "Aqua", amount: pool.Aqua, resource: aetherIconResources.aqua},
+		{name: "Ignus", element: "Ignus", amount: pool.Ignus, resource: aetherIconResources.ignus},
+		{name: "Luna", element: "Luna", amount: pool.Luna, resource: aetherIconResources.luna},
+		{name: "Silva", element: "Silva", amount: pool.Silva, resource: aetherIconResources.silva},
+		{name: "Solis", element: "Solis", amount: pool.Solis, resource: aetherIconResources.solis},
+		{name: "Terra", element: "Terra", amount: pool.Terra, resource: aetherIconResources.terra},
+		{name: "Void", element: "Void", amount: pool.Void, resource: aetherIconResources.void},
+		{name: "Non-elemental", element: "NonElemental", amount: pool.NonElemental, resource: aetherIconResources.nonElemental},
 	}
+}
+
+func visibleAetherEntries(pool model.AetherPool) []aetherDisplayEntry {
+	entries := allAetherEntries(pool)
 	visible := make([]aetherDisplayEntry, 0, len(entries))
 	for _, entry := range entries {
 		if entry.amount > 0 {
@@ -62,8 +67,15 @@ func visibleAetherEntries(pool model.AetherPool) []aetherDisplayEntry {
 	return visible
 }
 
-func newAetherPoolDisplay(pool model.AetherPool) fyne.CanvasObject {
+func newAetherPoolDisplay(
+	pool model.AetherPool,
+	editable bool,
+	onAdjust func(element string, delta int),
+) fyne.CanvasObject {
 	entries := visibleAetherEntries(pool)
+	if editable {
+		entries = allAetherEntries(pool)
+	}
 	if len(entries) == 0 {
 		return canvas.NewText("Aether: 0", boardForeground)
 	}
@@ -78,7 +90,17 @@ func newAetherPoolDisplay(pool model.AetherPool) fyne.CanvasObject {
 		icon.SetMinSize(fyne.NewSize(aetherIconSize, aetherIconSize))
 		amount := canvas.NewText(fmt.Sprintf("%d", entry.amount), boardForeground)
 		amount.TextStyle = fyne.TextStyle{Bold: true}
-		objects = append(objects, container.NewHBox(icon, amount))
+		row := container.NewHBox(icon, amount)
+		if editable && onAdjust != nil {
+			element := entry.element
+			objects = append(objects, newZoneInteractLayer(
+				row,
+				func() { onAdjust(element, 1) },
+				func(*fyne.PointEvent) { onAdjust(element, -1) },
+			))
+			continue
+		}
+		objects = append(objects, row)
 	}
 	return container.NewHBox(objects...)
 }

@@ -222,6 +222,13 @@ type MoveCardCommand struct {
 	Placement           DeckPlacement
 }
 
+// AdjustAetherCommand manually adds or removes one unit of Aether from the
+// acting player's pool (Cockatrice-style effect resolution aid).
+type AdjustAetherCommand struct {
+	Element string `json:"element"` // Aes…Void or NonElemental
+	Delta   int    `json:"delta"`   // +1 or -1
+}
+
 type DeckPlacement string
 
 const (

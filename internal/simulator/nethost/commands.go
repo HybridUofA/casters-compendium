@@ -268,6 +268,12 @@ func (host *Host) applyCommand(
 			return commandResult{}, err
 		}
 		return mutatingView(playerSession.MoveCard(args, revision))
+	case "adjust_aether":
+		var args model.AdjustAetherCommand
+		if err := json.Unmarshal(payload.Args, &args); err != nil {
+			return commandResult{}, err
+		}
+		return mutatingView(playerSession.AdjustAether(args, revision))
 	case "draw_cards":
 		var args struct {
 			Count int `json:"count"`
