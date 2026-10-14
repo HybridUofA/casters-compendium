@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/HybridUofA/casters-compendium/internal/simulator/engine/ops"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
@@ -33,12 +34,12 @@ func GenerateNonElementalAether(
 		return fmt.Errorf("player ID not found: %q", actingPlayer)
 	}
 	player := &state.Players[activeIndex]
-	instance, exists := state.CardInstances[cardID]
-	if !exists {
+	if _, exists := state.CardInstances[cardID]; !exists {
 		return fmt.Errorf("card %q does not exist in instances", cardID)
 	}
-	instance.Orientation = model.OrientationRested
-	state.CardInstances[cardID] = instance
+	if err := ops.SetOrientation(state, cardID, model.OrientationRested); err != nil {
+		return fmt.Errorf("rest caster for non-elemental aether: %w", err)
+	}
 	player.Aether.NonElemental++
 	state.Revision++
 	return nil
@@ -110,8 +111,7 @@ func GenerateCasterAether(
 	if actingIndex == -1 {
 		return fmt.Errorf("player %q not found in players", actingPlayerID)
 	}
-	instance, exists := state.CardInstances[cardID]
-	if !exists {
+	if _, exists := state.CardInstances[cardID]; !exists {
 		return fmt.Errorf("card %q does not exist in instances", cardID)
 	}
 
@@ -138,8 +138,9 @@ func GenerateCasterAether(
 	default:
 		return fmt.Errorf("unsupported Caster element %q", element)
 	}
-	instance.Orientation = model.OrientationRested
-	state.CardInstances[cardID] = instance
+	if err := ops.SetOrientation(state, cardID, model.OrientationRested); err != nil {
+		return fmt.Errorf("rest caster for elemental aether: %w", err)
+	}
 	*destination += amount
 	state.Revision++
 	return nil

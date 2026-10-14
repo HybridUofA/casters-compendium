@@ -33,6 +33,20 @@ func TestBuildMainMenuDisplaysEnabledSimulatorPrototype(t *testing.T) {
 	}
 }
 
+func TestBuildMainMenuDisplaysSoloVsTsubasa(t *testing.T) {
+	window := test.NewWindow(nil)
+	defer window.Close()
+
+	menu := buildMainMenu(window, mainMenuActions{PlaySoloVsTsubasa: func() {}})
+	button := findButtonText(menu, "Solo vs Tsubasa")
+	if button == nil {
+		t.Fatal("main menu does not display Solo vs Tsubasa")
+	}
+	if button.Disabled() {
+		t.Fatal("Solo vs Tsubasa is disabled despite having an action")
+	}
+}
+
 func TestBuildMainMenuDisplaysOnlinePlayActions(t *testing.T) {
 	window := test.NewWindow(nil)
 	defer window.Close()

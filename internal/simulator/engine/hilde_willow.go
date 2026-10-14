@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	gamecards "github.com/HybridUofA/casters-compendium/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/effects"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
@@ -16,10 +17,9 @@ func isHildeWillow(definition gamecards.Card) bool {
 		strings.EqualFold(strings.TrimSpace(definition.Type), "Caster")
 }
 
-// ActivateHildeWillow pays Hilde Willow's Rest cost and resolves the look
-// immediately (activated-ability Chase resolution is not implemented yet).
-// The caller shows the enemy deck-top privately and may then call
-// MoveDeckTopToBottom. The acting player retains priority.
+// ActivateHildeWillow pays Rest via the shared Rest path and runs the Hilde
+// recipe from master_effects (peek + PendingChoice leave/bottom). Returns the
+// enemy player ID so callers can show a private peek overlay.
 func ActivateHildeWillow(
 	state *model.MatchState,
 	catalog rules.CardCatalog,
@@ -33,20 +33,8 @@ func ActivateHildeWillow(
 	if catalog == nil {
 		return "", fmt.Errorf("catalog cannot be nil")
 	}
-	if expectedRevision != state.Revision {
-		return "", fmt.Errorf("expected revision %d does not match current revision %d", expectedRevision, state.Revision)
-	}
-	if state.MatchStatus != model.StatusInProgress {
-		return "", fmt.Errorf("match is not in progress")
-	}
-	if !state.PrioritySequenceOpen || state.PriorityHolder != actingPlayerID {
-		return "", fmt.Errorf("only the priority holder may activate Hilde Willow")
-	}
-	if state.PendingBreak.PlayerID != "" ||
-		state.PendingDraw.Step != model.PendingDrawIdle ||
-		state.PendingChoice.PlayerID != "" {
-		return "", fmt.Errorf("cannot activate Hilde Willow while another decision is pending")
-	}
+	RegisterDefaultEffectHandlers()
+
 	actingIndex, err := findPlayerIndex(state, actingPlayerID)
 	if err != nil {
 		return "", err
@@ -57,36 +45,23 @@ func ActivateHildeWillow(
 		return "", fmt.Errorf("enemy deck is empty")
 	}
 
-	foundInZone := false
-	for _, matchID := range state.Players[actingIndex].CasterZone {
-		if matchID == cardID {
-			foundInZone = true
-			break
-		}
-	}
-	if !foundInZone {
-		return "", fmt.Errorf("%q is not in your caster zone", cardID)
-	}
 	instance, ok := state.CardInstances[cardID]
 	if !ok {
 		return "", fmt.Errorf("caster %q not found", cardID)
-	}
-	if instance.Controller != actingPlayerID {
-		return "", fmt.Errorf("you do not control %q", cardID)
-	}
-	if instance.Face != model.CardFaceUp {
-		return "", fmt.Errorf("Hilde Willow must be face up")
-	}
-	if instance.Orientation != model.OrientationRecovered {
-		return "", fmt.Errorf("Hilde Willow must be Recovered to Rest")
 	}
 	definition, found := catalog.FindByID(string(instance.CardID))
 	if !found || !isHildeWillow(definition) {
 		return "", fmt.Errorf("%q is not Hilde Willow", cardID)
 	}
+	if !effects.HasMatch(&effectRegistry, effects.HookRest, instance.CardID, definition.Ability) {
+		return "", fmt.Errorf("Hilde Willow has no registered Rest automation")
+	}
 
-	instance.Orientation = model.OrientationRested
-	state.CardInstances[cardID] = instance
-	state.Revision++
+	if err := ActivateRegisteredRest(state, catalog, actingPlayerID, cardID, expectedRevision); err != nil {
+		return "", err
+	}
+	if state.PendingChoice.Kind == effects.PendingHildeDeckBottom && state.PendingChoice.Payload != "" {
+		enemyID = model.PlayerID(state.PendingChoice.Payload)
+	}
 	return enemyID, nil
 }

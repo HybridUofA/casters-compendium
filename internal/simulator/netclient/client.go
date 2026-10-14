@@ -71,12 +71,14 @@ func (client *Client) CreateRoom(
 	playerName, roomName string,
 	deck decks.Deck,
 	password string,
+	cosmetics simulatorview.PlayerCosmetics,
 ) (protocol.CreateRoomPayload, error) {
 	raw, err := protocol.Encode(protocol.KindCreateRoom, protocol.CreateRoomPayload{
 		PlayerName: playerName,
 		RoomName:   roomName,
 		Password:   password,
 		Deck:       deck,
+		Cosmetics:  cosmetics,
 	})
 	if err != nil {
 		return protocol.CreateRoomPayload{}, err
@@ -100,12 +102,14 @@ func (client *Client) JoinRoom(
 	roomCode, playerName string,
 	deck decks.Deck,
 	password string,
+	cosmetics simulatorview.PlayerCosmetics,
 ) (protocol.JoinRoomPayload, error) {
 	raw, err := protocol.Encode(protocol.KindJoinRoom, protocol.JoinRoomPayload{
 		RoomCode:   roomCode,
 		PlayerName: playerName,
 		Password:   password,
 		Deck:       deck,
+		Cosmetics:  cosmetics,
 	})
 	if err != nil {
 		return protocol.JoinRoomPayload{}, err
@@ -219,6 +223,7 @@ func (client *Client) CommandWithPrivate(
 		return simulatorview.MatchView{}, nil, err
 	}
 	applyDisplayNames(&payload.Match, payload.DisplayNames)
+	applyCosmetics(&payload.Match, payload.Cosmetics)
 	return payload.Match, payload.Private, nil
 }
 
@@ -231,6 +236,18 @@ func applyDisplayNames(match *simulatorview.MatchView, names map[string]string) 
 	}
 	for id, name := range names {
 		match.DisplayNames[model.PlayerID(id)] = name
+	}
+}
+
+func applyCosmetics(match *simulatorview.MatchView, cosmetics map[string]simulatorview.PlayerCosmetics) {
+	if match == nil || len(cosmetics) == 0 {
+		return
+	}
+	if match.Cosmetics == nil {
+		match.Cosmetics = make(map[model.PlayerID]simulatorview.PlayerCosmetics, len(cosmetics))
+	}
+	for id, value := range cosmetics {
+		match.Cosmetics[model.PlayerID(id)] = value
 	}
 }
 
@@ -314,6 +331,7 @@ func (client *Client) readLoop() {
 				continue
 			}
 			applyDisplayNames(&payload.Match, payload.DisplayNames)
+			applyCosmetics(&payload.Match, payload.Cosmetics)
 			if client.OnView != nil {
 				client.OnView(payload.Match)
 			}

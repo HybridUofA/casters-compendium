@@ -32,7 +32,7 @@ func TestOfferAndResolvePendingChoice(t *testing.T) {
 		t.Fatalf("PendingChoice = %#v", state.PendingChoice)
 	}
 
-	err := ResolvePendingChoice(&state, "player-one", "a", []model.MatchCardID{"card-1"}, 3)
+	err := ResolvePendingChoice(&state, nil, "player-one", "a", []model.MatchCardID{"card-1"}, 3)
 	if err != nil {
 		t.Fatalf("ResolvePendingChoice() error = %v", err)
 	}
@@ -77,7 +77,7 @@ func TestResolvePendingChoiceRejectsInvalidOption(t *testing.T) {
 			},
 		},
 	}
-	err := ResolvePendingChoice(&state, "player-one", "missing", nil, 2)
+	err := ResolvePendingChoice(&state, nil, "player-one", "missing", nil, 2)
 	if err == nil || !strings.Contains(err.Error(), "not part of the pending choice") {
 		t.Fatalf("ResolvePendingChoice() error = %v; want invalid option", err)
 	}

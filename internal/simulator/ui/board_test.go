@@ -1292,7 +1292,7 @@ func TestBreakPanelOffersUseAndDecline(t *testing.T) {
 	}
 }
 
-func TestCorruptOrbPanelSubmitsSelectedOrbIndex(t *testing.T) {
+func TestCorruptOrbHintUsesClickNotCheckboxPanel(t *testing.T) {
 	match := testMatchView()
 	match.MatchStatus = model.StatusInProgress
 	match.Revision = 55
@@ -1304,40 +1304,22 @@ func TestCorruptOrbPanelSubmitsSelectedOrbIndex(t *testing.T) {
 		CorruptCount: 1,
 	}
 	match.PrioritySequenceOpen = false
-	match.PriorityHolder = ""
-	match.PassCount = 0
-	// Viewer is player-one (Players[0]); opponent orbs are on Players[1].
 	match.Players[1].Orbs = []simulatorview.CardView{
 		{Face: model.CardFaceDown},
 		{Face: model.CardFaceDown},
 		{Face: model.CardFaceDown},
 	}
-	var (
-		orbIndexes []int
-		revision   model.Revision
-	)
 	controller := NewBoardController(
 		match,
 		testDefinitions(),
-		BoardActions{CorruptOrbs: func(gotIndexes []int, gotRevision model.Revision) {
-			orbIndexes = append([]int(nil), gotIndexes...)
-			revision = gotRevision
-		}},
+		BoardActions{CorruptOrbs: func([]int, model.Revision) {}},
 		nil,
 	)
-
-	checks := findChecks(controller.Content())
-	confirm := findButton(controller.Content(), "Corrupt Orb")
-	if len(checks) != 3 || confirm == nil {
-		t.Fatal("orb choice controls were not rendered")
+	if findButton(controller.Content(), "Corrupt Orb") != nil {
+		t.Fatal("legacy Corrupt Orb checkbox confirm should not render")
 	}
-	checks[1].SetChecked(true) // Orb 2 → index 1
-	if confirm.Disabled() {
-		t.Fatal("Corrupt Orb remained disabled after selecting an Orb")
-	}
-	test.Tap(confirm)
-	if len(orbIndexes) != 1 || orbIndexes[0] != 1 || revision != 55 {
-		t.Fatalf("CorruptOrbs submitted %#v/%d; want [1]/55", orbIndexes, revision)
+	if len(findChecks(controller.Content())) != 0 {
+		t.Fatal("orb corrupt should not use checkbox panel")
 	}
 }
 

@@ -1,9 +1,10 @@
 # Player custom-asset service
 
-This Cloudflare Worker accepts player-provided card backs and simulator card
-art. It validates Turnstile server-side, rate limits uploads, fully decodes and
-re-encodes images through Cloudflare Images, and stores only the normalized PNG
-in a dedicated R2 bucket. The official hosted catalog bucket is not used.
+This Cloudflare Worker accepts player-provided card backs, simulator caster
+tokens, and simulator card art. It validates Turnstile server-side, rate limits
+uploads, fully decodes and re-encodes images through Cloudflare Images, and
+stores only the normalized PNG in a dedicated R2 bucket. The official hosted
+catalog bucket is not used.
 
 Objects are content-addressed and intentionally retained: deleting an object
 would break existing Tabletop Simulator saves and multiplayer simulator data.

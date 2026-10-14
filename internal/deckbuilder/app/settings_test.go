@@ -8,6 +8,8 @@ import (
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
+	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
 // TestNormalizeAppearanceTheme verifies only supported persisted values survive.
@@ -89,6 +91,33 @@ func TestAppearanceThemeLabelsRoundTrip(t *testing.T) {
 		if got := appearanceThemeValue(appearanceThemeLabel(value)); got != value {
 			t.Errorf("theme preference %q round-tripped as %q", value, got)
 		}
+	}
+}
+
+func TestLoadAndApplySimulatorCosmetics(t *testing.T) {
+	guiApp := test.NewApp()
+	defer guiApp.Quit()
+
+	backURL := "https://custom-assets.casterscompendium.com/assets/tts-card-back/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.png"
+	tokenURL := "https://custom-assets.casterscompendium.com/assets/simulator-caster-token/fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210.png"
+	guiApp.Preferences().SetString(simulatorCardBackPreferenceKey, backURL)
+	guiApp.Preferences().SetString(simulatorCasterTokenPreferenceKey, tokenURL)
+
+	got := loadSimulatorCosmetics()
+	want := simulatorview.PlayerCosmetics{CardBackURL: backURL, CasterTokenURL: tokenURL}
+	if got != want {
+		t.Fatalf("loadSimulatorCosmetics() = %#v; want %#v", got, want)
+	}
+
+	match := &simulatorview.MatchView{
+		Players: [2]simulatorview.PlayerView{
+			{ID: "player-one"},
+			{ID: "player-two"},
+		},
+	}
+	applySimulatorCosmetics(match)
+	if match.Cosmetics["player-one"] != want || match.Cosmetics["player-two"] != want {
+		t.Fatalf("applySimulatorCosmetics() = %#v; want both seats %#v", match.Cosmetics, want)
 	}
 }
 

@@ -38,15 +38,26 @@ func (screen *BoardScreen) showHildePeekDialog(
 		label,
 	)
 	popup := dialog.NewCustom("Deck peek", "Leave on top", content, window)
-	if screen.actions.MoveDeckTopToBottom != nil {
-		popup.SetButtons([]fyne.CanvasObject{
-			widget.NewButton("Leave on top", func() { popup.Hide() }),
-			widget.NewButton("Put on bottom", func() {
-				screen.actions.MoveDeckTopToBottom(ownerID, screen.match.Revision)
-				popup.Hide()
-			}),
-		})
+	leave := func() {
+		if screen.actions.ResolvePendingChoice != nil &&
+			screen.match.PendingChoice.Kind == "fx:hilde_deck_bottom" {
+			screen.actions.ResolvePendingChoice("leave", nil, screen.match.Revision)
+		}
+		popup.Hide()
 	}
+	bottom := func() {
+		if screen.actions.ResolvePendingChoice != nil &&
+			screen.match.PendingChoice.Kind == "fx:hilde_deck_bottom" {
+			screen.actions.ResolvePendingChoice("bottom", nil, screen.match.Revision)
+		} else if screen.actions.MoveDeckTopToBottom != nil {
+			screen.actions.MoveDeckTopToBottom(ownerID, screen.match.Revision)
+		}
+		popup.Hide()
+	}
+	popup.SetButtons([]fyne.CanvasObject{
+		widget.NewButton("Leave on top", leave),
+		widget.NewButton("Put on bottom", bottom),
+	})
 	resizeDialogFraction(popup, window, 0.45, 0.35, 480, 260, 900, 520)
 	popup.Show()
 }

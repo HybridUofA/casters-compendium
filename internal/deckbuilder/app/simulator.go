@@ -43,6 +43,9 @@ func buildSimulatorSessions(
 	if repository == nil {
 		return [2]*session.PlayerSession{}, fmt.Errorf("card repository cannot be nil")
 	}
+	// Same as matchboot: Enter / Break / Rest automation must be installed for
+	// local hotseat and Solo vs Tsubasa, not only networked rooms.
+	engine.RegisterDefaultEffectHandlers()
 	state, err := engine.BeginSetup(engine.SetupInput{
 		Players: [2]engine.PlayerSetup{
 			{ID: "player-one", Deck: playerDecks[0]},

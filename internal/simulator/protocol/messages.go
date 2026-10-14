@@ -36,21 +36,23 @@ type HelloPayload struct {
 }
 
 type CreateRoomPayload struct {
-	RoomCode   string     `json:"room_code,omitempty"`
-	RoomName   string     `json:"room_name,omitempty"`
-	PlayerID   string     `json:"player_id,omitempty"`
-	PlayerName string     `json:"player_name"`
-	Password   string     `json:"password,omitempty"`
-	Deck       decks.Deck `json:"deck"`
+	RoomCode   string                        `json:"room_code,omitempty"`
+	RoomName   string                        `json:"room_name,omitempty"`
+	PlayerID   string                        `json:"player_id,omitempty"`
+	PlayerName string                        `json:"player_name"`
+	Password   string                        `json:"password,omitempty"`
+	Deck       decks.Deck                    `json:"deck"`
+	Cosmetics  simulatorview.PlayerCosmetics `json:"cosmetics,omitempty"`
 }
 
 type JoinRoomPayload struct {
-	RoomCode   string     `json:"room_code"`
-	PlayerID   string     `json:"player_id,omitempty"`
-	PlayerName string     `json:"player_name"`
-	Password   string     `json:"password,omitempty"`
-	Spectator  bool       `json:"spectator,omitempty"`
-	Deck       decks.Deck `json:"deck,omitempty"`
+	RoomCode   string                        `json:"room_code"`
+	PlayerID   string                        `json:"player_id,omitempty"`
+	PlayerName string                        `json:"player_name"`
+	Password   string                        `json:"password,omitempty"`
+	Spectator  bool                          `json:"spectator,omitempty"`
+	Deck       decks.Deck                    `json:"deck,omitempty"`
+	Cosmetics  simulatorview.PlayerCosmetics `json:"cosmetics,omitempty"`
 }
 
 type ListRoomsPayload struct{}
@@ -78,9 +80,10 @@ type CommandPayload struct {
 }
 
 type ViewPayload struct {
-	Match        simulatorview.MatchView `json:"match"`
-	Private      *PrivateView            `json:"private,omitempty"`
-	DisplayNames map[string]string       `json:"display_names,omitempty"`
+	Match        simulatorview.MatchView                  `json:"match"`
+	Private      *PrivateView                             `json:"private,omitempty"`
+	DisplayNames map[string]string                        `json:"display_names,omitempty"`
+	Cosmetics    map[string]simulatorview.PlayerCosmetics `json:"cosmetics,omitempty"`
 }
 
 // PrivateView carries actor-only information that must never be pushed to peers.

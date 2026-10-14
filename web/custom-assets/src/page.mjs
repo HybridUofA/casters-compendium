@@ -46,7 +46,8 @@ export function uploadPage(siteKey, nonce) {
         <form id="upload-form">
           <label for="asset-kind">Image use</label>
           <select id="asset-kind" name="assetKind">
-            <option value="tts-card-back">Tabletop Simulator card back</option>
+            <option value="tts-card-back">Card back (TTS + simulator)</option>
+            <option value="simulator-caster-token">Simulator caster token</option>
             <option value="simulator-card-art">Simulator card art</option>
           </select>
 

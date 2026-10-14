@@ -70,6 +70,86 @@ func TestShouldAutoPassPriorityForViewDefaultsToEmptyChase(t *testing.T) {
 	if !shouldAutoPassPriorityForView(mainOpponent) {
 		t.Fatal("default empty mode should auto-pass Main for the non-turn player")
 	}
+
+	emptyBattle := base
+	emptyBattle.Turn.Phase = model.PhaseBattle
+	emptyBattle.Players = [2]simulatorview.PlayerView{
+		{ID: "player-one"},
+		{ID: "player-two"},
+	}
+	if !shouldAutoPassPriorityForView(emptyBattle) {
+		t.Fatal("default empty mode should auto-pass empty Battle for the turn player")
+	}
+}
+
+func TestShouldAutoPassEmptyBattleIgnoresUntriggerableRest(t *testing.T) {
+	application := test.NewApp()
+	t.Cleanup(application.Quit)
+	prefs := application.Preferences()
+	prefs.SetString(networkPriorityModePreferenceKey, priorityModeEmpty)
+
+	autoPass := makeShouldAutoPassPriority([]cards.Card{
+		{
+			ID:      "lumielle",
+			Name:    "Lumielle",
+			Type:    "Caster",
+			Ability: "• Rest: Swap the ATK and DEF of target enemy servant until end of turn.",
+		},
+		{
+			ID:      "glory",
+			Name:    "Glory Butterfly",
+			Type:    "Caster",
+			Ability: "• Rest: Target allied servant gains +500 DEF until end of turn.",
+		},
+	})
+
+	base := simulatorview.MatchView{
+		ViewerID:             "player-one",
+		MatchStatus:          model.StatusInProgress,
+		PrioritySequenceOpen: true,
+		PriorityHolder:       "player-one",
+		Turn: model.TurnState{
+			ActivePlayer: "player-one",
+			Phase:        model.PhaseBattle,
+		},
+		Players: [2]simulatorview.PlayerView{
+			{
+				ID: "player-one",
+				CasterZone: []simulatorview.CardView{{
+					MatchID:     "lumielle-1",
+					CardID:      "lumielle",
+					ShowFace:    true,
+					Orientation: model.OrientationRecovered,
+				}},
+			},
+			{ID: "player-two"},
+		},
+	}
+	if !autoPass(base) {
+		t.Fatal("Lumielle with no enemy Servant should not keep empty Battle open")
+	}
+
+	gloryOnly := base
+	gloryOnly.Players[0].CasterZone = []simulatorview.CardView{{
+		MatchID:     "glory-1",
+		CardID:      "glory",
+		ShowFace:    true,
+		Orientation: model.OrientationRecovered,
+	}}
+	if !autoPass(gloryOnly) {
+		t.Fatal("Glory Butterfly with no allied Servant should not keep empty Battle open")
+	}
+
+	withEnemy := base
+	withEnemy.Players[1].ServantZone = []simulatorview.CardView{{
+		MatchID:     "enemy-s1",
+		CardID:      "enemy",
+		ShowFace:    true,
+		Orientation: model.OrientationRecovered,
+	}}
+	if autoPass(withEnemy) {
+		t.Fatal("Lumielle with an enemy Servant must keep Battle priority")
+	}
 }
 
 func TestShouldAutoPassPriorityStopsForQuickcastDuringChase(t *testing.T) {

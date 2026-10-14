@@ -8,6 +8,7 @@ export const MAX_INPUT_PIXELS = 25_000_000;
 const assetProfiles = Object.freeze({
   "tts-card-back": { minimumSide: 256, minimumRatio: 0.5, maximumRatio: 0.85 },
   "simulator-card-art": { minimumSide: 128, minimumRatio: 0.25, maximumRatio: 4 },
+  "simulator-caster-token": { minimumSide: 128, minimumRatio: 0.75, maximumRatio: 1.35 },
 });
 
 const acceptedFormats = new Set(["avif", "gif", "jpeg", "jpg", "png", "webp"]);
@@ -137,9 +138,13 @@ function validateProfile(kind, width, height) {
   }
   const ratio = width / height;
   if (ratio < profile.minimumRatio || ratio > profile.maximumRatio) {
-    return kind === "tts-card-back"
-      ? "A TTS card back must be a portrait image with a card-like aspect ratio."
-      : "The image aspect ratio is too extreme.";
+    if (kind === "tts-card-back") {
+      return "A TTS card back must be a portrait image with a card-like aspect ratio.";
+    }
+    if (kind === "simulator-caster-token") {
+      return "A caster token must be a near-square image.";
+    }
+    return "The image aspect ratio is too extreme.";
   }
   return "";
 }
@@ -251,7 +256,9 @@ export function createHandler({ fetchImpl = fetch } = {}) {
       if (url.pathname === "/api/v1/assets" && request.method === "POST") {
         return uploadAsset(request, env, fetchImpl);
       }
-      const assetMatch = url.pathname.match(/^\/assets\/(tts-card-back|simulator-card-art)\/([0-9a-f]{64})\.png$/);
+      const assetMatch = url.pathname.match(
+        /^\/assets\/(tts-card-back|simulator-card-art|simulator-caster-token)\/([0-9a-f]{64})\.png$/,
+      );
       if (assetMatch && (request.method === "GET" || request.method === "HEAD")) {
         return serveAsset(request, env, assetMatch);
       }

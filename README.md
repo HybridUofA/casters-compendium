@@ -30,8 +30,9 @@ explicitly authorized OpenAI assistance to implement the v0.3.2 networked
 playtest stack and Host/Join UI under maintainer direction, and later the
 v1.0.0 manual-playable simulator skeleton under the same review model, plus
 v1.1.0's Call / Level Up and priority playability fixes, v1.1.1's manual
-Aether adjust plus Hubris click-to-attack work, and v1.1.2's Arena-style
-priority auto-pass plus Hilde Willow Rest automation.
+Aether adjust plus Hubris click-to-attack work, v1.1.2's Arena-style
+priority auto-pass plus Hilde Willow Rest automation, and v1.2.0's effect
+automation plus Solo vs Tsubasa.
 
 ## Features
 
@@ -86,6 +87,15 @@ priority auto-pass plus Hilde Willow Rest automation.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v1.2.0
+
+- Catalog-backed Enter / Rest / Resolve automation for local hotseat, Solo, and
+  networked matches (local games now register the same effect handlers).
+- Main-menu **Solo vs Tsubasa**: play as Player One against a Passion Wing
+  persona on official DD01 Ignus.
+- Click Orb cards to corrupt after a player attack; Barriers no longer count as
+  mandatory attackers; empty Battle priority no longer soft-locks.
 
 ### What's new in v1.1.2
 
@@ -387,13 +397,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_1.1.2_amd64.deb
+sudo apt install ./casters-compendium_1.2.0_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-1.1.2-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-1.2.0-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

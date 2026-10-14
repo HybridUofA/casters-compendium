@@ -44,6 +44,7 @@ type CardTile struct {
 	OnDragUpdate        func(fyne.Position)
 	OnDragEnd           func()
 	dragStarted         bool
+	cardBackURL         string
 }
 
 var _ desktop.Hoverable = (*CardTile)(nil)
@@ -160,6 +161,8 @@ func (tile *CardTile) setSidewaysState(sideways bool) {
 	if tile.sidewaysImage == nil {
 		if tile.View.ShowFace {
 			tile.sidewaysImage = rotatedSimulatorCardImage(tile.Card, tile.uprightImage)
+		} else if tile.cardBackURL != "" {
+			tile.sidewaysImage = sidewaysCardBackImageForURL(tile.cardBackURL)
 		} else {
 			tile.sidewaysImage = sidewaysCardBackImage()
 		}

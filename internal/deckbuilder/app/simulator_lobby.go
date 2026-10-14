@@ -273,7 +273,7 @@ func joinLobbyAsPlayer(
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), networkCommandTimeout)
 	defer cancel()
-	joined, err := active.JoinRoom(ctx, roomCode, playerName, deck, password)
+	joined, err := active.JoinRoom(ctx, roomCode, playerName, deck, password, loadSimulatorCosmetics())
 	if err != nil {
 		fyne.Do(func() { dialog.ShowError(fmt.Errorf("join room: %w", err), window) })
 		return
@@ -379,7 +379,7 @@ func showPriorityPreferencesDialog(window fyne.Window) {
 	form := container.NewVBox(
 		widget.NewLabel("Arena-style priority control"),
 		modeSelect,
-		widget.NewLabel("Arena-style keeps Main/Battle for the turn player, auto-passes empty stacks, and only stops on Chase when you may have a non-main-timing response (Quickcast, field activated abilities, or a pending decision). Aether generation alone does not stop."),
+		widget.NewLabel("Arena-style keeps Main for the turn player, auto-skips empty Battle (no attack and no ability with a legal target), auto-passes empty stacks, and only stops on Chase when you may have a non-main-timing response (Quickcast, field activated abilities with legal targets, or a pending decision). Aether generation alone does not stop."),
 		widget.NewLabel("Stop phases (used when “except selected stop phases” is enabled):"),
 		recovery, draw, call, main, battle, end,
 	)
@@ -438,7 +438,8 @@ func shouldAutoPassPriorityForView(match simulatorview.MatchView) bool {
 // shouldAutoPassPriority decides whether the board should auto-pass for this
 // viewer-safe projection. Default Arena-style empty mode auto-passes empty
 // stacks and Chase priority when the viewer has no CR-legal non-main-timing
-// response; Main/Battle still pause for the turn player.
+// response; Main still pauses for the turn player. Empty Battle (no legal
+// attack and no activated ability with a legal target) auto-skips.
 //
 // Authority: CR 1.2 §§6.4, 7.1.2, 7.4, 9.7, 11.5 — outside main timing a player
 // with priority may pass, play activated abilities, or play Quickcast cards.
@@ -469,10 +470,14 @@ func shouldAutoPassPriority(
 			// Stop only when the viewer may have a non-main-timing response.
 			return !viewerHasNonMainTimingResponse(match, abilityOf)
 		}
-		// Empty Chase: leave Main/Battle with the turn player.
-		if match.Turn.ActivePlayer == match.ViewerID &&
-			(match.Turn.Phase == model.PhaseMain || match.Turn.Phase == model.PhaseBattle) {
+		// Empty Chase: leave Main with the turn player.
+		if match.Turn.ActivePlayer == match.ViewerID && match.Turn.Phase == model.PhaseMain {
 			return false
+		}
+		// Empty Battle: auto-pass when nothing legal can be done (no attackers,
+		// and Rest/activated lines that need missing targets do not count).
+		if match.Turn.ActivePlayer == match.ViewerID && match.Turn.Phase == model.PhaseBattle {
+			return !viewerHasUsableBattleAction(match, abilityOf)
 		}
 		return true
 	}
@@ -481,6 +486,8 @@ func shouldAutoPassPriority(
 // viewerHasNonMainTimingResponse reports whether the viewer may have a legal
 // action during Chase / non-main-timing priority (CR 6.4.1 + Quickcast).
 // Aether-only abilities are ignored so generated Aether does not force a stop.
+// Activated lines that need a missing target (e.g. Lumielle with no enemy
+// Servant, Glory Butterfly with no allied Servant) do not count.
 func viewerHasNonMainTimingResponse(
 	match simulatorview.MatchView,
 	abilityOf func(model.CardID) string,
@@ -505,11 +512,159 @@ func viewerHasNonMainTimingResponse(
 				if card.CardID == "" || !card.ShowFace {
 					continue
 				}
-				if cardHasNonMainTimingActivatedAbility(abilityOf(card.CardID), card.Orientation) {
+				if cardHasUsableActivatedAbility(abilityOf(card.CardID), card.Orientation, match) {
 					return true
 				}
 			}
 		}
+	}
+	return false
+}
+
+// viewerHasUsableBattleAction is true when the turn player can declare an
+// attack or activate a field ability that still has a legal target.
+func viewerHasUsableBattleAction(
+	match simulatorview.MatchView,
+	abilityOf func(model.CardID) string,
+) bool {
+	if viewerHasRecoveredAttacker(match) {
+		return true
+	}
+	if abilityOf == nil {
+		return false
+	}
+	for _, player := range match.Players {
+		if player.ID != match.ViewerID {
+			continue
+		}
+		for _, zone := range [][]simulatorview.CardView{player.CasterZone, player.ServantZone} {
+			for _, card := range zone {
+				if card.CardID == "" || !card.ShowFace {
+					continue
+				}
+				if cardHasUsableActivatedAbility(abilityOf(card.CardID), card.Orientation, match) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func viewerHasRecoveredAttacker(match simulatorview.MatchView) bool {
+	for _, player := range match.Players {
+		if player.ID != match.ViewerID {
+			continue
+		}
+		for _, card := range player.ServantZone {
+			if card.MatchID != "" && card.Orientation == model.OrientationRecovered {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// cardHasUsableActivatedAbility is like cardHasNonMainTimingActivatedAbility
+// but also skips Rest lines whose printed targets cannot exist right now.
+func cardHasUsableActivatedAbility(
+	ability string,
+	orientation model.CardOrientation,
+	match simulatorview.MatchView,
+) bool {
+	for _, line := range strings.Split(ability, "\n") {
+		trimmed := strings.TrimSpace(strings.TrimLeft(strings.TrimSpace(line), "•*-"))
+		if trimmed == "" {
+			continue
+		}
+		colon := strings.Index(trimmed, ":")
+		if colon <= 0 {
+			continue
+		}
+		cost := strings.TrimSpace(trimmed[:colon])
+		effect := strings.TrimSpace(trimmed[colon+1:])
+		if cost == "" || effect == "" {
+			continue
+		}
+		if label, ok := abilityKeywordLabelForAutoPass(line); ok {
+			if strings.EqualFold(label, "Quickcast") ||
+				strings.EqualFold(label, "Break") ||
+				strings.EqualFold(label, "Enter") ||
+				strings.EqualFold(label, "Last Words") ||
+				strings.EqualFold(label, "Unity") ||
+				strings.EqualFold(label, "United Front") ||
+				strings.EqualFold(label, "Slow Start") ||
+				strings.EqualFold(label, "Hubris") ||
+				strings.EqualFold(label, "Double Corrupt") ||
+				strings.EqualFold(label, "Triple Corrupt") {
+				continue
+			}
+		}
+		lowerEffect := strings.ToLower(effect)
+		if strings.Contains(lowerEffect, "only during main timing") ||
+			strings.Contains(lowerEffect, "only during your main") {
+			continue
+		}
+		if isAetherAbilityEffect(effect) {
+			continue
+		}
+		lowerCost := strings.ToLower(cost)
+		requiresRest := strings.Contains(lowerCost, "rest")
+		if requiresRest && orientation != model.OrientationRecovered {
+			continue
+		}
+		if !(requiresRest ||
+			strings.Contains(lowerCost, "banish") ||
+			strings.Contains(lowerCost, "discard") ||
+			strings.Contains(lowerCost, "return") ||
+			strings.Contains(lowerCost, "pay")) {
+			continue
+		}
+		if abilityEffectLacksLegalTarget(effect, match) {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+func abilityEffectLacksLegalTarget(effect string, match simulatorview.MatchView) bool {
+	lower := strings.ToLower(effect)
+	alliedServants := 0
+	enemyServants := 0
+	for _, player := range match.Players {
+		count := 0
+		for _, card := range player.ServantZone {
+			if card.MatchID != "" {
+				count++
+			}
+		}
+		if player.ID == match.ViewerID {
+			alliedServants = count
+		} else {
+			enemyServants = count
+		}
+	}
+	needsEnemy := strings.Contains(lower, "enemy servant") ||
+		strings.Contains(lower, "target enemy") ||
+		(strings.Contains(lower, "opponent") && strings.Contains(lower, "servant"))
+	needsAllied := strings.Contains(lower, "allied servant") ||
+		strings.Contains(lower, "target allied") ||
+		strings.Contains(lower, "allied {") ||
+		strings.Contains(lower, "an allied servant")
+	// Glory Butterfly style: "Target allied servant gains…"
+	if !needsAllied && strings.Contains(lower, "target") && strings.Contains(lower, "servant") &&
+		!needsEnemy && (strings.Contains(lower, "gains") || strings.Contains(lower, "gain ")) {
+		// Ambiguous "target servant" buffs usually mean allied when Rest on own caster.
+		if !strings.Contains(lower, "enemy") {
+			needsAllied = true
+		}
+	}
+	if needsEnemy && enemyServants == 0 {
+		return true
+	}
+	if needsAllied && alliedServants == 0 {
+		return true
 	}
 	return false
 }
@@ -544,61 +699,11 @@ func abilityKeywordLabelForAutoPass(line string) (string, bool) {
 }
 
 // cardHasNonMainTimingActivatedAbility detects printable activated abilities
-// that remain legal outside main timing (CR 6.4.1.a / 7.4). It skips aether
-// abilities (CR 9.7) and lines restricted to main timing.
+// that remain legal outside main timing (CR 6.4.1.a / 7.4). Prefer
+// cardHasUsableActivatedAbility when a MatchView is available so missing
+// targets (Lumielle / Glory Butterfly) do not falsely stop priority.
 func cardHasNonMainTimingActivatedAbility(ability string, orientation model.CardOrientation) bool {
-	for _, line := range strings.Split(ability, "\n") {
-		trimmed := strings.TrimSpace(strings.TrimLeft(strings.TrimSpace(line), "•*-"))
-		if trimmed == "" {
-			continue
-		}
-		colon := strings.Index(trimmed, ":")
-		if colon <= 0 {
-			continue
-		}
-		cost := strings.TrimSpace(trimmed[:colon])
-		effect := strings.TrimSpace(trimmed[colon+1:])
-		if cost == "" || effect == "" {
-			continue
-		}
-		// Keyword reminder lines like "Quickcast (...):" are not activated abilities.
-		if label, ok := abilityKeywordLabelForAutoPass(line); ok {
-			if strings.EqualFold(label, "Quickcast") ||
-				strings.EqualFold(label, "Break") ||
-				strings.EqualFold(label, "Enter") ||
-				strings.EqualFold(label, "Last Words") ||
-				strings.EqualFold(label, "Unity") ||
-				strings.EqualFold(label, "United Front") ||
-				strings.EqualFold(label, "Slow Start") ||
-				strings.EqualFold(label, "Hubris") ||
-				strings.EqualFold(label, "Double Corrupt") ||
-				strings.EqualFold(label, "Triple Corrupt") {
-				continue
-			}
-		}
-		lowerEffect := strings.ToLower(effect)
-		if strings.Contains(lowerEffect, "only during main timing") ||
-			strings.Contains(lowerEffect, "only during your main") {
-			continue
-		}
-		if isAetherAbilityEffect(effect) {
-			continue
-		}
-		lowerCost := strings.ToLower(cost)
-		requiresRest := strings.Contains(lowerCost, "rest")
-		if requiresRest && orientation != model.OrientationRecovered {
-			continue
-		}
-		// Heuristic: treat Rest / Banish / Discard cost lines as activated.
-		if requiresRest ||
-			strings.Contains(lowerCost, "banish") ||
-			strings.Contains(lowerCost, "discard") ||
-			strings.Contains(lowerCost, "return") ||
-			strings.Contains(lowerCost, "pay") {
-			return true
-		}
-	}
-	return false
+	return cardHasUsableActivatedAbility(ability, orientation, simulatorview.MatchView{})
 }
 
 func isAetherAbilityEffect(effect string) bool {
