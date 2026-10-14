@@ -29,8 +29,9 @@ v0.1.8-hotfix.2's card-art recovery fix. The statement also records that Hybrid
 explicitly authorized OpenAI assistance to implement the v0.3.2 networked
 playtest stack and Host/Join UI under maintainer direction, and later the
 v1.0.0 manual-playable simulator skeleton under the same review model, plus
-v1.1.0's Call / Level Up and priority playability fixes, and v1.1.1's manual
-Aether adjust plus Hubris click-to-attack work.
+v1.1.0's Call / Level Up and priority playability fixes, v1.1.1's manual
+Aether adjust plus Hubris click-to-attack work, and v1.1.2's Arena-style
+priority auto-pass plus Hilde Willow Rest automation.
 
 ## Features
 
@@ -85,6 +86,14 @@ Aether adjust plus Hubris click-to-attack work.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v1.1.2
+
+- Arena-style auto-pass: skip empty Chase priority unless you have Quickcast or
+  a non-aether activated ability (or a pending decision).
+- Hilde Willow Rest ability: peek the enemy deck top and optionally put it on
+  the bottom while holding priority.
+- PendingChoice prompt framework for future Enter / Last Words automation.
 
 ### What's new in v1.1.1
 
@@ -378,13 +387,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_1.1.1_amd64.deb
+sudo apt install ./casters-compendium_1.1.2_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-1.1.1-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-1.1.2-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

@@ -283,3 +283,15 @@ and remains responsible for acceptance and publication.
 Under that authorization, Cursor assistance implemented AdjustAether through
 engine/session/nethost/UI, battle click targeting and printed Hubris checks,
 tests, transparency updates, and release metadata under maintainer review.
+
+## Disclosed v1.1.2 assistance
+
+Hybrid directed the v1.1.2 automation and priority-UX pass (Arena-style
+auto-pass using Quickcast and non-aether activated abilities, PendingChoice
+prompt scaffolding, Hilde Willow Rest peek/bottom, and shipping as a patch
+release) and remains responsible for acceptance and publication.
+
+Under that authorization, Cursor assistance implemented auto-pass heuristics,
+PendingChoice model/view/session/nethost/UI, Hilde Willow activation, the
+effects registry stub, tests, transparency updates, and release metadata under
+maintainer review.

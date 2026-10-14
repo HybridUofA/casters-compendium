@@ -1642,7 +1642,7 @@ func showApplication(
 									cardDefinitions,
 									simulatorui.BoardActions{
 										BackLabel:              backLabel,
-										ShouldAutoPassPriority: shouldAutoPassPriorityForView,
+										ShouldAutoPassPriority: makeShouldAutoPassPriority(cardDefinitions),
 										UseCasterToken: func(
 											tokenID model.MatchCardID,
 											expectedRevision model.Revision,
@@ -1843,6 +1843,26 @@ func showApplication(
 											}
 											scheduleBoardRefresh(playerIndex, updatedView)
 										},
+										ActivateHildeWillow: func(
+											cardID model.MatchCardID,
+											expectedRevision model.Revision,
+											done func(simulatorview.CardView, model.PlayerID, error),
+										) {
+											peeked, enemyID, updatedView, activateErr := playerSessions[playerIndex].ActivateHildeWillow(
+												cardID,
+												expectedRevision,
+											)
+											if activateErr != nil {
+												if done != nil {
+													done(simulatorview.CardView{}, "", activateErr)
+												}
+												return
+											}
+											scheduleBoardRefresh(playerIndex, updatedView)
+											if done != nil {
+												done(peeked, enemyID, nil)
+											}
+										},
 										ResolveDeckDig: func(
 											keep model.MatchCardID,
 											bottomOrder []model.MatchCardID,
@@ -1931,6 +1951,32 @@ func showApplication(
 										},
 										DeclineBreak: func(expectedRevision model.Revision) {
 											updatedView, declineErr := playerSessions[playerIndex].DeclineBreak(
+												expectedRevision,
+											)
+											if declineErr != nil {
+												dialog.ShowError(declineErr, playerWindows[playerIndex])
+												return
+											}
+											scheduleBoardRefresh(playerIndex, updatedView)
+										},
+										ResolvePendingChoice: func(
+											optionID string,
+											selectedCardIDs []model.MatchCardID,
+											expectedRevision model.Revision,
+										) {
+											updatedView, resolveErr := playerSessions[playerIndex].ResolvePendingChoice(
+												optionID,
+												selectedCardIDs,
+												expectedRevision,
+											)
+											if resolveErr != nil {
+												dialog.ShowError(resolveErr, playerWindows[playerIndex])
+												return
+											}
+											scheduleBoardRefresh(playerIndex, updatedView)
+										},
+										DeclinePendingChoice: func(expectedRevision model.Revision) {
+											updatedView, declineErr := playerSessions[playerIndex].DeclinePendingChoice(
 												expectedRevision,
 											)
 											if declineErr != nil {

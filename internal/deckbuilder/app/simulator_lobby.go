@@ -23,8 +23,10 @@ const (
 	networkStopPhasesPreferenceKey   = "network.stop_phases"
 	priorityModeFull                 = "full"
 	priorityModeStops                = "stops"
-	// priorityModeEmpty auto-passes empty priority stacks and stops when a Chase
-	// starts. Main/Battle still pause for the turn player so they can act.
+	// priorityModeEmpty is Arena-style: auto-pass empty priority and Chase
+	// priority when the viewer has no non-main-timing response (Quickcast or
+	// non-aether activated abilities). Main/Battle still pause for the turn
+	// player. Aether abilities alone do not stop (CR 9.7 / Arena mana analogue).
 	priorityModeEmpty = "empty"
 )
 
@@ -339,7 +341,7 @@ func showPriorityPreferencesDialog(window fyne.Window) {
 	stops := prefs.StringWithFallback(networkStopPhasesPreferenceKey, "Main,Battle")
 
 	const (
-		labelEmpty = "Auto-pass empty priority (stop when Chase starts)"
+		labelEmpty = "Arena-style: auto-pass unless you can act or must decide"
 		labelStops = "Auto-pass except selected stop phases"
 		labelFull  = "Full control (stop every priority)"
 	)
@@ -377,7 +379,7 @@ func showPriorityPreferencesDialog(window fyne.Window) {
 	form := container.NewVBox(
 		widget.NewLabel("Arena-style priority control"),
 		modeSelect,
-		widget.NewLabel("Empty-priority mode keeps Main/Battle for the turn player so they can cast or attack. Chase links always require a manual pass."),
+		widget.NewLabel("Arena-style keeps Main/Battle for the turn player, auto-passes empty stacks, and only stops on Chase when you may have a non-main-timing response (Quickcast, field activated abilities, or a pending decision). Aether generation alone does not stop."),
 		widget.NewLabel("Stop phases (used when “except selected stop phases” is enabled):"),
 		recovery, draw, call, main, battle, end,
 	)
@@ -413,18 +415,46 @@ func roomMatchesSearch(room protocol.RoomSummary, query string) bool {
 	return false
 }
 
-// shouldAutoPassPriorityForView decides whether the board should auto-pass for
-// this viewer-safe projection. Default is empty-stack auto-pass until a Chase
-// starts; Main/Battle still pause for the turn player.
+// makeShouldAutoPassPriority returns Arena-style auto-pass using printed
+// ability text to detect CR-legal non-main-timing responses during Chase.
+func makeShouldAutoPassPriority(definitions []cards.Card) func(simulatorview.MatchView) bool {
+	abilityByID := make(map[model.CardID]string, len(definitions))
+	for _, definition := range definitions {
+		abilityByID[model.CardID(definition.ID)] = definition.Ability
+	}
+	return func(match simulatorview.MatchView) bool {
+		return shouldAutoPassPriority(match, func(id model.CardID) string {
+			return abilityByID[id]
+		})
+	}
+}
+
+// shouldAutoPassPriorityForView is the catalog-free default used when
+// definitions are unavailable. Chase with unknown abilities auto-passes.
 func shouldAutoPassPriorityForView(match simulatorview.MatchView) bool {
+	return shouldAutoPassPriority(match, nil)
+}
+
+// shouldAutoPassPriority decides whether the board should auto-pass for this
+// viewer-safe projection. Default Arena-style empty mode auto-passes empty
+// stacks and Chase priority when the viewer has no CR-legal non-main-timing
+// response; Main/Battle still pause for the turn player.
+//
+// Authority: CR 1.2 §§6.4, 7.1.2, 7.4, 9.7, 11.5 — outside main timing a player
+// with priority may pass, play activated abilities, or play Quickcast cards.
+// Servant/Conjure/Barrier plays without Quickcast require main timing.
+func shouldAutoPassPriority(
+	match simulatorview.MatchView,
+	abilityOf func(model.CardID) string,
+) bool {
 	if match.Spectator ||
 		match.MatchStatus != model.StatusInProgress ||
 		!match.PrioritySequenceOpen ||
 		match.PriorityHolder != match.ViewerID ||
-		match.ChaseLinkCount > 0 ||
 		match.Attack.Step != model.BattleStepIdle ||
 		match.PendingDraw.Step != "" ||
-		match.PendingBreak.PlayerID != "" {
+		match.PendingBreak.PlayerID != "" ||
+		match.PendingChoice.PlayerID != "" {
 		return false
 	}
 	prefs := fyne.CurrentApp().Preferences()
@@ -435,13 +465,145 @@ func shouldAutoPassPriorityForView(match simulatorview.MatchView) bool {
 	case priorityModeStops:
 		return !phaseIsConfiguredStop(string(match.Turn.Phase), prefs.StringWithFallback(networkStopPhasesPreferenceKey, "Main,Battle"))
 	default:
-		// Empty-chase default: leave Main/Battle with the turn player.
+		if match.ChaseLinkCount > 0 {
+			// Stop only when the viewer may have a non-main-timing response.
+			return !viewerHasNonMainTimingResponse(match, abilityOf)
+		}
+		// Empty Chase: leave Main/Battle with the turn player.
 		if match.Turn.ActivePlayer == match.ViewerID &&
 			(match.Turn.Phase == model.PhaseMain || match.Turn.Phase == model.PhaseBattle) {
 			return false
 		}
 		return true
 	}
+}
+
+// viewerHasNonMainTimingResponse reports whether the viewer may have a legal
+// action during Chase / non-main-timing priority (CR 6.4.1 + Quickcast).
+// Aether-only abilities are ignored so generated Aether does not force a stop.
+func viewerHasNonMainTimingResponse(
+	match simulatorview.MatchView,
+	abilityOf func(model.CardID) string,
+) bool {
+	if abilityOf == nil {
+		return false
+	}
+	for _, player := range match.Players {
+		if player.ID != match.ViewerID {
+			continue
+		}
+		for _, card := range player.Hand {
+			if card.CardID == "" {
+				continue
+			}
+			if cardDeclaresQuickcastAbility(abilityOf(card.CardID)) {
+				return true
+			}
+		}
+		for _, zone := range [][]simulatorview.CardView{player.CasterZone, player.ServantZone} {
+			for _, card := range zone {
+				if card.CardID == "" || !card.ShowFace {
+					continue
+				}
+				if cardHasNonMainTimingActivatedAbility(abilityOf(card.CardID), card.Orientation) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func cardDeclaresQuickcastAbility(ability string) bool {
+	for _, line := range strings.Split(ability, "\n") {
+		label, ok := abilityKeywordLabelForAutoPass(line)
+		if ok && strings.EqualFold(label, "Quickcast") {
+			return true
+		}
+	}
+	return false
+}
+
+func abilityKeywordLabelForAutoPass(line string) (string, bool) {
+	trimmed := strings.TrimSpace(strings.TrimLeft(strings.TrimSpace(line), "•*-"))
+	if trimmed == "" {
+		return "", false
+	}
+	if strings.HasPrefix(trimmed, "[") {
+		if closing := strings.IndexRune(trimmed, ']'); closing > 1 {
+			return strings.TrimSpace(trimmed[1:closing]), true
+		}
+	}
+	if separator := strings.IndexAny(trimmed, "(:,→"); separator >= 0 {
+		return strings.TrimSpace(trimmed[:separator]), true
+	}
+	if strings.ContainsAny(trimmed, ".!?;") {
+		return "", false
+	}
+	return strings.TrimSpace(trimmed), true
+}
+
+// cardHasNonMainTimingActivatedAbility detects printable activated abilities
+// that remain legal outside main timing (CR 6.4.1.a / 7.4). It skips aether
+// abilities (CR 9.7) and lines restricted to main timing.
+func cardHasNonMainTimingActivatedAbility(ability string, orientation model.CardOrientation) bool {
+	for _, line := range strings.Split(ability, "\n") {
+		trimmed := strings.TrimSpace(strings.TrimLeft(strings.TrimSpace(line), "•*-"))
+		if trimmed == "" {
+			continue
+		}
+		colon := strings.Index(trimmed, ":")
+		if colon <= 0 {
+			continue
+		}
+		cost := strings.TrimSpace(trimmed[:colon])
+		effect := strings.TrimSpace(trimmed[colon+1:])
+		if cost == "" || effect == "" {
+			continue
+		}
+		// Keyword reminder lines like "Quickcast (...):" are not activated abilities.
+		if label, ok := abilityKeywordLabelForAutoPass(line); ok {
+			if strings.EqualFold(label, "Quickcast") ||
+				strings.EqualFold(label, "Break") ||
+				strings.EqualFold(label, "Enter") ||
+				strings.EqualFold(label, "Last Words") ||
+				strings.EqualFold(label, "Unity") ||
+				strings.EqualFold(label, "United Front") ||
+				strings.EqualFold(label, "Slow Start") ||
+				strings.EqualFold(label, "Hubris") ||
+				strings.EqualFold(label, "Double Corrupt") ||
+				strings.EqualFold(label, "Triple Corrupt") {
+				continue
+			}
+		}
+		lowerEffect := strings.ToLower(effect)
+		if strings.Contains(lowerEffect, "only during main timing") ||
+			strings.Contains(lowerEffect, "only during your main") {
+			continue
+		}
+		if isAetherAbilityEffect(effect) {
+			continue
+		}
+		lowerCost := strings.ToLower(cost)
+		requiresRest := strings.Contains(lowerCost, "rest")
+		if requiresRest && orientation != model.OrientationRecovered {
+			continue
+		}
+		// Heuristic: treat Rest / Banish / Discard cost lines as activated.
+		if requiresRest ||
+			strings.Contains(lowerCost, "banish") ||
+			strings.Contains(lowerCost, "discard") ||
+			strings.Contains(lowerCost, "return") ||
+			strings.Contains(lowerCost, "pay") {
+			return true
+		}
+	}
+	return false
+}
+
+func isAetherAbilityEffect(effect string) bool {
+	lower := strings.ToLower(effect)
+	return strings.Contains(lower, "produce") && strings.Contains(lower, "aether")
 }
 
 func phaseIsConfiguredStop(matchPhase, stopsCSV string) bool {

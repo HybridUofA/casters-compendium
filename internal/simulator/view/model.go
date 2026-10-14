@@ -21,6 +21,7 @@ type MatchView struct {
 	Attack               model.AttackState
 	PendingDraw          model.PendingDraw
 	PendingBreak         model.PendingBreak
+	PendingChoice        model.PendingChoice
 	Result               model.MatchResult
 	// DisplayNames maps seat/spectator IDs to lobby display names when known.
 	DisplayNames map[model.PlayerID]string

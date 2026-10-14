@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/fyne/v2/test"
 
+	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/protocol"
 	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
@@ -54,8 +55,8 @@ func TestShouldAutoPassPriorityForViewDefaultsToEmptyChase(t *testing.T) {
 
 	withChase := base
 	withChase.ChaseLinkCount = 1
-	if shouldAutoPassPriorityForView(withChase) {
-		t.Fatal("default empty mode must not auto-pass after a Chase starts")
+	if !shouldAutoPassPriorityForView(withChase) {
+		t.Fatal("default empty mode should auto-pass Chase when no response is known")
 	}
 
 	mainTurn := base
@@ -68,6 +69,183 @@ func TestShouldAutoPassPriorityForViewDefaultsToEmptyChase(t *testing.T) {
 	mainOpponent.Turn.ActivePlayer = "player-two"
 	if !shouldAutoPassPriorityForView(mainOpponent) {
 		t.Fatal("default empty mode should auto-pass Main for the non-turn player")
+	}
+}
+
+func TestShouldAutoPassPriorityStopsForQuickcastDuringChase(t *testing.T) {
+	application := test.NewApp()
+	t.Cleanup(application.Quit)
+	prefs := application.Preferences()
+	prefs.SetString(networkPriorityModePreferenceKey, priorityModeEmpty)
+
+	autoPass := makeShouldAutoPassPriority([]cards.Card{
+		{
+			ID:      "quick-def",
+			Name:    "Quick Spell",
+			Type:    "Conjure",
+			Ability: "• Quickcast (You may play this card any time you have priority.)\n• Draw a card.",
+		},
+		{
+			ID:      "slow-def",
+			Name:    "Slow Spell",
+			Type:    "Conjure",
+			Ability: "• Draw a card.",
+		},
+	})
+
+	base := simulatorview.MatchView{
+		ViewerID:             "player-one",
+		MatchStatus:          model.StatusInProgress,
+		PrioritySequenceOpen: true,
+		PriorityHolder:       "player-one",
+		ChaseLinkCount:       1,
+		Turn: model.TurnState{
+			ActivePlayer: "player-two",
+			Phase:        model.PhaseMain,
+		},
+		Players: [2]simulatorview.PlayerView{
+			{
+				ID: "player-one",
+				Hand: []simulatorview.CardView{
+					{MatchID: "hand-1", CardID: "slow-def", ShowFace: true},
+				},
+			},
+			{ID: "player-two"},
+		},
+	}
+	if !autoPass(base) {
+		t.Fatal("Chase with only non-Quickcast hand should auto-pass")
+	}
+
+	withQuickcast := base
+	withQuickcast.Players[0].Hand = []simulatorview.CardView{
+		{MatchID: "hand-1", CardID: "quick-def", ShowFace: true},
+	}
+	if autoPass(withQuickcast) {
+		t.Fatal("Chase with Quickcast in hand must not auto-pass")
+	}
+}
+
+func TestShouldAutoPassPriorityStopsForActivatedAbilityDuringChase(t *testing.T) {
+	application := test.NewApp()
+	t.Cleanup(application.Quit)
+	prefs := application.Preferences()
+	prefs.SetString(networkPriorityModePreferenceKey, priorityModeEmpty)
+
+	autoPass := makeShouldAutoPassPriority([]cards.Card{
+		{
+			ID:      "hilde",
+			Name:    "Hilde Willow",
+			Type:    "Caster",
+			Ability: "• Rest: Look at the top card of an enemy deck. You may put that card on the bottom of that enemy deck.",
+		},
+		{
+			ID:      "aether-only",
+			Name:    "Sheer Gray",
+			Type:    "Caster",
+			Ability: "• Rest: Produce one aether of any element. Spend this aether only to play [Talent] cards.",
+		},
+		{
+			ID:      "main-only",
+			Name:    "Citra Piece",
+			Type:    "Caster",
+			Ability: "• Rest, banish a \"Citra Cayce\" from my Stock: Search your deck. Play this ability only during main timing.",
+		},
+	})
+
+	base := simulatorview.MatchView{
+		ViewerID:             "player-one",
+		MatchStatus:          model.StatusInProgress,
+		PrioritySequenceOpen: true,
+		PriorityHolder:       "player-one",
+		ChaseLinkCount:       1,
+		Turn: model.TurnState{
+			ActivePlayer: "player-two",
+			Phase:        model.PhaseMain,
+		},
+		Players: [2]simulatorview.PlayerView{
+			{ID: "player-one"},
+			{ID: "player-two"},
+		},
+	}
+
+	withRestAbility := base
+	withRestAbility.Players[0].CasterZone = []simulatorview.CardView{{
+		MatchID:     "hilde-1",
+		CardID:      "hilde",
+		ShowFace:    true,
+		Orientation: model.OrientationRecovered,
+	}}
+	if autoPass(withRestAbility) {
+		t.Fatal("Chase with recovered Rest activated ability must not auto-pass")
+	}
+
+	rested := withRestAbility
+	rested.Players[0].CasterZone[0].Orientation = model.OrientationRested
+	if !autoPass(rested) {
+		t.Fatal("Chase with only a rested Rest ability should auto-pass")
+	}
+
+	aetherOnly := base
+	aetherOnly.Players[0].CasterZone = []simulatorview.CardView{{
+		MatchID:     "sheer-1",
+		CardID:      "aether-only",
+		ShowFace:    true,
+		Orientation: model.OrientationRecovered,
+	}}
+	if !autoPass(aetherOnly) {
+		t.Fatal("Chase with only an aether ability should auto-pass")
+	}
+
+	mainOnly := base
+	mainOnly.Players[0].CasterZone = []simulatorview.CardView{{
+		MatchID:     "citra-1",
+		CardID:      "main-only",
+		ShowFace:    true,
+		Orientation: model.OrientationRecovered,
+	}}
+	if !autoPass(mainOnly) {
+		t.Fatal("Chase with only a main-timing-restricted ability should auto-pass")
+	}
+}
+
+func TestShouldAutoPassPriorityStopsForPendingDecisions(t *testing.T) {
+	application := test.NewApp()
+	t.Cleanup(application.Quit)
+	prefs := application.Preferences()
+	prefs.SetString(networkPriorityModePreferenceKey, priorityModeEmpty)
+
+	base := simulatorview.MatchView{
+		ViewerID:             "player-one",
+		MatchStatus:          model.StatusInProgress,
+		PrioritySequenceOpen: true,
+		PriorityHolder:       "player-one",
+		Turn: model.TurnState{
+			ActivePlayer: "player-two",
+			Phase:        model.PhaseMain,
+		},
+	}
+	if !shouldAutoPassPriorityForView(base) {
+		t.Fatal("empty opponent Main should auto-pass")
+	}
+
+	withBreak := base
+	withBreak.PendingBreak.PlayerID = "player-one"
+	if shouldAutoPassPriorityForView(withBreak) {
+		t.Fatal("PendingBreak must not auto-pass")
+	}
+
+	withDraw := base
+	withDraw.PendingDraw.Step = model.PendingDrawOffer
+	withDraw.PendingDraw.PlayerID = "player-one"
+	if shouldAutoPassPriorityForView(withDraw) {
+		t.Fatal("PendingDraw must not auto-pass")
+	}
+
+	withChoice := base
+	withChoice.PendingChoice.PlayerID = "player-one"
+	if shouldAutoPassPriorityForView(withChoice) {
+		t.Fatal("PendingChoice must not auto-pass")
 	}
 }
 
@@ -100,5 +278,17 @@ func TestShouldAutoPassPriorityForViewHonorsFullAndStopsModes(t *testing.T) {
 	match.Turn.Phase = model.PhaseMain
 	if shouldAutoPassPriorityForView(match) {
 		t.Fatal("stops mode must not auto-pass configured Main stop")
+	}
+}
+
+func TestCardDeclaresQuickcastAbility(t *testing.T) {
+	if !cardDeclaresQuickcastAbility("• Quickcast (You may play this card any time you have priority.)\n• Draw a card.") {
+		t.Fatal("expected Quickcast reminder text to match")
+	}
+	if !cardDeclaresQuickcastAbility("• Quickcast\n• Draw a card.") {
+		t.Fatal("expected bare Quickcast label to match")
+	}
+	if cardDeclaresQuickcastAbility("• Cards you control lose Quickcast.") {
+		t.Fatal("prose mentioning Quickcast must not count as declaring it")
 	}
 }

@@ -167,6 +167,9 @@ type MatchState struct {
 	// CardIDs[0] is the card currently offered; the owner may Use or Decline
 	// each entry in order (multi-corrupt queues several at once).
 	PendingBreak PendingBreak
+	// PendingChoice is a generic decision prompt for Hybrid-owned effects
+	// (Enter targets, Last Words modes, optional responses, etc.).
+	PendingChoice PendingChoice
 	// KnownCards records MatchCardIDs whose faces a player has seen and should
 	// keep seeing while those cards remain in a hidden zone (e.g. peeked Orbs).
 	KnownCards map[PlayerID]map[MatchCardID]struct{}
@@ -192,6 +195,23 @@ type PendingDraw struct {
 	PlayerID  PlayerID
 	Remaining int
 	Step      PendingDrawStep
+}
+
+// PendingChoiceOption is one labeled mode for a PendingChoice.
+type PendingChoiceOption struct {
+	ID    string
+	Label string
+}
+
+// PendingChoice is a reusable decision opened by engine/effects code. Hybrid
+// owns Kind semantics and resolution side effects; UI presents Prompt/Options.
+type PendingChoice struct {
+	PlayerID          PlayerID
+	Kind              string
+	Prompt            string
+	AllowDecline      bool
+	Options           []PendingChoiceOption
+	SelectableCardIDs []MatchCardID
 }
 
 type TurnState struct {
