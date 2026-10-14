@@ -292,6 +292,36 @@ func TestAetherPoolsLiveBelowDescriptionAndUpdateWithoutRebuildingFields(t *test
 	}
 }
 
+func TestBoardUsesDisplayNamesForFieldAndAetherLabels(t *testing.T) {
+	match := testMatchView()
+	match.DisplayNames = map[model.PlayerID]string{
+		"player-one": "Hybrid",
+		"player-two": "Alex",
+	}
+	controller := NewBoardController(match, testDefinitions(), BoardActions{}, nil)
+
+	if !containsText(controller.Content(), "Player Field — Hybrid") ||
+		!containsText(controller.Content(), "Opponent Field — Alex") {
+		t.Fatal("field headers did not use lobby display names")
+	}
+	if !containsText(controller.aetherPools, "You — Hybrid") ||
+		!containsText(controller.aetherPools, "Opponent — Alex") {
+		t.Fatal("Aether pool headings did not use lobby display names")
+	}
+
+	updated := match
+	updated.DisplayNames = map[model.PlayerID]string{
+		"player-one": "Hybrid",
+		"player-two": "Sam",
+	}
+	updated.Revision++
+	controller.Update(updated)
+	if !containsText(controller.Content(), "Opponent Field — Sam") ||
+		!containsText(controller.aetherPools, "Opponent — Sam") {
+		t.Fatal("display-name update did not refresh field/Aether labels")
+	}
+}
+
 func TestAetherPoolRenderingOnlyIncludesPositiveTypes(t *testing.T) {
 	pool := model.AetherPool{
 		Aes:          2,
@@ -1102,6 +1132,121 @@ func TestSageAdvicePanelOffersUseAndDecline(t *testing.T) {
 	test.Tap(draw)
 	if declined != 77 {
 		t.Fatalf("DeclineDrawReplacement revision = %d; want 77", declined)
+	}
+}
+
+func TestHildeWillowAbilityActivationWiresPeek(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.PrioritySequenceOpen = true
+	match.PriorityHolder = match.ViewerID
+	match.Revision = 9
+	match.Players[0].ID = match.ViewerID
+	match.Players[0].CasterZone = []simulatorview.CardView{{
+		MatchID:     "hilde-1",
+		CardID:      "hilde-def",
+		Face:        model.CardFaceUp,
+		ShowFace:    true,
+		Orientation: model.OrientationRecovered,
+	}}
+	match.Players[1].ID = "player-two"
+	match.Players[1].DeckCount = 3
+
+	var activated model.MatchCardID
+	var peekedOwner model.PlayerID
+	controller := NewBoardController(
+		match,
+		[]cards.Card{{
+			ID:      "hilde-def",
+			Name:    "Hilde Willow",
+			Type:    "Caster",
+			Ability: "• Rest: Look at the top card of an enemy deck. You may put that card on the bottom of that enemy deck.",
+		}},
+		BoardActions{
+			GenerateCasterAether: func(model.MatchCardID, model.Revision) {},
+			ActivateHildeWillow: func(
+				cardID model.MatchCardID,
+				revision model.Revision,
+				done func(simulatorview.CardView, model.PlayerID, error),
+			) {
+				activated = cardID
+				_ = revision
+				if done != nil {
+					done(simulatorview.CardView{
+						MatchID:  "enemy-top",
+						CardID:   "hilde-def",
+						ShowFace: true,
+					}, "player-two", nil)
+				}
+			},
+			MoveDeckTopToBottom: func(ownerID model.PlayerID, revision model.Revision) {
+				peekedOwner = ownerID
+				_ = revision
+			},
+		},
+		nil,
+	)
+	window := test.NewWindow(controller.Content())
+	defer window.Close()
+
+	viewerBoard := controller.playerBoards[1]
+	tiles := collectCardTiles(viewerBoard.caster)
+	if len(tiles) == 0 || tiles[0].OnActivate == nil {
+		t.Fatal("Hilde Willow tile should be activatable")
+	}
+	if !canViewerActivateHildeWillow(controller.match) || !cardIsHildeWillow(controller.definitions["hilde-def"]) {
+		t.Fatal("viewer should be able to activate Hilde Willow")
+	}
+	controller.beginHildeWillowAbility("hilde-1", 9)
+	if activated != "hilde-1" {
+		t.Fatalf("ActivateHildeWillow card = %q; want hilde-1", activated)
+	}
+	if len(window.Canvas().Overlays().List()) == 0 {
+		t.Fatal("expected Hilde peek dialog overlay after activation")
+	}
+	_ = peekedOwner
+}
+
+func TestPendingChoicePanelOffersOptionsAndDecline(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 88
+	match.PendingChoice = model.PendingChoice{
+		PlayerID:     match.ViewerID,
+		Kind:         "test_prompt",
+		Prompt:       "Choose a mode.",
+		AllowDecline: true,
+		Options: []model.PendingChoiceOption{
+			{ID: "a", Label: "Mode A"},
+			{ID: "b", Label: "Mode B"},
+		},
+	}
+	var resolvedOption string
+	var declined model.Revision
+	controller := NewBoardController(
+		match,
+		testDefinitions(),
+		BoardActions{
+			ResolvePendingChoice: func(optionID string, _ []model.MatchCardID, revision model.Revision) {
+				resolvedOption = optionID
+				_ = revision
+			},
+			DeclinePendingChoice: func(revision model.Revision) { declined = revision },
+		},
+		nil,
+	)
+	modeA := findButton(controller.Content(), "Mode A")
+	decline := findButton(controller.Content(), "Decline")
+	if modeA == nil || decline == nil {
+		t.Fatal("PendingChoice panel buttons missing")
+	}
+	test.Tap(modeA)
+	if resolvedOption != "a" {
+		t.Fatalf("ResolvePendingChoice option = %q; want a", resolvedOption)
+	}
+	test.Tap(decline)
+	if declined != 88 {
+		t.Fatalf("DeclinePendingChoice revision = %d; want 88", declined)
 	}
 }
 

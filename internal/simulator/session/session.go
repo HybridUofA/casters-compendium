@@ -131,6 +131,50 @@ func (session *PlayerSession) PeekDeckTops(
 	return peeked, matchView, nil
 }
 
+// ActivateHildeWillow rests Hilde Willow and returns a private peek of the
+// enemy deck top for the optional put-on-bottom choice.
+func (session *PlayerSession) ActivateHildeWillow(
+	cardID model.MatchCardID,
+	expectedRevision model.Revision,
+) (peeked view.CardView, enemyID model.PlayerID, matchView view.MatchView, err error) {
+	if session == nil || session.match == nil {
+		return view.CardView{}, "", view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	enemyID, err = engine.ActivateHildeWillow(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		expectedRevision,
+	)
+	if err != nil {
+		return view.CardView{}, "", view.MatchView{}, fmt.Errorf("activate hilde willow: %w", err)
+	}
+	tops, err := engine.PeekDeckTops(&session.match.state, enemyID, 1)
+	if err != nil {
+		return view.CardView{}, "", view.MatchView{}, fmt.Errorf("activate hilde willow peek: %w", err)
+	}
+	instance, exists := session.match.state.CardInstances[tops[0]]
+	if !exists {
+		return view.CardView{}, "", view.MatchView{}, fmt.Errorf("activate hilde willow peek: card %q missing", tops[0])
+	}
+	peeked = view.CardView{
+		MatchID:  tops[0],
+		CardID:   instance.CardID,
+		Face:     model.CardFaceDown,
+		ShowFace: true,
+		Owner:    instance.Owner,
+		HasStock: len(instance.Stock) > 0,
+	}
+	matchView, err = view.ProjectMatch(session.match.state, session.playerID)
+	if err != nil {
+		return view.CardView{}, "", view.MatchView{}, err
+	}
+	return peeked, enemyID, matchView, nil
+}
+
 // MoveDeckTopToBottom puts the top card of deckOwner's deck on the bottom.
 func (session *PlayerSession) MoveDeckTopToBottom(
 	deckOwnerID model.PlayerID,
@@ -850,6 +894,44 @@ func (session *PlayerSession) DeclineBreak(
 	defer session.match.mu.Unlock()
 	if err := engine.DeclineBreak(&session.match.state, session.playerID, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("decline break: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// ResolvePendingChoice accepts the open generic PendingChoice prompt.
+func (session *PlayerSession) ResolvePendingChoice(
+	optionID string,
+	selectedCardIDs []model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.ResolvePendingChoice(
+		&session.match.state,
+		session.playerID,
+		optionID,
+		selectedCardIDs,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("resolve pending choice: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
+// DeclinePendingChoice skips an optional PendingChoice when allowed.
+func (session *PlayerSession) DeclinePendingChoice(
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.DeclinePendingChoice(&session.match.state, session.playerID, expectedRevision); err != nil {
+		return view.MatchView{}, fmt.Errorf("decline pending choice: %w", err)
 	}
 	return view.ProjectMatch(session.match.state, session.playerID)
 }

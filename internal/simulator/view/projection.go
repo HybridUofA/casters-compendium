@@ -27,6 +27,29 @@ func projectPendingBreak(pending model.PendingBreak, viewerID model.PlayerID) mo
 	return out
 }
 
+func projectPendingChoice(pending model.PendingChoice, viewerID model.PlayerID) model.PendingChoice {
+	if pending.PlayerID == "" {
+		return model.PendingChoice{}
+	}
+	if pending.PlayerID != viewerID {
+		// Peers only learn that a decision is outstanding.
+		return model.PendingChoice{PlayerID: pending.PlayerID}
+	}
+	out := model.PendingChoice{
+		PlayerID:     pending.PlayerID,
+		Kind:         pending.Kind,
+		Prompt:       pending.Prompt,
+		AllowDecline: pending.AllowDecline,
+	}
+	if len(pending.Options) > 0 {
+		out.Options = append([]model.PendingChoiceOption(nil), pending.Options...)
+	}
+	if len(pending.SelectableCardIDs) > 0 {
+		out.SelectableCardIDs = append([]model.MatchCardID(nil), pending.SelectableCardIDs...)
+	}
+	return out
+}
+
 // IsSpectatorViewer reports whether viewerID is a recognized spectator id.
 func IsSpectatorViewer(viewerID model.PlayerID) bool {
 	return strings.HasPrefix(string(viewerID), "spectator-")
@@ -50,6 +73,7 @@ func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, e
 		Attack:               state.Attack,
 		PendingDraw:          state.PendingDraw,
 		PendingBreak:         projectPendingBreak(state.PendingBreak, viewerID),
+		PendingChoice:        projectPendingChoice(state.PendingChoice, viewerID),
 		Result:               state.Result,
 		Spectator:            !isPlayer,
 	}

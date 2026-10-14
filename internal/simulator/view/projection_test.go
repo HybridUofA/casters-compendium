@@ -112,6 +112,41 @@ func TestProjectMatchUsesViewerPerspectiveForEitherPlayer(t *testing.T) {
 	}
 }
 
+func TestProjectPendingChoiceConcealsDetailsFromPeers(t *testing.T) {
+	state := projectionStateForTest()
+	state.PendingChoice = model.PendingChoice{
+		PlayerID:     "player-one",
+		Kind:         "enter_target",
+		Prompt:       "Choose a target.",
+		AllowDecline: true,
+		Options: []model.PendingChoiceOption{
+			{ID: "a", Label: "A"},
+		},
+		SelectableCardIDs: []model.MatchCardID{"p2-servant"},
+	}
+
+	ownerView, err := ProjectMatch(state, "player-one")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ownerView.PendingChoice.Prompt != "Choose a target." ||
+		len(ownerView.PendingChoice.Options) != 1 ||
+		len(ownerView.PendingChoice.SelectableCardIDs) != 1 {
+		t.Fatalf("owner PendingChoice = %#v", ownerView.PendingChoice)
+	}
+
+	peerView, err := ProjectMatch(state, "player-two")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if peerView.PendingChoice.PlayerID != "player-one" ||
+		peerView.PendingChoice.Prompt != "" ||
+		len(peerView.PendingChoice.Options) != 0 ||
+		len(peerView.PendingChoice.SelectableCardIDs) != 0 {
+		t.Fatalf("peer PendingChoice leaked details: %#v", peerView.PendingChoice)
+	}
+}
+
 func TestProjectMatchShowsKnownEnemyOrbPersistently(t *testing.T) {
 	state := projectionStateForTest()
 	model.MarkCardKnown(&state, "player-one", "p2-orb")

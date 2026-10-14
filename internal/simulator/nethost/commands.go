@@ -303,6 +303,25 @@ func (host *Host) applyCommand(
 				DeckPeekOwner: string(args.OwnerID),
 			},
 		}, nil
+	case "activate_hilde_willow":
+		var args struct {
+			CardID model.MatchCardID `json:"card_id"`
+		}
+		if err := json.Unmarshal(payload.Args, &args); err != nil {
+			return commandResult{}, err
+		}
+		peeked, enemyID, matchView, err := playerSession.ActivateHildeWillow(args.CardID, revision)
+		if err != nil {
+			return commandResult{}, err
+		}
+		return commandResult{
+			view:   matchView,
+			mutate: true,
+			private: &protocol.PrivateView{
+				DeckPeek:      []simulatorview.CardView{peeked},
+				DeckPeekOwner: string(enemyID),
+			},
+		}, nil
 	case "move_deck_top_to_bottom":
 		var args struct {
 			OwnerID model.PlayerID `json:"owner_id"`
@@ -363,6 +382,19 @@ func (host *Host) applyCommand(
 		return mutatingView(playerSession.PlayBreak(args.CardID, args.EntryOrientation, revision))
 	case "decline_break":
 		return mutatingView(playerSession.DeclineBreak(revision))
+	case "resolve_pending_choice":
+		var args struct {
+			OptionID        string              `json:"option_id,omitempty"`
+			SelectedCardIDs []model.MatchCardID `json:"selected_card_ids,omitempty"`
+		}
+		if len(payload.Args) > 0 {
+			if err := json.Unmarshal(payload.Args, &args); err != nil {
+				return commandResult{}, err
+			}
+		}
+		return mutatingView(playerSession.ResolvePendingChoice(args.OptionID, args.SelectedCardIDs, revision))
+	case "decline_pending_choice":
+		return mutatingView(playerSession.DeclinePendingChoice(revision))
 	case "accept_sage_advice":
 		return mutatingView(playerSession.AcceptSageAdvice(revision))
 	case "decline_draw_replacement":

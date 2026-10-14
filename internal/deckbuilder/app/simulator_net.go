@@ -364,7 +364,7 @@ func openNetworkBoard(
 	actions := simulatorui.BoardActions{BackLabel: "Leave Match"}
 	if !spectator {
 		actions = networkBoardActions(runCommand, runCommandWithPrivate)
-		actions.ShouldAutoPassPriority = shouldAutoPassPriorityForView
+		actions.ShouldAutoPassPriority = makeShouldAutoPassPriority(repository.All())
 	}
 
 	screen = simulatorui.NewBoardController(
@@ -506,6 +506,31 @@ func networkBoardActions(
 		MoveDeckTopToBottom: func(ownerID model.PlayerID, expectedRevision model.Revision) {
 			runCommand("move_deck_top_to_bottom", expectedRevision, map[string]any{"owner_id": ownerID})
 		},
+		ActivateHildeWillow: func(
+			cardID model.MatchCardID,
+			expectedRevision model.Revision,
+			done func(simulatorview.CardView, model.PlayerID, error),
+		) {
+			runCommandWithPrivate(
+				"activate_hilde_willow",
+				expectedRevision,
+				map[string]any{"card_id": cardID},
+				func(private *protocol.PrivateView, err error) {
+					if done == nil {
+						return
+					}
+					if err != nil {
+						done(simulatorview.CardView{}, "", err)
+						return
+					}
+					if private == nil || len(private.DeckPeek) == 0 {
+						done(simulatorview.CardView{}, "", fmt.Errorf("hilde willow returned no peek"))
+						return
+					}
+					done(private.DeckPeek[0], model.PlayerID(private.DeckPeekOwner), nil)
+				},
+			)
+		},
 		ResolveDeckDig: func(
 			keep model.MatchCardID,
 			bottomOrder []model.MatchCardID,
@@ -548,6 +573,19 @@ func networkBoardActions(
 		},
 		DeclineBreak: func(expectedRevision model.Revision) {
 			runCommand("decline_break", expectedRevision, nil)
+		},
+		ResolvePendingChoice: func(
+			optionID string,
+			selectedCardIDs []model.MatchCardID,
+			expectedRevision model.Revision,
+		) {
+			runCommand("resolve_pending_choice", expectedRevision, map[string]any{
+				"option_id":         optionID,
+				"selected_card_ids": selectedCardIDs,
+			})
+		},
+		DeclinePendingChoice: func(expectedRevision model.Revision) {
+			runCommand("decline_pending_choice", expectedRevision, nil)
 		},
 		AcceptSageAdvice: func(expectedRevision model.Revision) {
 			runCommand("accept_sage_advice", expectedRevision, nil)
