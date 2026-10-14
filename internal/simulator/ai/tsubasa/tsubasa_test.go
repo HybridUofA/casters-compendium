@@ -132,7 +132,7 @@ func TestChoosePassesWhenNothingLegal(t *testing.T) {
 
 func TestChooseCallsPassionWingFaceUp(t *testing.T) {
 	catalog := stubCatalog{
-		"pw1": {ID: "pw1", Name: "Passion Wing", Type: "Caster", CostLevel: "1", Element: "Ignus"},
+		"pw1":   {ID: "pw1", Name: "Passion Wing", Type: "Caster", CostLevel: "1", Element: "Ignus"},
 		"other": {ID: "other", Name: "Other Caster", Type: "Caster", CostLevel: "1", Element: "Ignus"},
 	}
 	agent := Agent{Catalog: catalog}

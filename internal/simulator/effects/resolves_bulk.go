@@ -1190,13 +1190,13 @@ func resolveAzathothEOT(ctx Context) error {
 	}
 	// Optional — offer decline banish.
 	return offerOrSkip(ctx, model.PendingChoice{
-		PlayerID:     ctx.Controller,
-		Kind:         PendingBanishAlliedServant,
-		Prompt:       "Azathoth: you may banish me. If you do and the enemy has no orbs, they lose.",
-		AllowDecline: true,
-		SourceCardID: ctx.Source,
+		PlayerID:          ctx.Controller,
+		Kind:              PendingBanishAlliedServant,
+		Prompt:            "Azathoth: you may banish me. If you do and the enemy has no orbs, they lose.",
+		AllowDecline:      true,
+		SourceCardID:      ctx.Source,
 		SelectableCardIDs: []model.MatchCardID{ctx.Source},
-		Payload:      "azathoth",
+		Payload:           "azathoth",
 	})
 }
 

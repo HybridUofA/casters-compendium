@@ -9,9 +9,9 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	sourceRPS "github.com/HybridUofA/casters-compendium/internal/sources/rps"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/effects"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
+	sourceRPS "github.com/HybridUofA/casters-compendium/internal/sources/rps"
 )
 
 var rpsOptionResources = map[string]fyne.Resource{

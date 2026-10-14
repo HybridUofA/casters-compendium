@@ -115,25 +115,25 @@ type BoardActions struct {
 // match metadata in place and rebuilds card zones only when projected player
 // data changes.
 type BoardScreen struct {
-	content              fyne.CanvasObject
-	status               *canvas.Text
-	phaseHint            *canvas.Text
-	phaseButtons         map[model.Phase]*widget.Button
-	passPriority         *widget.Button
-	attackPanel          *fyne.Container
-	boards               *fyne.Container
-	playerBoards         [2]*playerBoardController
-	boardArea            fyne.CanvasObject
-	aetherPools          *fyne.Container
-	match                simulatorview.MatchView
-	definitions          cardLookup
-	preview              previewState
-	actions              BoardActions
-	dropTargets          []zoneDropTarget
-	drag                 cardDragSession
-	lastAutoPassRevision model.Revision
+	content               fyne.CanvasObject
+	status                *canvas.Text
+	phaseHint             *canvas.Text
+	phaseButtons          map[model.Phase]*widget.Button
+	passPriority          *widget.Button
+	attackPanel           *fyne.Container
+	boards                *fyne.Container
+	playerBoards          [2]*playerBoardController
+	boardArea             fyne.CanvasObject
+	aetherPools           *fyne.Container
+	match                 simulatorview.MatchView
+	definitions           cardLookup
+	preview               previewState
+	actions               BoardActions
+	dropTargets           []zoneDropTarget
+	drag                  cardDragSession
+	lastAutoPassRevision  model.Revision
 	lastAutoPhaseRevision model.Revision
-	lastSageDigRevision  model.Revision
+	lastSageDigRevision   model.Revision
 	// pendingAttackerID is a local UI selection for left-click attack targeting.
 	pendingAttackerID model.MatchCardID
 	// pendingCorruptIndexes accumulates enemy Orb clicks for Double Corrupt.
