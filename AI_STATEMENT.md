@@ -295,3 +295,14 @@ Under that authorization, Cursor assistance implemented auto-pass heuristics,
 PendingChoice model/view/session/nethost/UI, Hilde Willow activation, the
 effects registry stub, tests, transparency updates, and release metadata under
 maintainer review.
+
+## Disclosed v1.2.0 assistance
+
+Hybrid directed the v1.2.0 playability release (catalog-backed Enter / Rest /
+Resolve automation, Solo vs Tsubasa, Orb click corrupt, Barrier and empty
+Battle UX fixes, and shipping as a minor release) and remains responsible for
+acceptance and publication.
+
+Under that authorization, Cursor assistance implemented ops/effects wiring and
+registration for local play, the Agent/driver/Tsubasa Solo path, board UX,
+tests, transparency updates, and release metadata under maintainer review.

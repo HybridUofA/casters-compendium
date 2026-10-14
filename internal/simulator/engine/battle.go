@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/HybridUofA/casters-compendium/internal/simulator/engine/ops"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
@@ -60,21 +61,28 @@ func DeclareAttack(
 	if err != nil {
 		return err
 	}
-	if err := validateAttacker(state, actingIndex, attackerID); err != nil {
+	if err := validateAttacker(state, catalog, actingIndex, attackerID); err != nil {
 		return err
 	}
 	if err := validateAttackTarget(state, catalog, attackerID, opponentIndex, targetKind, targetCardID); err != nil {
 		return err
 	}
 
-	attacker := state.CardInstances[attackerID]
-	attacker.Orientation = model.OrientationRested
-	state.CardInstances[attackerID] = attacker
+	if err := validateAttackerContinuous(state, catalog, attackerID); err != nil {
+		return err
+	}
+	if err := ops.SetOrientation(state, attackerID, model.OrientationRested); err != nil {
+		return fmt.Errorf("rest attacker: %w", err)
+	}
 	state.Attack = model.AttackState{
 		AttackerID:   attackerID,
 		TargetKind:   targetKind,
 		TargetCardID: targetCardID,
 		Step:         model.BattleStepDeclared,
+	}
+	noteAttackDeclared(state, actingPlayerID, attackerID, targetCardID)
+	if err := triggerAttackEffects(state, catalog, attackerID); err != nil {
+		return fmt.Errorf("attack trigger for %q: %w", attackerID, err)
 	}
 	state.PassCount = 0
 	state.PriorityHolder = actingPlayerID
@@ -102,6 +110,7 @@ func battlePlayerIndexes(
 
 func validateAttacker(
 	state *model.MatchState,
+	catalog rules.CardCatalog,
 	actingIndex int,
 	attackerID model.MatchCardID,
 ) error {
@@ -117,6 +126,55 @@ func validateAttacker(
 	}
 	if attacker.Orientation != model.OrientationRecovered {
 		return fmt.Errorf("attacker %q must be Recovered", attackerID)
+	}
+	if cardIsBarrier(catalog, attacker.CardID) {
+		return fmt.Errorf("barriers cannot declare attacks")
+	}
+	return nil
+}
+
+func cardIsBarrier(catalog rules.CardCatalog, cardID model.CardID) bool {
+	if catalog == nil || cardID == "" {
+		return false
+	}
+	definition, found := catalog.FindByID(string(cardID))
+	if !found {
+		return false
+	}
+	return strings.EqualFold(strings.TrimSpace(definition.Type), "Barrier")
+}
+
+// activePlayerHasLegalAttacker reports recovered non-Barrier field cards the
+// active player could still declare an attack with.
+func activePlayerHasLegalAttacker(state *model.MatchState, catalog rules.CardCatalog) bool {
+	if state == nil {
+		return false
+	}
+	for _, player := range state.Players {
+		if player.ID != state.Turn.ActivePlayer {
+			continue
+		}
+		for _, cardID := range player.ServantZone {
+			instance, ok := state.CardInstances[cardID]
+			if !ok || instance.Orientation != model.OrientationRecovered {
+				continue
+			}
+			if cardIsBarrier(catalog, instance.CardID) {
+				continue
+			}
+			return true
+		}
+	}
+	return false
+}
+
+func validateAttackerContinuous(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	attackerID model.MatchCardID,
+) error {
+	if hasSlowStartThisTurn(state, catalog, attackerID) {
+		return fmt.Errorf("attacker %q cannot attack this turn (Slow Start)", attackerID)
 	}
 	return nil
 }
@@ -134,6 +192,9 @@ func validateAttackTarget(
 	case model.AttackTargetPlayer:
 		if targetCardID != "" {
 			return fmt.Errorf("player attacks cannot name a target card")
+		}
+		if playerCannotBeAttacked(state, opponentIndex) {
+			return fmt.Errorf("opponent cannot be attacked this turn")
 		}
 		if attackerHasPrintedHubris(state, catalog, attackerID) {
 			return nil
@@ -157,6 +218,9 @@ func validateAttackTarget(
 		}
 		if _, ok := state.CardInstances[targetCardID]; !ok {
 			return fmt.Errorf("target servant %q does not exist", targetCardID)
+		}
+		if servantCannotBeAttacked(state, catalog, targetCardID, opponentIndex) {
+			return fmt.Errorf("target servant %q cannot be attacked", targetCardID)
 		}
 		return nil
 	default:
@@ -279,7 +343,14 @@ func resolveServantJudgment(
 		return fmt.Errorf("target combat value: %w", err)
 	}
 	if attackerATK > targetValue {
-		if err := destroyServant(state, attack.TargetCardID); err != nil {
+		attacker, _ := state.CardInstances[attack.AttackerID]
+		if err := destroyServantWithCause(
+			state,
+			catalog,
+			attack.TargetCardID,
+			destroyCauseBattle,
+			attacker.Controller,
+		); err != nil {
 			return err
 		}
 	}
@@ -447,46 +518,13 @@ func CorruptOrbs(
 		model.MarkCardKnown(state, opponent.ID, orbID)
 		corrupted = append(corrupted, orbID)
 	}
+	noteCorrupt(state, actingPlayerID)
 	clearAttack(state)
 	queueBreakIfPresent(state, catalog, opponent.ID, corrupted...)
 	if state.PendingBreak.PlayerID == "" {
 		reopenPriorityForActivePlayer(state)
 	}
 	state.Revision++
-	return nil
-}
-
-func destroyServant(state *model.MatchState, cardID model.MatchCardID) error {
-	instance, ok := state.CardInstances[cardID]
-	if !ok {
-		return fmt.Errorf("destroyed servant %q does not exist", cardID)
-	}
-	location, err := model.FindCardLocation(state, cardID)
-	if err != nil {
-		return fmt.Errorf("locate destroyed servant: %w", err)
-	}
-	if location.Zone != model.ZoneServant {
-		return fmt.Errorf("destroyed servant %q is not in a servant zone", cardID)
-	}
-	zone := &state.Players[location.PlayerIndex].ServantZone
-	*zone = slices.Delete(*zone, location.CardIndex, location.CardIndex+1)
-
-	ownerIndex := -1
-	for index, player := range state.Players {
-		if player.ID == instance.Owner {
-			ownerIndex = index
-			break
-		}
-	}
-	if ownerIndex == -1 {
-		return fmt.Errorf("owner %q of destroyed servant was not found", instance.Owner)
-	}
-	instance.Controller = instance.Owner
-	instance.Face = model.CardFaceUp
-	instance.Orientation = model.OrientationRecovered
-	instance.GrantedDoubleCorrupt = false
-	state.Players[ownerIndex].Graveyard = append(state.Players[ownerIndex].Graveyard, cardID)
-	state.CardInstances[cardID] = instance
 	return nil
 }
 
@@ -517,7 +555,10 @@ func cardCombatStat(
 	if err != nil {
 		return 0, fmt.Errorf("card %q has invalid %s value %q", cardID, label, raw)
 	}
-	return value, nil
+	if useAttack {
+		return value + instance.AttackModifier, nil
+	}
+	return value + instance.DefenseModifier, nil
 }
 
 func clearAttack(state *model.MatchState) {

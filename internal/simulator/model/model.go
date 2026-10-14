@@ -60,6 +60,19 @@ type CardInstance struct {
 	// Double Corrupt (caster abilities, temporary grants). Cleared when the
 	// card leaves the Servant zone.
 	GrantedDoubleCorrupt bool
+	// AttackModifier and DefenseModifier are additive offsets to printed ATK/DEF
+	// while the card is on the Servant field. Cleared when the card leaves that zone.
+	AttackModifier  int
+	DefenseModifier int
+	// EnteredOnTurn is the Turn.Number when this card last entered the Servant
+	// zone (0 = never tracked). Used for Slow Start.
+	EnteredOnTurn int
+	// GrantedSlowStartUntilEOT / LosesSlowStartUntilEOT are temporary Slow Start
+	// overlays cleared at end of turn.
+	GrantedSlowStartUntilEOT bool
+	LosesSlowStartUntilEOT   bool
+	// BattledThisTurn is set when this card attacks or is attacked.
+	BattledThisTurn bool
 }
 
 type CardLocation struct {
@@ -147,6 +160,11 @@ type PlayerState struct {
 	Exile                []MatchCardID
 }
 
+// EffectRandom is optional match entropy for automated shuffle/search effects.
+type EffectRandom interface {
+	RandInt(upperBound int) int
+}
+
 type MatchState struct {
 	CardInstances        map[MatchCardID]CardInstance
 	Players              [2]PlayerState
@@ -173,6 +191,40 @@ type MatchState struct {
 	// KnownCards records MatchCardIDs whose faces a player has seen and should
 	// keep seeing while those cards remain in a hidden zone (e.g. peeked Orbs).
 	KnownCards map[PlayerID]map[MatchCardID]struct{}
+	// EffectRandom powers ops.ShuffleDeck from automated card effects.
+	EffectRandom EffectRandom
+	// TurnFlags counts this-turn events for conditional Rest / EOT effects.
+	// Indexes match Players[0]/Players[1]. Cleared when the turn rolls.
+	TurnFlags TurnFlags
+	// ContinuousUntilEOT holds temporary continuous shields cleared at EOT.
+	ContinuousUntilEOT ContinuousUntilEOT
+}
+
+// TurnFlags are per-player event counters for the current turn (Players index).
+type TurnFlags struct {
+	ServantsEntered                 [2]int
+	BattleDestroysDealt             [2]int // allied servant destroyed an enemy in battle
+	AlliedDestroyedInBattle         [2]int
+	AlliedDestroyedNonBattle        [2]int
+	AlliedInsectDestroyedOrBanished [2]int
+	AlliedCorruptedOrb              [2]int
+	EnemyReturnedToHand             [2]int // an enemy-controlled servant returned to hand
+	EnemyDiscarded                  [2]int
+	EnemyEnterAbility               [2]int
+	BreakPlayed                     [2]int
+	AnyCardPlayed                   [2]int
+	NonCasterPlayed                 [2]int
+	ConjureEffectDraws              [2]int
+	EnemyAttacks                    [2]int // attacks declared by the other player
+	SpellDestroyedEnemy             [2]int
+}
+
+// ContinuousUntilEOT is temporary continuous protection cleared at end of turn.
+type ContinuousUntilEOT struct {
+	PlayerCannotBeAttacked         [2]bool
+	AlliedServantsCannotBeAttacked [2]bool
+	// RestedAlliedCannotBeAttacked is Charyl-style; still requires fewer servants.
+	RestedAlliedCannotBeAttacked [2]bool
 }
 
 // PendingBreak is set when corrupted Orbs with Break enter their owner's hand.
@@ -212,6 +264,11 @@ type PendingChoice struct {
 	AllowDecline      bool
 	Options           []PendingChoiceOption
 	SelectableCardIDs []MatchCardID
+	// SourceCardID is the effect source when Kind is an effects continuation
+	// (for example Enter destroy-target prompts).
+	SourceCardID MatchCardID
+	// Payload carries effect-specific continuation data (cost caps, chains, filters).
+	Payload string
 }
 
 type TurnState struct {

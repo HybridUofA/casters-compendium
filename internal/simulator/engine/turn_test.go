@@ -276,7 +276,7 @@ func TestCompleteEndPhaseRejectsMissingActivePlayerWithoutClearingAether(t *test
 	state.Players[1].Aether = model.AetherPool{Terra: 1, NonElemental: 2}
 	before := state
 
-	err := completeEndPhase(&state, "missing-player")
+	err := completeEndPhase(&state, nil, "missing-player")
 	if err == nil || !strings.Contains(err.Error(), "not found in players") {
 		t.Fatalf("completeEndPhase() error = %v; want missing-player error", err)
 	}

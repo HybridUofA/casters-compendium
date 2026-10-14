@@ -4,10 +4,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/HybridUofA/casters-compendium/internal/simulator/effects"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 )
 
-func TestActivateHildeWillowRestsAndReturnsEnemy(t *testing.T) {
+func TestActivateHildeWillowRestsAndOpensPendingChoice(t *testing.T) {
+	ResetEffectHandlers()
+	RegisterDefaultEffectHandlers()
 	state, catalog := hildeWillowStateForTest()
 	enemyID, err := ActivateHildeWillow(&state, catalog, "player-one", "hilde", state.Revision)
 	if err != nil {
@@ -19,22 +22,27 @@ func TestActivateHildeWillowRestsAndReturnsEnemy(t *testing.T) {
 	if state.CardInstances["hilde"].Orientation != model.OrientationRested {
 		t.Fatal("Hilde Willow did not become Rested")
 	}
-	if state.Revision != 2 {
-		t.Fatalf("Revision = %d; want 2", state.Revision)
+	if state.PendingChoice.Kind != effects.PendingHildeDeckBottom {
+		t.Fatalf("PendingChoice.Kind = %q; want %q", state.PendingChoice.Kind, effects.PendingHildeDeckBottom)
+	}
+	if state.PendingChoice.Payload != "player-two" {
+		t.Fatalf("PendingChoice.Payload = %q; want player-two", state.PendingChoice.Payload)
 	}
 	if state.PriorityHolder != "player-one" || !state.PrioritySequenceOpen {
 		t.Fatal("activator should retain priority")
 	}
 }
 
-func TestActivateHildeWillowThenMoveTopToBottom(t *testing.T) {
+func TestActivateHildeWillowThenBottomViaPending(t *testing.T) {
+	ResetEffectHandlers()
+	RegisterDefaultEffectHandlers()
 	state, catalog := hildeWillowStateForTest()
-	enemyID, err := ActivateHildeWillow(&state, catalog, "player-one", "hilde", state.Revision)
+	_, err := ActivateHildeWillow(&state, catalog, "player-one", "hilde", state.Revision)
 	if err != nil {
 		t.Fatalf("ActivateHildeWillow() error = %v", err)
 	}
-	if err := MoveDeckTopToBottom(&state, "player-one", enemyID, state.Revision); err != nil {
-		t.Fatalf("MoveDeckTopToBottom() error = %v", err)
+	if err := ResolvePendingChoice(&state, catalog, "player-one", "bottom", nil, state.Revision); err != nil {
+		t.Fatalf("ResolvePendingChoice(bottom) error = %v", err)
 	}
 	want := []model.MatchCardID{"e2", "e3", "e1"}
 	if got := state.Players[1].Deck; len(got) != 3 || got[0] != "e2" || got[2] != "e1" {
@@ -43,6 +51,8 @@ func TestActivateHildeWillowThenMoveTopToBottom(t *testing.T) {
 }
 
 func TestActivateHildeWillowRejectsWithoutPriority(t *testing.T) {
+	ResetEffectHandlers()
+	RegisterDefaultEffectHandlers()
 	state, catalog := hildeWillowStateForTest()
 	state.PriorityHolder = "player-two"
 	_, err := ActivateHildeWillow(&state, catalog, "player-one", "hilde", state.Revision)
@@ -52,6 +62,8 @@ func TestActivateHildeWillowRejectsWithoutPriority(t *testing.T) {
 }
 
 func TestActivateHildeWillowRejectsEmptyEnemyDeck(t *testing.T) {
+	ResetEffectHandlers()
+	RegisterDefaultEffectHandlers()
 	state, catalog := hildeWillowStateForTest()
 	state.Players[1].Deck = nil
 	_, err := ActivateHildeWillow(&state, catalog, "player-one", "hilde", state.Revision)
@@ -64,7 +76,7 @@ func hildeWillowStateForTest() (model.MatchState, casterAetherCatalogForTest) {
 	state := model.MatchState{
 		CardInstances: map[model.MatchCardID]model.CardInstance{
 			"hilde": {
-				CardID:       "hilde-def",
+				CardID:       "146",
 				MatchID:      "hilde",
 				Owner:        "player-one",
 				Controller:   "player-one",
@@ -95,8 +107,8 @@ func hildeWillowStateForTest() (model.MatchState, casterAetherCatalogForTest) {
 		NextLinkID:           1,
 	}
 	catalog := casterAetherCatalogForTest{
-		"hilde-def": {
-			ID:      "hilde-def",
+		"146": {
+			ID:      "146",
 			Name:    "Hilde Willow",
 			Type:    "Caster",
 			Ability: "• Rest: Look at the top card of an enemy deck. You may put that card on the bottom of that enemy deck.",

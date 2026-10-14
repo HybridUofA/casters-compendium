@@ -115,27 +115,40 @@ type BoardActions struct {
 // match metadata in place and rebuilds card zones only when projected player
 // data changes.
 type BoardScreen struct {
-	content              fyne.CanvasObject
-	status               *canvas.Text
-	phaseHint            *canvas.Text
-	phaseButtons         map[model.Phase]*widget.Button
-	passPriority         *widget.Button
-	attackPanel          *fyne.Container
-	boards               *fyne.Container
-	playerBoards         [2]*playerBoardController
-	boardArea            fyne.CanvasObject
-	aetherPools          *fyne.Container
-	match                simulatorview.MatchView
-	definitions          cardLookup
-	preview              previewState
-	actions              BoardActions
-	dropTargets          []zoneDropTarget
-	drag                 cardDragSession
-	lastAutoPassRevision model.Revision
-	lastSageDigRevision  model.Revision
+	content               fyne.CanvasObject
+	status                *canvas.Text
+	phaseHint             *canvas.Text
+	phaseButtons          map[model.Phase]*widget.Button
+	passPriority          *widget.Button
+	attackPanel           *fyne.Container
+	boards                *fyne.Container
+	playerBoards          [2]*playerBoardController
+	boardArea             fyne.CanvasObject
+	aetherPools           *fyne.Container
+	match                 simulatorview.MatchView
+	definitions           cardLookup
+	preview               previewState
+	actions               BoardActions
+	dropTargets           []zoneDropTarget
+	drag                  cardDragSession
+	lastAutoPassRevision  model.Revision
+	lastAutoPhaseRevision model.Revision
+	lastSageDigRevision   model.Revision
 	// pendingAttackerID is a local UI selection for left-click attack targeting.
 	pendingAttackerID model.MatchCardID
+	// pendingCorruptIndexes accumulates enemy Orb clicks for Double Corrupt.
+	pendingCorruptIndexes []int
+	// orbPickMode is set after Peek/Reveal context-menu items (click an Orb tile).
+	orbPickMode orbPickMode
 }
+
+type orbPickMode int
+
+const (
+	orbPickNone orbPickMode = iota
+	orbPickPeek
+	orbPickReveal
+)
 
 // NewBoardScreen renders one viewer-safe match projection. It deliberately
 // accepts MatchView rather than MatchState so concealed identities cannot be
@@ -245,13 +258,14 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 	// viewer's Hand is rebuilt, not on every revision bump — otherwise a peer
 	// view push or auto-pass can wipe the Level Up prompt mid-selection.
 	displayNamesChanged := !reflect.DeepEqual(previous.DisplayNames, match.DisplayNames)
+	cosmeticsChanged := !reflect.DeepEqual(previous.Cosmetics, match.Cosmetics)
 	if previous.ViewerID != match.ViewerID ||
 		previous.Players[0].Aether != match.Players[0].Aether ||
 		previous.Players[1].Aether != match.Players[1].Aether ||
 		displayNamesChanged {
 		screen.updateAetherPools()
 	}
-	if previous.ViewerID != match.ViewerID {
+	if previous.ViewerID != match.ViewerID || cosmeticsChanged {
 		screen.rebuildBoards()
 		return
 	}
@@ -376,6 +390,7 @@ func (screen *BoardScreen) updateMetadata() {
 	screen.updateAttackPanel()
 	screen.maybePromptSageDig()
 	screen.maybeAutoPassPriority()
+	screen.maybeAutoCompleteEmptyBattle()
 }
 
 func displayNameFor(match simulatorview.MatchView, id model.PlayerID) string {
@@ -406,6 +421,45 @@ func (screen *BoardScreen) maybeAutoPassPriority() {
 	fyne.Do(func() {
 		if screen.actions.PassPriority != nil {
 			screen.actions.PassPriority(revision)
+		}
+	})
+}
+
+// maybeAutoCompleteEmptyBattle advances Battle when the turn player has priority
+// closed and no legal attack/ability left (Arena-style empty Battle skip).
+func (screen *BoardScreen) maybeAutoCompleteEmptyBattle() {
+	if screen == nil ||
+		screen.actions.CompleteCurrentPhase == nil ||
+		screen.actions.ShouldAutoPassPriority == nil {
+		return
+	}
+	match := screen.match
+	if match.Revision == 0 || match.Revision == screen.lastAutoPhaseRevision {
+		return
+	}
+	if match.MatchStatus != model.StatusInProgress ||
+		match.Turn.Phase != model.PhaseBattle ||
+		match.Turn.ActivePlayer != match.ViewerID ||
+		match.PrioritySequenceOpen ||
+		match.Attack.Step != model.BattleStepIdle ||
+		match.PendingBreak.PlayerID != "" ||
+		match.PendingChoice.PlayerID != "" ||
+		match.PendingDraw.Step != model.PendingDrawIdle {
+		return
+	}
+	// Reuse Arena gate: only auto-complete when the same policy would auto-pass
+	// an open Battle priority (i.e. no usable battle action).
+	probe := match
+	probe.PrioritySequenceOpen = true
+	probe.PriorityHolder = match.ViewerID
+	if !screen.actions.ShouldAutoPassPriority(probe) {
+		return
+	}
+	screen.lastAutoPhaseRevision = match.Revision
+	revision := match.Revision
+	fyne.Do(func() {
+		if screen.actions.CompleteCurrentPhase != nil {
+			screen.actions.CompleteCurrentPhase(revision)
 		}
 	})
 }
@@ -566,7 +620,11 @@ func (screen *BoardScreen) updateAttackPanel() {
 	match := screen.match
 	if canViewerDecidePendingChoice(match) &&
 		(screen.actions.ResolvePendingChoice != nil || screen.actions.DeclinePendingChoice != nil) {
-		screen.renderPendingChoicePanel()
+		if pendingChoiceIsRPS(match.PendingChoice) {
+			screen.renderRPSPendingChoicePanel()
+		} else {
+			screen.renderPendingChoicePanel()
+		}
 		return
 	}
 	if match.PendingChoice.PlayerID != "" && match.PendingChoice.PlayerID != match.ViewerID {
@@ -594,9 +652,14 @@ func (screen *BoardScreen) updateAttackPanel() {
 		return
 	}
 	if screen.actions.CorruptOrbs != nil && canViewerCorruptOrb(match) {
-		screen.renderOrbChoicePanel()
+		screen.renderOrbChoiceHint()
 		return
 	}
+	if screen.orbPickMode == orbPickPeek || screen.orbPickMode == orbPickReveal {
+		screen.renderOrbPickHint()
+		return
+	}
+	screen.pendingCorruptIndexes = nil
 	if match.PendingBreak.PlayerID != "" && match.PendingBreak.PlayerID != match.ViewerID {
 		screen.renderDecisionStrip(decisionStripConfig{
 			Hint: "Waiting for opponent to decide whether to use Break…",
@@ -627,12 +690,18 @@ func (screen *BoardScreen) updateAttackPanel() {
 				if card.Orientation != model.OrientationRecovered {
 					continue
 				}
+				if cardViewIsBarrier(card, screen.definitions) {
+					continue
+				}
 				label := fmt.Sprintf("%s (%s)", name, card.MatchID)
 				if cardShowsDoubleCorrupt(card, definition) {
 					label += " [Double Corrupt]"
 				}
 				attackerLabels = append(attackerLabels, label)
 				attackerIDs[label] = card.MatchID
+				continue
+			}
+			if cardViewIsBarrier(card, screen.definitions) {
 				continue
 			}
 			if card.Orientation == model.OrientationReversed {
@@ -827,6 +896,9 @@ func (screen *BoardScreen) handleServantPrimaryTap(
 		if card.Orientation != model.OrientationRecovered {
 			return
 		}
+		if cardViewIsBarrier(card, screen.definitions) {
+			return
+		}
 		if screen.pendingAttackerID == card.MatchID {
 			screen.clearPendingAttacker()
 			screen.updateAttackPanel()
@@ -834,6 +906,9 @@ func (screen *BoardScreen) handleServantPrimaryTap(
 		}
 		screen.pendingAttackerID = card.MatchID
 		screen.updateAttackPanel()
+		return
+	}
+	if cardViewIsBarrier(card, screen.definitions) {
 		return
 	}
 	if screen.pendingAttackerID == "" {
@@ -848,14 +923,25 @@ func (screen *BoardScreen) handleServantPrimaryTap(
 	screen.clearPendingAttacker()
 }
 
-func (screen *BoardScreen) handleOpponentOrbPrimaryTap() {
-	if screen == nil || screen.actions.DeclareAttack == nil || !canViewerDeclareAttack(screen.match) {
+func (screen *BoardScreen) handleOpponentOrbPrimaryTap(orbIndex int) {
+	if screen == nil {
+		return
+	}
+	if screen.actions.CorruptOrbs != nil && canViewerCorruptOrb(screen.match) {
+		screen.selectCorruptOrb(orbIndex)
+		return
+	}
+	if screen.orbPickMode == orbPickPeek {
+		screen.finishPeekOrb(orbIndex)
+		return
+	}
+	if screen.actions.DeclareAttack == nil || !canViewerDeclareAttack(screen.match) {
 		return
 	}
 	if screen.pendingAttackerID == "" {
 		return
 	}
-	if !screen.canPendingAttackerTargetPlayer(viewerHasReversedEnemyServant(screen.match)) {
+	if !screen.canPendingAttackerTargetPlayer(viewerHasReversedEnemyServant(screen.match, screen.definitions)) {
 		return
 	}
 	screen.actions.DeclareAttack(
@@ -867,12 +953,133 @@ func (screen *BoardScreen) handleOpponentOrbPrimaryTap() {
 	screen.clearPendingAttacker()
 }
 
-func viewerHasReversedEnemyServant(match simulatorview.MatchView) bool {
+func (screen *BoardScreen) handleViewerOrbPrimaryTap(orbIndex int) {
+	if screen == nil {
+		return
+	}
+	if screen.orbPickMode == orbPickReveal {
+		screen.finishRevealOrb(orbIndex)
+	}
+}
+
+func (screen *BoardScreen) selectCorruptOrb(orbIndex int) {
+	if screen == nil || screen.actions.CorruptOrbs == nil || !canViewerCorruptOrb(screen.match) {
+		return
+	}
+	wantCount := screen.match.Attack.CorruptCount
+	if wantCount < 1 {
+		wantCount = 1
+	}
+	opponentOrbs := 0
+	for _, player := range screen.match.Players {
+		if player.ID != screen.match.ViewerID {
+			opponentOrbs = len(player.Orbs)
+			break
+		}
+	}
+	if orbIndex < 0 || orbIndex >= opponentOrbs {
+		return
+	}
+	if wantCount > opponentOrbs {
+		wantCount = opponentOrbs
+	}
+	if wantCount <= 1 {
+		screen.pendingCorruptIndexes = nil
+		screen.actions.CorruptOrbs([]int{orbIndex}, screen.match.Revision)
+		return
+	}
+	// Toggle selection for Double Corrupt (or higher).
+	selected := append([]int(nil), screen.pendingCorruptIndexes...)
+	found := -1
+	for i, idx := range selected {
+		if idx == orbIndex {
+			found = i
+			break
+		}
+	}
+	if found >= 0 {
+		selected = append(selected[:found], selected[found+1:]...)
+	} else if len(selected) < wantCount {
+		selected = append(selected, orbIndex)
+	}
+	screen.pendingCorruptIndexes = selected
+	if len(selected) == wantCount {
+		chosen := append([]int(nil), selected...)
+		screen.pendingCorruptIndexes = nil
+		screen.actions.CorruptOrbs(chosen, screen.match.Revision)
+		return
+	}
+	screen.renderOrbChoiceHint()
+}
+
+func (screen *BoardScreen) finishPeekOrb(orbIndex int) {
+	if screen == nil || screen.actions.PeekOrb == nil {
+		screen.orbPickMode = orbPickNone
+		return
+	}
+	ownerID := model.PlayerID("")
+	for _, player := range screen.match.Players {
+		if player.ID != screen.match.ViewerID {
+			ownerID = player.ID
+			break
+		}
+	}
+	if ownerID == "" {
+		screen.orbPickMode = orbPickNone
+		return
+	}
+	revision := screen.match.Revision
+	screen.orbPickMode = orbPickNone
+	screen.actions.PeekOrb(ownerID, orbIndex, revision, func(card simulatorview.CardView, err error) {
+		if err != nil {
+			window := windowForObject(screen.content)
+			if window != nil {
+				dialog.ShowError(err, window)
+			}
+			return
+		}
+		screen.showOrbPeekDialog(card, "Orb peek")
+	})
+	screen.updateAttackPanel()
+}
+
+func (screen *BoardScreen) finishRevealOrb(orbIndex int) {
+	if screen == nil || screen.actions.RevealOrb == nil {
+		screen.orbPickMode = orbPickNone
+		return
+	}
+	revision := screen.match.Revision
+	screen.orbPickMode = orbPickNone
+	screen.actions.RevealOrb(orbIndex, revision)
+	screen.updateAttackPanel()
+}
+
+func (screen *BoardScreen) beginOrbPick(mode orbPickMode) {
+	if screen == nil {
+		return
+	}
+	screen.orbPickMode = mode
+	screen.clearPendingAttacker()
+	screen.updateAttackPanel()
+}
+
+func (screen *BoardScreen) cancelOrbPick() {
+	if screen == nil {
+		return
+	}
+	screen.orbPickMode = orbPickNone
+	screen.updateAttackPanel()
+}
+
+func viewerHasReversedEnemyServant(match simulatorview.MatchView, definitions cardLookup) bool {
 	for _, player := range match.Players {
 		if player.ID == match.ViewerID {
 			continue
 		}
 		for _, card := range player.ServantZone {
+			if cardViewIsBarrier(card, definitions) {
+				continue
+			}
 			if card.Orientation == model.OrientationReversed {
 				return true
 			}
@@ -899,7 +1106,7 @@ func canViewerCorruptOrb(match simulatorview.MatchView) bool {
 	return false
 }
 
-func viewerHasMandatoryAttacker(match simulatorview.MatchView) bool {
+func viewerHasMandatoryAttacker(match simulatorview.MatchView, definitions cardLookup) bool {
 	if match.MatchStatus != model.StatusInProgress ||
 		match.Turn.Phase != model.PhaseBattle ||
 		match.Turn.ActivePlayer != match.ViewerID ||
@@ -921,6 +1128,9 @@ func viewerHasMandatoryAttacker(match simulatorview.MatchView) bool {
 	}
 	opponentHasReversed := false
 	for _, card := range opponent.ServantZone {
+		if cardViewIsBarrier(card, definitions) {
+			continue
+		}
 		if card.Orientation == model.OrientationReversed {
 			opponentHasReversed = true
 			break
@@ -930,12 +1140,37 @@ func viewerHasMandatoryAttacker(match simulatorview.MatchView) bool {
 		if card.MatchID == "" || card.Orientation != model.OrientationRecovered {
 			continue
 		}
+		// Barriers share ServantZone storage but cannot attack.
+		if cardViewIsBarrier(card, definitions) {
+			continue
+		}
 		if !opponentHasReversed {
 			return true
 		}
-		if len(opponent.ServantZone) > 0 {
+		if opponentHasAttackableServant(*opponent, definitions) {
 			return true
 		}
+	}
+	return false
+}
+
+func cardViewIsBarrier(card simulatorview.CardView, definitions cardLookup) bool {
+	if definitions == nil || card.CardID == "" {
+		return false
+	}
+	definition, found := definitions[card.CardID]
+	if !found {
+		return false
+	}
+	return strings.EqualFold(strings.TrimSpace(definition.Type), "Barrier")
+}
+
+func opponentHasAttackableServant(opponent simulatorview.PlayerView, definitions cardLookup) bool {
+	for _, card := range opponent.ServantZone {
+		if card.MatchID == "" || cardViewIsBarrier(card, definitions) {
+			continue
+		}
+		return true
 	}
 	return false
 }
@@ -1216,85 +1451,38 @@ func cardDeclaresDoubleCorruptAbility(ability string) bool {
 	return false
 }
 
-func (screen *BoardScreen) renderOrbChoicePanel() {
+func (screen *BoardScreen) renderOrbChoiceHint() {
 	match := screen.match
-	var opponentOrbs []simulatorview.CardView
-	for _, player := range match.Players {
-		if player.ID != match.ViewerID {
-			opponentOrbs = player.Orbs
-			break
-		}
-	}
 	wantCount := match.Attack.CorruptCount
 	if wantCount < 1 {
 		wantCount = 1
 	}
-	if wantCount > len(opponentOrbs) {
-		wantCount = len(opponentOrbs)
-	}
-	labels := make([]string, 0, len(opponentOrbs))
-	indexes := make(map[string]int, len(opponentOrbs))
-	for index := range opponentOrbs {
-		label := fmt.Sprintf("Orb %d", index+1)
-		labels = append(labels, label)
-		indexes[label] = index
-	}
-
-	selected := make(map[string]bool, len(labels))
-	confirm := widget.NewButton("Corrupt Orb", nil)
-	confirm.Disable()
-	updateConfirm := func() {
-		count := 0
-		for _, on := range selected {
-			if on {
-				count++
-			}
-		}
-		if count == wantCount {
-			confirm.Enable()
-			return
-		}
-		confirm.Disable()
-	}
-	checks := make([]fyne.CanvasObject, 0, len(labels))
-	for _, label := range labels {
-		captured := label
-		check := widget.NewCheck(captured, func(on bool) {
-			selected[captured] = on
-			updateConfirm()
-		})
-		checks = append(checks, check)
-	}
-	confirm.OnTapped = func() {
-		if screen.actions.CorruptOrbs == nil {
-			return
-		}
-		chosen := make([]int, 0, wantCount)
-		for _, label := range labels {
-			if selected[label] {
-				chosen = append(chosen, indexes[label])
-			}
-		}
-		if len(chosen) != wantCount {
-			return
-		}
-		screen.actions.CorruptOrbs(chosen, match.Revision)
-	}
-	hintText := "Player attack connected. Choose which enemy Orb to corrupt (faces stay hidden)."
+	hintText := "Player attack connected. Click an enemy Orb card to corrupt it (faces stay hidden)."
 	if wantCount > 1 {
+		selected := len(screen.pendingCorruptIndexes)
 		hintText = fmt.Sprintf(
-			"Double Corrupt: choose %d enemy Orbs to corrupt simultaneously (faces stay hidden).",
+			"Double Corrupt: click %d enemy Orb cards (selected %d/%d). Click again to deselect.",
+			wantCount,
+			selected,
 			wantCount,
 		)
-		confirm.SetText(fmt.Sprintf("Corrupt %d Orbs", wantCount))
 	}
-	hint := widget.NewLabel(hintText)
-	hint.Wrapping = fyne.TextWrapWord
-	objects := []fyne.CanvasObject{hint}
-	objects = append(objects, checks...)
-	objects = append(objects, confirm)
-	screen.attackPanel.Objects = objects
-	refreshContainerStructure(screen.attackPanel)
+	screen.renderDecisionStrip(decisionStripConfig{Hint: hintText})
+}
+
+func (screen *BoardScreen) renderOrbPickHint() {
+	hint := "Click an Orb card to select it."
+	switch screen.orbPickMode {
+	case orbPickPeek:
+		hint = "Click an enemy Orb card to peek it."
+	case orbPickReveal:
+		hint = "Click one of your Orb cards to reveal it to the opponent."
+	}
+	screen.renderDecisionStrip(decisionStripConfig{
+		Hint:           hint,
+		SecondaryLabel: "Cancel",
+		Secondary:      screen.cancelOrbPick,
+	})
 }
 
 func (screen *BoardScreen) updatePhaseButtons() {
@@ -1311,7 +1499,7 @@ func (screen *BoardScreen) updatePhaseButtons() {
 		}
 		if match.Turn.Phase == model.PhaseBattle &&
 			match.Turn.ActivePlayer == match.ViewerID &&
-			viewerHasMandatoryAttacker(match) {
+			viewerHasMandatoryAttacker(match, screen.definitions) {
 			hint += "  •  Attack with every able Servant before ending Battle"
 		}
 		if match.ChaseLinkCount > 0 {
@@ -1347,7 +1535,7 @@ func (screen *BoardScreen) updatePhaseButtons() {
 				phase == completionTarget
 		if legalCompletion &&
 			match.Turn.Phase == model.PhaseBattle &&
-			viewerHasMandatoryAttacker(match) {
+			viewerHasMandatoryAttacker(match, screen.definitions) {
 			legalCompletion = false
 		}
 		if !legalCompletion {
@@ -1635,6 +1823,7 @@ func newPlayerBoardController(
 		canCallLevelOne,
 		canCastCards,
 	))
+	board.applyAllCosmetics()
 
 	centerRows := []fyne.CanvasObject{board.hand, board.caster, board.barriers, board.servants}
 	pileZones := []fyne.CanvasObject{board.exile, board.graveyard, board.deck}
@@ -1770,8 +1959,30 @@ func (board *playerBoardController) update(
 	board.canNonElemental = canNonElemental
 	board.canCasterAether = canCasterAether
 	board.canUseToken = canUseToken
+	board.applyAllCosmetics()
 	if board.host != nil {
 		board.host.refreshDropTargets()
+	}
+}
+
+func (board *playerBoardController) applyAllCosmetics() {
+	if board == nil || board.host == nil {
+		return
+	}
+	cosmetics := cosmeticsForPlayer(board.host.match, board.player.ID)
+	for _, holder := range []*fyne.Container{
+		board.orbs,
+		board.deck,
+		board.graveyard,
+		board.exile,
+		board.servants,
+		board.barriers,
+		board.caster,
+		board.hand,
+	} {
+		for _, tile := range collectCardTiles(holder) {
+			applyTileCosmetics(tile, cosmetics)
+		}
 	}
 }
 
@@ -2830,7 +3041,7 @@ func (stack *verticalCardStackLayout) Layout(objects []fyne.CanvasObject, size f
 }
 
 func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) fyne.CanvasObject {
-	var onPrimary func()
+	var onPrimaryAt func(int)
 	var onSecondary func(*fyne.PointEvent)
 	canPeek := !board.isViewer && board.actions.PeekOrb != nil && len(cards) > 0
 	canReveal := board.isViewer && board.actions.RevealOrb != nil && len(cards) > 0
@@ -2839,9 +3050,15 @@ func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) f
 			board.showOrbContextMenu(event)
 		}
 	}
-	if !board.isViewer && board.host != nil {
-		onPrimary = func() {
-			board.host.handleOpponentOrbPrimaryTap()
+	if board.host != nil {
+		if !board.isViewer {
+			onPrimaryAt = func(index int) {
+				board.host.handleOpponentOrbPrimaryTap(index)
+			}
+		} else {
+			onPrimaryAt = func(index int) {
+				board.host.handleViewerOrbPrimaryTap(index)
+			}
 		}
 	}
 	return newLayeredOrbZone(
@@ -2850,7 +3067,7 @@ func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) f
 		board.definitions,
 		board.preview,
 		!board.isViewer,
-		onPrimary,
+		onPrimaryAt,
 		onSecondary,
 	)
 }
@@ -2882,11 +3099,11 @@ func newLayeredOrbZone(
 	definitions cardLookup,
 	preview previewState,
 	alignBottom bool,
-	onPrimary func(),
+	onPrimaryAt func(int),
 	onSecondary func(*fyne.PointEvent),
 ) fyne.CanvasObject {
 	objects := make([]fyne.CanvasObject, 0, len(cardViews))
-	for _, projectedCard := range cardViews {
+	for index, projectedCard := range cardViews {
 		definition := definitions[projectedCard.CardID]
 		onHidden := func() { preview.showHiddenCard(playerName, "Orb Zone") }
 		onShow := preview.showCard
@@ -2902,8 +3119,11 @@ func newLayeredOrbZone(
 			onHidden,
 			true,
 		)
-		if onPrimary != nil {
-			tile.OnActivate = onPrimary
+		if onPrimaryAt != nil {
+			orbIndex := index
+			tile.OnActivate = func() {
+				onPrimaryAt(orbIndex)
+			}
 		}
 		objects = append(objects, tile)
 	}
@@ -2923,8 +3143,9 @@ func newLayeredOrbZone(
 		preview,
 		fyne.Size{},
 	)
-	if onPrimary != nil || onSecondary != nil {
-		return newZoneInteractLayer(zone, onPrimary, onSecondary)
+	// Zone-level secondary for context menu; primary taps go to individual Orb tiles.
+	if onSecondary != nil {
+		return newZoneInteractLayer(zone, nil, onSecondary)
 	}
 	return zone
 }
@@ -3432,7 +3653,7 @@ func newCompactDeckZone(
 	content := fyne.CanvasObject(layout.NewSpacer())
 	if count > 0 {
 		cardBack := NewCardTile(
-			simulatorview.CardView{Face: model.CardFaceDown},
+			simulatorview.CardView{Face: model.CardFaceDown, ShowFace: false},
 			cards.Card{},
 			fyne.NewSize(utilityCardWidth, utilityCardHeight),
 			preview.showCard,

@@ -147,6 +147,35 @@ test("sanitizes, stores, and serves an accepted asset", async () => {
   assert.equal(served.headers.get("Access-Control-Allow-Origin"), "*");
 });
 
+test("sanitizes, stores, and serves a near-square caster token", async () => {
+  const env = testEnvironment();
+  env.IMAGES.info = async () => ({ width: 512, height: 512, format: "image/png" });
+  const handler = createHandler({ fetchImpl: passingTurnstile });
+  const response = await handler.fetch(uploadRequest({ kind: "simulator-caster-token" }), env);
+  assert.equal(response.status, 201);
+  const result = await response.json();
+  assert.equal(result.kind, "simulator-caster-token");
+  assert.match(
+    result.url,
+    /^https:\/\/custom-assets\.casterscompendium\.com\/assets\/simulator-caster-token\/[0-9a-f]{64}\.png$/,
+  );
+
+  const served = await handler.fetch(new Request(result.url), env);
+  assert.equal(served.status, 200);
+  assert.equal(served.headers.get("Content-Type"), "image/png");
+});
+
+test("rejects extreme aspect ratios for caster tokens", async () => {
+  const env = testEnvironment();
+  env.IMAGES.info = async () => ({ width: 1000, height: 400, format: "png" });
+  const response = await createHandler({ fetchImpl: passingTurnstile }).fetch(
+    uploadRequest({ kind: "simulator-caster-token" }),
+    env,
+  );
+  assert.equal(response.status, 400);
+  assert.match((await response.json()).error, /near-square/i);
+});
+
 test("content-addressed uploads do not rewrite an existing object", async () => {
   const env = testEnvironment();
   let writes = 0;

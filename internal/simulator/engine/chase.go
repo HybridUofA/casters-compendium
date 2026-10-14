@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/HybridUofA/casters-compendium/internal/simulator/effects"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
@@ -131,17 +132,39 @@ func resolveTopChaseLink(state *model.MatchState, catalog rules.CardCatalog, act
 			if err := resolveServantCardPlay(state, topLink, instance); err != nil {
 				return fmt.Errorf("error resolving Servant card play: %w", err)
 			}
+			noteServantEntered(state, topLink.Controller, topLink.SourceCardID)
+			noteCardPlayed(state, catalog, topLink.Controller, instance.CardID)
+			hadEnter := effects.HasMatch(&effectRegistry, effects.HookEnter, instance.CardID, "")
+			if catalog != nil {
+				if definition, found := catalog.FindByID(string(instance.CardID)); found {
+					hadEnter = effects.HasMatch(&effectRegistry, effects.HookEnter, instance.CardID, definition.Ability)
+				}
+			}
+			if err := triggerEnterEffects(state, catalog, topLink.SourceCardID); err != nil {
+				return fmt.Errorf("error resolving Servant Enter effects: %w", err)
+			}
+			if hadEnter {
+				noteEnterAbility(state, topLink.Controller)
+			}
 		case "conjure":
-			// Card-specific Conjure effects are handled manually in the alpha;
-			// resolving the card play still sends the card to its Graveyard.
+			// Move to Graveyard first, then run HookResolve recipes (draws, board wipes, …).
+			noteCardPlayed(state, catalog, topLink.Controller, instance.CardID)
 			if err := resolveConjureCardPlay(state, topLink, instance); err != nil {
 				return fmt.Errorf("error resolving Conjure card play: %w", err)
 			}
+			if err := triggerResolveEffects(state, catalog, topLink.SourceCardID); err != nil {
+				return fmt.Errorf("error resolving Conjure effects: %w", err)
+			}
 		case "barrier":
-			// Card-specific Barrier effects are handled manually in the alpha;
-			// the persistent card itself enters the shared field zone.
+			// The persistent card itself enters the shared field zone; Enter
+			// handlers run the same path as Servants when registered.
 			if err := resolveBarrierCardPlay(state, topLink, instance); err != nil {
 				return fmt.Errorf("error resolving Barrier card play: %w", err)
+			}
+			noteServantEntered(state, topLink.Controller, topLink.SourceCardID)
+			noteCardPlayed(state, catalog, topLink.Controller, instance.CardID)
+			if err := triggerEnterEffects(state, catalog, topLink.SourceCardID); err != nil {
+				return fmt.Errorf("error resolving Barrier Enter effects: %w", err)
 			}
 		default:
 			return fmt.Errorf("unsupported card-play type %q", definition.Type)
@@ -233,6 +256,14 @@ func PassPriority(state *model.MatchState, catalog rules.CardCatalog, actingPlay
 				state.PassCount = 0
 				state.PriorityHolder = ""
 			}
+			// Enter/Resolve targeting (e.g. Firewheel destroy) must be answered
+			// before priority continues — otherwise the active player is stuck
+			// holding an empty priority while a PendingChoice is open.
+			if state.PendingChoice.PlayerID != "" {
+				state.PrioritySequenceOpen = false
+				state.PassCount = 0
+				state.PriorityHolder = ""
+			}
 			state.Revision++
 			return nil
 		}
@@ -268,6 +299,14 @@ func PassPriority(state *model.MatchState, catalog rules.CardCatalog, actingPlay
 				state.PrioritySequenceOpen = false
 				state.PassCount = 0
 				state.PriorityHolder = ""
+				state.Revision++
+				return nil
+			}
+			// Mandatory Battle attacks: keep priority with the active player
+			// while recovered Servants (not Barriers) can still attack.
+			if state.Turn.Phase == model.PhaseBattle &&
+				activePlayerHasLegalAttacker(state, catalog) {
+				reopenPriorityForActivePlayer(state)
 				state.Revision++
 				return nil
 			}

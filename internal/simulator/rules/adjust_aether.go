@@ -87,6 +87,11 @@ func ParseAetherElementKey(raw string) (AetherElementKey, error) {
 	}
 }
 
+// AetherPoolAmount returns the current value for one Aether pool counter.
+func AetherPoolAmount(pool model.AetherPool, key AetherElementKey) int {
+	return aetherPoolAmount(pool, key)
+}
+
 func aetherPoolAmount(pool model.AetherPool, key AetherElementKey) int {
 	switch key {
 	case AetherElementAes:

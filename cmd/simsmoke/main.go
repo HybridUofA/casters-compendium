@@ -9,6 +9,7 @@ import (
 
 	"github.com/HybridUofA/casters-compendium/internal/simulator/matchboot"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/netclient"
+	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
 // simsmoke dials a running simhost, creates a room, joins it, and requests a view.
@@ -44,7 +45,7 @@ func main() {
 	if err := hostClient.Hello(ctx, "SmokeHost"); err != nil {
 		fail("host hello: %v", err)
 	}
-	created, err := hostClient.CreateRoom(ctx, "SmokeHost", "Smoke Room", deck, "")
+	created, err := hostClient.CreateRoom(ctx, "SmokeHost", "Smoke Room", deck, "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		fail("create room: %v", err)
 	}
@@ -53,7 +54,7 @@ func main() {
 	if err := guestClient.Hello(ctx, "SmokeGuest"); err != nil {
 		fail("guest hello: %v", err)
 	}
-	joined, err := guestClient.JoinRoom(ctx, created.RoomCode, "SmokeGuest", deck, "")
+	joined, err := guestClient.JoinRoom(ctx, created.RoomCode, "SmokeGuest", deck, "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		fail("join room: %v", err)
 	}

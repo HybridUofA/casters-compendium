@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/HybridUofA/casters-compendium/internal/simulator/effects"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
 
 func clearPendingChoice(state *model.MatchState) {
@@ -37,6 +39,8 @@ func OfferPendingChoice(state *model.MatchState, choice model.PendingChoice) err
 		Kind:         choice.Kind,
 		Prompt:       choice.Prompt,
 		AllowDecline: choice.AllowDecline,
+		SourceCardID: choice.SourceCardID,
+		Payload:      choice.Payload,
 	}
 	if len(choice.Options) > 0 {
 		state.PendingChoice.Options = append([]model.PendingChoiceOption(nil), choice.Options...)
@@ -47,10 +51,11 @@ func OfferPendingChoice(state *model.MatchState, choice model.PendingChoice) err
 	return nil
 }
 
-// ResolvePendingChoice accepts the open PendingChoice. Hybrid owns Kind-specific
-// side effects; this scaffolding validates the decision and clears the prompt.
+// ResolvePendingChoice accepts the open PendingChoice and runs Kind-specific
+// effect continuations when Kind is an effects pending key.
 func ResolvePendingChoice(
 	state *model.MatchState,
+	catalog rules.CardCatalog,
 	actingPlayerID model.PlayerID,
 	optionID string,
 	selectedCardIDs []model.MatchCardID,
@@ -97,8 +102,26 @@ func ResolvePendingChoice(
 	} else if len(selectedCardIDs) > 0 {
 		return fmt.Errorf("pending choice has no selectable cards")
 	}
-	// Kind-specific effect resolution is Hybrid-owned. Scaffolding clears only.
+	pending := state.PendingChoice
 	clearPendingChoice(state)
+	if err := effects.ContinuePendingChoice(pending, selectedCardIDs, optionID, effects.Context{
+		State:      state,
+		Source:     pending.SourceCardID,
+		Controller: actingPlayerID,
+		Catalog:    catalog,
+		DestroyField: func(cardID model.MatchCardID) error {
+			return destroyServantWithCause(state, catalog, cardID, destroyCauseEffect, actingPlayerID)
+		},
+		OfferChoice: func(choice model.PendingChoice) error {
+			return OfferPendingChoice(state, choice)
+		},
+	}); err != nil {
+		return err
+	}
+	// Nested OfferChoice (multi-step recipes) keeps priority paused.
+	if state.PendingChoice.PlayerID == "" && state.MatchStatus == model.StatusInProgress {
+		reopenPriorityForActivePlayer(state)
+	}
 	state.Revision++
 	return nil
 }
@@ -125,6 +148,9 @@ func DeclinePendingChoice(
 		return fmt.Errorf("pending choice cannot be declined")
 	}
 	clearPendingChoice(state)
+	if state.MatchStatus == model.StatusInProgress {
+		reopenPriorityForActivePlayer(state)
+	}
 	state.Revision++
 	return nil
 }

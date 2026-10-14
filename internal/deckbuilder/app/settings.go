@@ -2,6 +2,7 @@ package deckbuilder
 
 import (
 	"image/color"
+	"net/url"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -11,6 +12,9 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
+	deckexport "github.com/HybridUofA/casters-compendium/internal/deckbuilder/export"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
+	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 	sourcebackgrounds "github.com/HybridUofA/casters-compendium/internal/sources/backgrounds"
 )
 
@@ -38,6 +42,11 @@ const (
 	backgroundNoneLabel        = "None"
 	backgroundAcademyRiftLabel = "Academy Rift"
 	backgroundCasterDuelLabel  = "Caster Duel"
+)
+
+const (
+	simulatorCardBackPreferenceKey    = "simulator.card_back_url"
+	simulatorCasterTokenPreferenceKey = "simulator.caster_token_url"
 )
 
 var (
@@ -213,6 +222,41 @@ func loadAppearanceTheme(guiApp fyne.App) {
 	applyAppearanceTheme(guiApp, value)
 }
 
+// loadSimulatorCosmetics reads the saved allowlisted custom-asset URLs.
+func loadSimulatorCosmetics() simulatorview.PlayerCosmetics {
+	prefs := fyne.CurrentApp().Preferences()
+	return simulatorview.PlayerCosmetics{
+		CardBackURL: strings.TrimSpace(prefs.StringWithFallback(
+			simulatorCardBackPreferenceKey,
+			"",
+		)),
+		CasterTokenURL: strings.TrimSpace(prefs.StringWithFallback(
+			simulatorCasterTokenPreferenceKey,
+			"",
+		)),
+	}
+}
+
+// applySimulatorCosmetics stamps prefs cosmetics onto both local seats.
+func applySimulatorCosmetics(match *simulatorview.MatchView) {
+	if match == nil {
+		return
+	}
+	cosmetics := loadSimulatorCosmetics()
+	if cosmetics.CardBackURL == "" && cosmetics.CasterTokenURL == "" {
+		return
+	}
+	if match.Cosmetics == nil {
+		match.Cosmetics = make(map[model.PlayerID]simulatorview.PlayerCosmetics, 2)
+	}
+	for _, player := range match.Players {
+		if player.ID == "" {
+			continue
+		}
+		match.Cosmetics[player.ID] = cosmetics
+	}
+}
+
 // showSettingsDialog lets the user save and immediately apply appearance settings.
 func showSettingsDialog(window fyne.Window, guiApp fyne.App, onSaved func()) {
 	selection := widget.NewRadioGroup(
@@ -249,6 +293,22 @@ func showSettingsDialog(window fyne.Window, guiApp fyne.App, onSaved func()) {
 		),
 	))
 
+	cardBackEntry := widget.NewEntry()
+	cardBackEntry.SetText(guiApp.Preferences().StringWithFallback(simulatorCardBackPreferenceKey, ""))
+	cardBackEntry.SetPlaceHolder("Leave blank for the official card back")
+	cardBackEntry.Validator = deckexport.ValidateSimulatorCardBackURL
+
+	casterTokenEntry := widget.NewEntry()
+	casterTokenEntry.SetText(guiApp.Preferences().StringWithFallback(simulatorCasterTokenPreferenceKey, ""))
+	casterTokenEntry.SetPlaceHolder("Leave blank for the official caster token")
+	casterTokenEntry.Validator = deckexport.ValidateSimulatorCasterTokenURL
+
+	uploadURL, err := url.Parse(deckexport.CustomAssetUploadURL)
+	var uploadLink fyne.CanvasObject = widget.NewLabel(deckexport.CustomAssetUploadURL)
+	if err == nil {
+		uploadLink = widget.NewHyperlink("Upload and copy a custom image URL", uploadURL)
+	}
+
 	dialog.NewCustomConfirm(
 		"Settings",
 		"Save",
@@ -269,9 +329,30 @@ func showSettingsDialog(window fyne.Window, guiApp fyne.App, onSaved func()) {
 			),
 			widget.NewLabel("Artwork"),
 			backgroundSelection,
+			widget.NewSeparator(),
+			widget.NewLabelWithStyle(
+				"Simulator Cosmetics",
+				fyne.TextAlignLeading,
+				fyne.TextStyle{Bold: true},
+			),
+			uploadLink,
+			widget.NewLabel("Card back URL"),
+			cardBackEntry,
+			widget.NewLabel("Caster token URL"),
+			casterTokenEntry,
 		),
 		func(saved bool) {
 			if !saved {
+				return
+			}
+			cardBackURL := strings.TrimSpace(cardBackEntry.Text)
+			casterTokenURL := strings.TrimSpace(casterTokenEntry.Text)
+			if err := deckexport.ValidateSimulatorCardBackURL(cardBackURL); err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
+			if err := deckexport.ValidateSimulatorCasterTokenURL(casterTokenURL); err != nil {
+				dialog.ShowError(err, window)
 				return
 			}
 			value := appearanceThemeValue(selection.Selected)
@@ -279,6 +360,8 @@ func showSettingsDialog(window fyne.Window, guiApp fyne.App, onSaved func()) {
 			applyAppearanceTheme(guiApp, value)
 			background := backgroundValue(backgroundSelection.Selected)
 			guiApp.Preferences().SetString(backgroundPreferenceKey, background)
+			guiApp.Preferences().SetString(simulatorCardBackPreferenceKey, cardBackURL)
+			guiApp.Preferences().SetString(simulatorCasterTokenPreferenceKey, casterTokenURL)
 			if onSaved != nil {
 				onSaved()
 			}

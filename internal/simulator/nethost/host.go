@@ -119,7 +119,13 @@ func (host *Host) handleCreateRoom(client *wsClient, raw json.RawMessage) ([]byt
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return encodeError("bad_request", err.Error())
 	}
-	roomCode, playerID, roomName, err := host.Lobby.CreateRoom(payload.PlayerName, payload.RoomName, payload.Deck, payload.Password)
+	roomCode, playerID, roomName, err := host.Lobby.CreateRoom(
+		payload.PlayerName,
+		payload.RoomName,
+		payload.Deck,
+		payload.Password,
+		payload.Cosmetics,
+	)
 	if err != nil {
 		return encodeError("create_room_failed", err.Error())
 	}
@@ -150,7 +156,13 @@ func (host *Host) handleJoinRoom(client *wsClient, raw json.RawMessage) ([]byte,
 	if payload.Spectator {
 		playerID, err = host.Lobby.JoinSpectator(payload.RoomCode, payload.PlayerName, payload.Password)
 	} else {
-		playerID, err = host.Lobby.JoinRoom(payload.RoomCode, payload.PlayerName, payload.Deck, payload.Password)
+		playerID, err = host.Lobby.JoinRoom(
+			payload.RoomCode,
+			payload.PlayerName,
+			payload.Deck,
+			payload.Password,
+			payload.Cosmetics,
+		)
 	}
 	if err != nil {
 		return encodeError("join_room_failed", err.Error())

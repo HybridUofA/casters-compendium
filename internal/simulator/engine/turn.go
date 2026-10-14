@@ -180,7 +180,7 @@ func hasMandatoryEligibleAttacker(
 		return false
 	}
 	for _, cardID := range state.Players[actingIndex].ServantZone {
-		if err := validateAttacker(state, actingIndex, cardID); err != nil {
+		if err := validateAttacker(state, catalog, actingIndex, cardID); err != nil {
 			continue
 		}
 		if validateAttackTarget(state, catalog, cardID, opponentIndex, model.AttackTargetPlayer, "") == nil {
@@ -195,13 +195,36 @@ func hasMandatoryEligibleAttacker(
 	return false
 }
 
+func clearTemporaryCombatModifiers(state *model.MatchState) {
+	if state == nil {
+		return
+	}
+	// Effect-granted ATK/DEF last until end of turn. GrantedDoubleCorrupt stays
+	// (used for both temporary and lasting grants); until-EOT DC clears in the
+	// effect that granted it when we add duration tracking.
+	for id, instance := range state.CardInstances {
+		if instance.AttackModifier == 0 && instance.DefenseModifier == 0 {
+			continue
+		}
+		instance.AttackModifier = 0
+		instance.DefenseModifier = 0
+		state.CardInstances[id] = instance
+	}
+}
+
 func completeEndPhase(
 	state *model.MatchState,
+	catalog rules.CardCatalog,
 	actingPlayerID model.PlayerID,
 ) error {
 	if err := validatePhaseCompletion(state, actingPlayerID, model.PhaseEnd); err != nil {
 		return fmt.Errorf("error validating phase: %w", err)
 	}
+	if err := triggerFieldEndOfTurnEffects(state, catalog, actingPlayerID); err != nil {
+		return fmt.Errorf("end of turn effects: %w", err)
+	}
+	clearTemporaryCombatModifiers(state)
+	clearTurnEventFlags(state)
 	actingIndex := -1
 	for index := range state.Players {
 		if state.Players[index].ID == actingPlayerID {
@@ -264,7 +287,7 @@ func CompleteCurrentPhase(
 			return fmt.Errorf("transition from %q: %w", state.Turn.Phase, err)
 		}
 	case model.PhaseEnd:
-		if err := completeEndPhase(state, actingPlayerID); err != nil {
+		if err := completeEndPhase(state, catalog, actingPlayerID); err != nil {
 			return fmt.Errorf("transition from %q: %w", state.Turn.Phase, err)
 		}
 	default:

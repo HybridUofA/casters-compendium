@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 
+	"github.com/HybridUofA/casters-compendium/internal/simulator/engine/ops"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 )
 
@@ -43,8 +44,9 @@ func recoverPlayerCards(state *model.MatchState, playerID model.PlayerID) error 
 			return fmt.Errorf("card %q does not exist", cardID)
 		}
 		if instance.Orientation == model.OrientationRested {
-			instance.Orientation = model.OrientationRecovered
-			state.CardInstances[cardID] = instance
+			if err := ops.SetOrientation(state, cardID, model.OrientationRecovered); err != nil {
+				return fmt.Errorf("recover caster %q: %w", cardID, err)
+			}
 		}
 	}
 	for _, cardID := range state.Players[activeIndex].ServantZone {
@@ -53,8 +55,9 @@ func recoverPlayerCards(state *model.MatchState, playerID model.PlayerID) error 
 			return fmt.Errorf("card %q does not exist", cardID)
 		}
 		if instance.Orientation == model.OrientationRested {
-			instance.Orientation = model.OrientationRecovered
-			state.CardInstances[cardID] = instance
+			if err := ops.SetOrientation(state, cardID, model.OrientationRecovered); err != nil {
+				return fmt.Errorf("recover servant %q: %w", cardID, err)
+			}
 		}
 	}
 	return nil

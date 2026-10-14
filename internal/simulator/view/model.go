@@ -25,8 +25,16 @@ type MatchView struct {
 	Result               model.MatchResult
 	// DisplayNames maps seat/spectator IDs to lobby display names when known.
 	DisplayNames map[model.PlayerID]string
+	// Cosmetics maps seat IDs to player-chosen card-back and caster-token URLs.
+	Cosmetics map[model.PlayerID]PlayerCosmetics
 	// Spectator is true when ViewerID is not a match player seat.
 	Spectator bool
+}
+
+// PlayerCosmetics carries optional allowlisted custom-asset URLs for one seat.
+type PlayerCosmetics struct {
+	CardBackURL    string `json:"card_back_url,omitempty"`
+	CasterTokenURL string `json:"caster_token_url,omitempty"`
 }
 
 // PlayerView contains the zones and public counts that may be displayed for

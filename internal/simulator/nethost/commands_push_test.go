@@ -11,17 +11,18 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/protocol"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/session"
+	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
 func TestMutatingCommandReplyNotBlockedByStalledPeer(t *testing.T) {
 	lobby := NewLobby()
 	host := NewHost(lobby)
 
-	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), ""); err != nil {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "", simulatorview.PlayerCosmetics{}); err != nil {
 		t.Fatalf("JoinRoom() error = %v", err)
 	}
 

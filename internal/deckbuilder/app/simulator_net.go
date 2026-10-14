@@ -56,7 +56,7 @@ func showHostOnlineGame(
 						fyne.Do(func() { dialog.ShowError(fmt.Errorf("hello: %w", err), window) })
 						return
 					}
-					created, err := client.CreateRoom(ctx, playerName, roomName, deck, password)
+					created, err := client.CreateRoom(ctx, playerName, roomName, deck, password, loadSimulatorCosmetics())
 					if err != nil {
 						_ = client.Close()
 						fyne.Do(func() { dialog.ShowError(fmt.Errorf("create room: %w", err), window) })
@@ -110,7 +110,7 @@ func showJoinOnlineGame(
 						fyne.Do(func() { dialog.ShowError(fmt.Errorf("hello: %w", err), window) })
 						return
 					}
-					joined, err := client.JoinRoom(ctx, roomCode, playerName, deck, password)
+					joined, err := client.JoinRoom(ctx, roomCode, playerName, deck, password, loadSimulatorCosmetics())
 					if err != nil {
 						_ = client.Close()
 						fyne.Do(func() { dialog.ShowError(fmt.Errorf("join room: %w", err), window) })

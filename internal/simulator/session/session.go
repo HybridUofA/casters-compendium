@@ -175,6 +175,29 @@ func (session *PlayerSession) ActivateHildeWillow(
 	return peeked, enemyID, matchView, nil
 }
 
+// ActivateRegisteredRest pays Rest on a recovered field card and runs its
+// registered HookRest automation (used by solo AI and generic Rest UI).
+func (session *PlayerSession) ActivateRegisteredRest(
+	cardID model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.ActivateRegisteredRest(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("activate rest: %w", err)
+	}
+	return view.ProjectMatch(session.match.state, session.playerID)
+}
+
 // MoveDeckTopToBottom puts the top card of deckOwner's deck on the bottom.
 func (session *PlayerSession) MoveDeckTopToBottom(
 	deckOwnerID model.PlayerID,
@@ -325,10 +348,12 @@ func NewLocalMatch(state model.MatchState, seed engine.MatchSeed, catalog rules.
 	if err != nil {
 		return nil, fmt.Errorf("error displaying player two's state: %w", err)
 	}
+	random := engine.NewSeededRandom(seed)
+	state.EffectRandom = random
 	localMatch := &LocalMatch{
 		state:   state,
 		seed:    seed,
-		random:  engine.NewSeededRandom(seed),
+		random:  random,
 		catalog: catalog,
 	}
 	return localMatch, nil
@@ -911,6 +936,7 @@ func (session *PlayerSession) ResolvePendingChoice(
 	defer session.match.mu.Unlock()
 	if err := engine.ResolvePendingChoice(
 		&session.match.state,
+		session.match.catalog,
 		session.playerID,
 		optionID,
 		selectedCardIDs,

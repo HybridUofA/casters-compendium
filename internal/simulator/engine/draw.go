@@ -2,36 +2,15 @@ package engine
 
 import (
 	"fmt"
-	"strings"
 
+	"github.com/HybridUofA/casters-compendium/internal/simulator/engine/ops"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
 
+// DrawCards moves the top count cards of playerID's deck into their hand.
 func DrawCards(state *model.MatchState, playerID model.PlayerID, count int) error {
-	if state == nil {
-		return fmt.Errorf("state cannot be nil")
-	}
-	if strings.TrimSpace(string(playerID)) == "" {
-		return fmt.Errorf("player ID cannot be empty")
-	}
-	playerIndex := -1
-	for index, player := range state.Players {
-		if player.ID == playerID {
-			playerIndex = index
-			break
-		}
-	}
-	if playerIndex == -1 {
-		return fmt.Errorf("player not found")
-	}
-	taken, remaining, err := takeTopCards(state.Players[playerIndex].Deck, count)
-	if err != nil {
-		return fmt.Errorf("error taking cards: %w", err)
-	}
-	state.Players[playerIndex].Deck = remaining
-	state.Players[playerIndex].Hand = append(state.Players[playerIndex].Hand, taken...)
-	return nil
+	return ops.Draw(state, playerID, count)
 }
 
 // ManualDrawCards is the Cockatrice-style player command: draw N from your deck

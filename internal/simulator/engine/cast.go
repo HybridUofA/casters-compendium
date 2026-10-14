@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/HybridUofA/casters-compendium/internal/simulator/engine/ops"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
@@ -181,7 +182,9 @@ func castCardWithPlan(
 	if !exists {
 		return fmt.Errorf("card %q was not found in card instances", cardID)
 	}
-	applyCastAetherProductions(state, playerIndex, productions)
+	if err := applyCastAetherProductions(state, playerIndex, productions); err != nil {
+		return err
+	}
 	payAether(&state.Players[playerIndex].Aether, plan.Payment)
 	hand := state.Players[playerIndex].Hand
 	hand = slices.Delete(hand, cardIndex, cardIndex+1)
@@ -254,7 +257,7 @@ func validateCastAetherSources(
 	return productions, pool, nil
 }
 
-func applyCastAetherProductions(state *model.MatchState, playerIndex int, productions []castAetherProduction) {
+func applyCastAetherProductions(state *model.MatchState, playerIndex int, productions []castAetherProduction) error {
 	player := &state.Players[playerIndex]
 	for _, production := range productions {
 		if production.token {
@@ -264,15 +267,18 @@ func applyCastAetherProductions(state *model.MatchState, playerIndex int, produc
 			player.Aether.NonElemental++
 			continue
 		}
-		instance := state.CardInstances[production.cardID]
-		instance.Orientation = model.OrientationRested
-		state.CardInstances[production.cardID] = instance
+		if err := ops.SetOrientation(state, production.cardID, model.OrientationRested); err != nil {
+			return fmt.Errorf("rest caster %q for cast payment: %w", production.cardID, err)
+		}
 		if production.element == "" {
 			player.Aether.NonElemental += production.amount
 			continue
 		}
-		_ = addAether(&player.Aether, production.element, production.amount)
+		if err := addAether(&player.Aether, production.element, production.amount); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func addAether(pool *model.AetherPool, element model.Element, amount int) error {

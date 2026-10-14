@@ -9,12 +9,13 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/simulator/engine"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/session"
+	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
 func TestCreateRoomAssignsHostSeatAndStoresRoom(t *testing.T) {
 	lobby := NewLobby()
 
-	code, playerID, _, err := lobby.CreateRoom("Hybrid", "Friday Night", validTestDeck("Host Deck"), "")
+	code, playerID, _, err := lobby.CreateRoom("Hybrid", "Friday Night", validTestDeck("Host Deck"), "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
@@ -60,12 +61,12 @@ func TestNormalizeRoomNameDefaultsAndTruncates(t *testing.T) {
 
 func TestJoinRoomAssignsGuestSeat(t *testing.T) {
 	lobby := NewLobby()
-	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
 
-	playerID, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "")
+	playerID, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		t.Fatalf("JoinRoom() error = %v", err)
 	}
@@ -83,11 +84,11 @@ func TestJoinRoomAssignsGuestSeat(t *testing.T) {
 
 func TestJoinRoomRejectsMissingFullAndBlankNames(t *testing.T) {
 	lobby := NewLobby()
-	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), ""); err != nil {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "", simulatorview.PlayerCosmetics{}); err != nil {
 		t.Fatalf("first JoinRoom() error = %v", err)
 	}
 
@@ -103,28 +104,28 @@ func TestJoinRoomRejectsMissingFullAndBlankNames(t *testing.T) {
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
-			_, err := lobby.JoinRoom(testCase.roomCode, testCase.playerName, validTestDeck("Other Deck"), "")
+			_, err := lobby.JoinRoom(testCase.roomCode, testCase.playerName, validTestDeck("Other Deck"), "", simulatorview.PlayerCosmetics{})
 			if err == nil || !strings.Contains(err.Error(), testCase.wantErr) {
 				t.Fatalf("JoinRoom() error = %v; want containing %q", err, testCase.wantErr)
 			}
 		})
 	}
 
-	if _, _, _, err := lobby.CreateRoom("", "", validTestDeck("Blank"), ""); err == nil || !strings.Contains(err.Error(), "player name is required") {
+	if _, _, _, err := lobby.CreateRoom("", "", validTestDeck("Blank"), "", simulatorview.PlayerCosmetics{}); err == nil || !strings.Contains(err.Error(), "player name is required") {
 		t.Fatalf("CreateRoom(\"\") error = %v; want blank-name error", err)
 	}
 }
 
 func TestRoomPasswordAndSpectatorLobby(t *testing.T) {
 	lobby := NewLobby()
-	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "secret")
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "secret", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "wrong"); err == nil || !strings.Contains(err.Error(), "incorrect password") {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "wrong", simulatorview.PlayerCosmetics{}); err == nil || !strings.Contains(err.Error(), "incorrect password") {
 		t.Fatalf("JoinRoom(wrong password) error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "secret"); err != nil {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "secret", simulatorview.PlayerCosmetics{}); err != nil {
 		t.Fatalf("JoinRoom(correct password) error = %v", err)
 	}
 
@@ -160,11 +161,11 @@ func TestRoomPasswordAndSpectatorLobby(t *testing.T) {
 
 func TestAttachMatchStoresSessionsForBothSeats(t *testing.T) {
 	lobby := NewLobby()
-	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), ""); err != nil {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "", simulatorview.PlayerCosmetics{}); err != nil {
 		t.Fatalf("JoinRoom() error = %v", err)
 	}
 
@@ -196,7 +197,7 @@ func TestAttachMatchStoresSessionsForBothSeats(t *testing.T) {
 
 func TestAttachMatchAndSessionRejectInvalidStates(t *testing.T) {
 	lobby := NewLobby()
-	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "")
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "", simulatorview.PlayerCosmetics{})
 	if err != nil {
 		t.Fatalf("CreateRoom() error = %v", err)
 	}
@@ -205,7 +206,7 @@ func TestAttachMatchAndSessionRejectInvalidStates(t *testing.T) {
 	if err := lobby.AttachMatch(code, match); err == nil || !strings.Contains(err.Error(), "room must contain 2 players") {
 		t.Fatalf("AttachMatch(one player) error = %v", err)
 	}
-	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), ""); err != nil {
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "", simulatorview.PlayerCosmetics{}); err != nil {
 		t.Fatalf("JoinRoom() error = %v", err)
 	}
 	if err := lobby.AttachMatch("ZZZZ", match); err == nil || !strings.Contains(err.Error(), "room not found") {
@@ -257,5 +258,44 @@ func validTestDeck(name string) decks.Deck {
 	return decks.Deck{
 		SchemaVersion: 1,
 		Name:          name,
+	}
+}
+
+func TestCreateAndJoinRoomStoresValidatedCosmetics(t *testing.T) {
+	lobby := NewLobby()
+	hostCosmetics := simulatorview.PlayerCosmetics{
+		CardBackURL: "https://custom-assets.casterscompendium.com/assets/tts-card-back/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.png",
+	}
+	guestCosmetics := simulatorview.PlayerCosmetics{
+		CasterTokenURL: "https://custom-assets.casterscompendium.com/assets/simulator-caster-token/fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210.png",
+	}
+
+	code, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "", hostCosmetics)
+	if err != nil {
+		t.Fatalf("CreateRoom() error = %v", err)
+	}
+	if _, err := lobby.JoinRoom(code, "Guest", validTestDeck("Guest Deck"), "", guestCosmetics); err != nil {
+		t.Fatalf("JoinRoom() error = %v", err)
+	}
+
+	lobby.mu.Lock()
+	room := lobby.rooms[code]
+	got := room.PlayerCosmetics()
+	lobby.mu.Unlock()
+	if got["player-one"] != hostCosmetics {
+		t.Fatalf("host cosmetics = %#v; want %#v", got["player-one"], hostCosmetics)
+	}
+	if got["player-two"] != guestCosmetics {
+		t.Fatalf("guest cosmetics = %#v; want %#v", got["player-two"], guestCosmetics)
+	}
+}
+
+func TestCreateRoomRejectsNonAllowlistedCosmetics(t *testing.T) {
+	lobby := NewLobby()
+	_, _, _, err := lobby.CreateRoom("Host", "", validTestDeck("Host Deck"), "", simulatorview.PlayerCosmetics{
+		CardBackURL: "https://evil.example/assets/tts-card-back/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.png",
+	})
+	if err == nil || !strings.Contains(err.Error(), "cosmetics") {
+		t.Fatalf("CreateRoom() error = %v; want cosmetics rejection", err)
 	}
 }

@@ -10,10 +10,12 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	deckexport "github.com/HybridUofA/casters-compendium/internal/deckbuilder/export"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/protocol"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/session"
+	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
 const maxRoomNameRunes = 48
@@ -40,6 +42,7 @@ type Room struct {
 	Players        map[string]string
 	Spectators     map[string]string
 	Decks          map[string]decks.Deck
+	Cosmetics      map[string]simulatorview.PlayerCosmetics
 	Match          *session.LocalMatch
 	Sessions       map[string]*session.PlayerSession
 	nextSpectatorN int
@@ -105,12 +108,49 @@ func (room *Room) DisplayNames() map[string]string {
 	return names
 }
 
-func (lobby *Lobby) CreateRoom(playerName, roomName string, deck decks.Deck, password string) (roomCode, playerID, resolvedName string, err error) {
+func (room *Room) PlayerCosmetics() map[string]simulatorview.PlayerCosmetics {
+	if room == nil || len(room.Cosmetics) == 0 {
+		return nil
+	}
+	out := make(map[string]simulatorview.PlayerCosmetics, len(room.Cosmetics))
+	for id, cosmetics := range room.Cosmetics {
+		out[id] = cosmetics
+	}
+	return out
+}
+
+func validatePlayerCosmetics(cosmetics simulatorview.PlayerCosmetics) error {
+	if err := deckexport.ValidateSimulatorCardBackURL(cosmetics.CardBackURL); err != nil {
+		return err
+	}
+	if err := deckexport.ValidateSimulatorCasterTokenURL(cosmetics.CasterTokenURL); err != nil {
+		return err
+	}
+	return nil
+}
+
+func normalizePlayerCosmetics(cosmetics simulatorview.PlayerCosmetics) simulatorview.PlayerCosmetics {
+	return simulatorview.PlayerCosmetics{
+		CardBackURL:    strings.TrimSpace(cosmetics.CardBackURL),
+		CasterTokenURL: strings.TrimSpace(cosmetics.CasterTokenURL),
+	}
+}
+
+func (lobby *Lobby) CreateRoom(
+	playerName, roomName string,
+	deck decks.Deck,
+	password string,
+	cosmetics simulatorview.PlayerCosmetics,
+) (roomCode, playerID, resolvedName string, err error) {
 	if playerName == "" {
 		return "", "", "", fmt.Errorf("player name is required")
 	}
 	if err := deck.Validate(); err != nil {
 		return "", "", "", fmt.Errorf("deck: %w", err)
+	}
+	cosmetics = normalizePlayerCosmetics(cosmetics)
+	if err := validatePlayerCosmetics(cosmetics); err != nil {
+		return "", "", "", fmt.Errorf("cosmetics: %w", err)
 	}
 	lobby.mu.Lock()
 	defer lobby.mu.Unlock()
@@ -126,7 +166,7 @@ func (lobby *Lobby) CreateRoom(playerName, roomName string, deck decks.Deck, pas
 	}
 	playerID = "player-one"
 	resolvedName = normalizeRoomName(roomName, playerName)
-	lobby.rooms[roomCode] = &Room{
+	room := &Room{
 		Code:         roomCode,
 		Name:         resolvedName,
 		PasswordHash: hashRoomPassword(password),
@@ -134,15 +174,28 @@ func (lobby *Lobby) CreateRoom(playerName, roomName string, deck decks.Deck, pas
 		Spectators:   map[string]string{},
 		Decks:        map[string]decks.Deck{playerID: deck},
 	}
+	if cosmetics.CardBackURL != "" || cosmetics.CasterTokenURL != "" {
+		room.Cosmetics = map[string]simulatorview.PlayerCosmetics{playerID: cosmetics}
+	}
+	lobby.rooms[roomCode] = room
 	return roomCode, playerID, resolvedName, nil
 }
 
-func (lobby *Lobby) JoinRoom(roomCode, playerName string, deck decks.Deck, password string) (playerID string, err error) {
+func (lobby *Lobby) JoinRoom(
+	roomCode, playerName string,
+	deck decks.Deck,
+	password string,
+	cosmetics simulatorview.PlayerCosmetics,
+) (playerID string, err error) {
 	if playerName == "" {
 		return "", fmt.Errorf("player name is required")
 	}
 	if err := deck.Validate(); err != nil {
 		return "", fmt.Errorf("deck: %w", err)
+	}
+	cosmetics = normalizePlayerCosmetics(cosmetics)
+	if err := validatePlayerCosmetics(cosmetics); err != nil {
+		return "", fmt.Errorf("cosmetics: %w", err)
 	}
 	lobby.mu.Lock()
 	defer lobby.mu.Unlock()
@@ -165,6 +218,12 @@ func (lobby *Lobby) JoinRoom(roomCode, playerName string, deck decks.Deck, passw
 		room.Decks = make(map[string]decks.Deck)
 	}
 	room.Decks[playerID] = deck
+	if cosmetics.CardBackURL != "" || cosmetics.CasterTokenURL != "" {
+		if room.Cosmetics == nil {
+			room.Cosmetics = make(map[string]simulatorview.PlayerCosmetics)
+		}
+		room.Cosmetics[playerID] = cosmetics
+	}
 	return playerID, nil
 }
 

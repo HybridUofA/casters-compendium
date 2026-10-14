@@ -46,9 +46,10 @@ func (host *Host) handleCommand(client *wsClient, raw json.RawMessage) ([]byte, 
 	}
 
 	reply, err := protocol.Encode(protocol.KindView, protocol.ViewPayload{
-		Match:        host.withDisplayNames(roomCode, result.view),
+		Match:        host.withCosmetics(roomCode, host.withDisplayNames(roomCode, result.view)),
 		Private:      result.private,
 		DisplayNames: host.displayNames(roomCode),
+		Cosmetics:    host.cosmetics(roomCode),
 	})
 	if err != nil {
 		return nil, err
@@ -85,6 +86,16 @@ func (host *Host) displayNames(roomCode string) map[string]string {
 	return room.DisplayNames()
 }
 
+func (host *Host) cosmetics(roomCode string) map[string]simulatorview.PlayerCosmetics {
+	host.Lobby.mu.Lock()
+	defer host.Lobby.mu.Unlock()
+	room, ok := host.Lobby.rooms[roomCode]
+	if !ok {
+		return nil
+	}
+	return room.PlayerCosmetics()
+}
+
 func (host *Host) withDisplayNames(roomCode string, matchView simulatorview.MatchView) simulatorview.MatchView {
 	names := host.displayNames(roomCode)
 	if len(names) == 0 {
@@ -93,6 +104,18 @@ func (host *Host) withDisplayNames(roomCode string, matchView simulatorview.Matc
 	matchView.DisplayNames = make(map[model.PlayerID]string, len(names))
 	for id, name := range names {
 		matchView.DisplayNames[model.PlayerID(id)] = name
+	}
+	return matchView
+}
+
+func (host *Host) withCosmetics(roomCode string, matchView simulatorview.MatchView) simulatorview.MatchView {
+	cosmetics := host.cosmetics(roomCode)
+	if len(cosmetics) == 0 {
+		return matchView
+	}
+	matchView.Cosmetics = make(map[model.PlayerID]simulatorview.PlayerCosmetics, len(cosmetics))
+	for id, value := range cosmetics {
+		matchView.Cosmetics[model.PlayerID(id)] = value
 	}
 	return matchView
 }
@@ -436,6 +459,7 @@ func (host *Host) pushViews(roomCode, exceptPlayerID string) {
 		return
 	}
 	names := host.displayNames(roomCode)
+	cosmetics := host.cosmetics(roomCode)
 	for _, client := range host.clientsInRoom(roomCode) {
 		if client.playerID == "" || client.playerID == exceptPlayerID {
 			continue
@@ -451,10 +475,11 @@ func (host *Host) pushViews(roomCode, exceptPlayerID string) {
 		if err != nil {
 			continue
 		}
-		matchView = host.withDisplayNames(roomCode, matchView)
+		matchView = host.withCosmetics(roomCode, host.withDisplayNames(roomCode, matchView))
 		raw, err := protocol.Encode(protocol.KindView, protocol.ViewPayload{
 			Match:        matchView,
 			DisplayNames: names,
+			Cosmetics:    cosmetics,
 		})
 		if err != nil {
 			continue

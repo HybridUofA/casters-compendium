@@ -161,6 +161,7 @@ func PlayBreak(
 		EntryOrientation: entryOrientation,
 	})
 	state.NextLinkID++
+	noteBreakPlayed(state, actingPlayerID)
 	state.PendingBreak.CardIDs = state.PendingBreak.CardIDs[1:]
 	if len(state.PendingBreak.CardIDs) == 0 {
 		clearPendingBreak(state)

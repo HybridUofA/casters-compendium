@@ -105,6 +105,7 @@ func NewMatch(
 	if repository == nil {
 		return nil, fmt.Errorf("card repository cannot be nil")
 	}
+	engine.RegisterDefaultEffectHandlers()
 	state, err := engine.BeginSetup(engine.SetupInput{
 		Players: [2]engine.PlayerSetup{
 			{ID: "player-one", Deck: playerDecks[0]},

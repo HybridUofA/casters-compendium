@@ -16,20 +16,21 @@ import (
 )
 
 type mainMenuActions struct {
-	PlayGame         func()
-	OnlineLobby      func()
-	HostOnlineGame   func()
-	JoinOnlineGame   func()
-	OpenDeckEditor   func()
-	NewDeck          func()
-	LoadDeck         func()
-	GenerateImage    func()
-	GenerateDecklist func()
-	UpdateDatabase   func()
-	Changelog        func()
-	HowToUse         func()
-	Diagnostics      func()
-	Settings         func()
+	PlayGame          func()
+	PlaySoloVsTsubasa func()
+	OnlineLobby       func()
+	HostOnlineGame    func()
+	JoinOnlineGame    func()
+	OpenDeckEditor    func()
+	NewDeck           func()
+	LoadDeck          func()
+	GenerateImage     func()
+	GenerateDecklist  func()
+	UpdateDatabase    func()
+	Changelog         func()
+	HowToUse          func()
+	Diagnostics       func()
+	Settings          func()
 }
 
 // buildMainMenu constructs the application's primary workflow chooser.
@@ -45,6 +46,10 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 	playButton := widget.NewButton("Play a Game (Hotseat)", actions.PlayGame)
 	if actions.PlayGame == nil {
 		playButton.Disable()
+	}
+	soloButton := widget.NewButton("Solo vs Tsubasa", actions.PlaySoloVsTsubasa)
+	if actions.PlaySoloVsTsubasa == nil {
+		soloButton.Disable()
 	}
 	lobbyButton := widget.NewButton("Online Lobby", actions.OnlineLobby)
 	if actions.OnlineLobby == nil {
@@ -68,6 +73,7 @@ func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObjec
 		description,
 		widget.NewSeparator(),
 		playButton,
+		soloButton,
 		lobbyButton,
 		hostButton,
 		joinButton,
