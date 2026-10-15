@@ -257,6 +257,23 @@ func (host *Host) clientsInRoom(roomCode string) []*wsClient {
 	return out
 }
 
+// clearRoomBindings detaches websocket clients from a closed room so later
+// commands cannot target a removed match.
+func (host *Host) clearRoomBindings(roomCode string) {
+	if host == nil || roomCode == "" {
+		return
+	}
+	host.mu.Lock()
+	defer host.mu.Unlock()
+	for client := range host.clients {
+		if client.roomCode == roomCode {
+			client.roomCode = ""
+			client.playerID = ""
+			client.spectator = false
+		}
+	}
+}
+
 func encodeError(code, message string) ([]byte, error) {
 	return protocol.Encode(protocol.KindError, protocol.ErrorPayload{
 		Code:    code,

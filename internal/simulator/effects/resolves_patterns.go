@@ -463,7 +463,7 @@ func resolveAlliedATK(delta int) func(Context) error {
 		if err != nil {
 			return err
 		}
-		targets := append([]model.MatchCardID(nil), ctx.State.Players[idx].ServantZone...)
+		targets := zoneServants(ctx, idx)
 		return offerOrSkip(ctx, model.PendingChoice{
 			PlayerID:          ctx.Controller,
 			Kind:              PendingModifyATK,
@@ -483,7 +483,7 @@ func resolveAlliedATK4000AndDC(ctx Context) error {
 	if err != nil {
 		return err
 	}
-	targets := append([]model.MatchCardID(nil), ctx.State.Players[idx].ServantZone...)
+	targets := zoneServants(ctx, idx)
 	// Use ATK pending; grant DC in continuation via combined kind — do ATK then DC on same target.
 	return offerOrSkip(ctx, model.PendingChoice{
 		PlayerID:          ctx.Controller,

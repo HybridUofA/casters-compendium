@@ -141,12 +141,45 @@ func isServantInstance(ctx Context, instance model.CardInstance) bool {
 	case "servant":
 		return true
 	default:
+		// Barriers (and other types) share ServantZone storage but are not servants.
 		return false
 	}
 }
 
 func isBarrierInstance(ctx Context, instance model.CardInstance) bool {
 	return printedType(ctx, instance) == "barrier"
+}
+
+// zoneServants returns Servant-type cards in playerIndex's servant zone.
+func zoneServants(ctx Context, playerIndex int) []model.MatchCardID {
+	if ctx.State == nil || playerIndex < 0 || playerIndex > 1 {
+		return nil
+	}
+	var out []model.MatchCardID
+	for _, id := range ctx.State.Players[playerIndex].ServantZone {
+		inst, ok := ctx.State.CardInstances[id]
+		if !ok || !isServantInstance(ctx, inst) {
+			continue
+		}
+		out = append(out, id)
+	}
+	return out
+}
+
+func filterServants(ctx Context, ids []model.MatchCardID) []model.MatchCardID {
+	out := make([]model.MatchCardID, 0, len(ids))
+	for _, id := range ids {
+		inst, ok := ctx.State.CardInstances[id]
+		if !ok || !isServantInstance(ctx, inst) {
+			continue
+		}
+		out = append(out, id)
+	}
+	return out
+}
+
+func countZoneServants(ctx Context, playerIndex int) int {
+	return len(zoneServants(ctx, playerIndex))
 }
 
 func printedType(ctx Context, instance model.CardInstance) string {

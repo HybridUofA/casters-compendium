@@ -58,7 +58,16 @@ func (host *Host) handleCommand(client *wsClient, raw json.RawMessage) ([]byte, 
 	// Reply to the acting player first. Peer fan-out must not block their
 	// command round-trip (a stalled peer write previously froze online play).
 	if result.mutate {
-		go host.pushViews(roomCode, playerID)
+		finished := result.view.MatchStatus == model.StatusFinished
+		go func() {
+			host.pushViews(roomCode, playerID)
+			if finished {
+				// Drop the room from the open lobby once both seats have the
+				// finished view so it no longer appears as joinable/in-progress.
+				host.Lobby.CloseRoom(roomCode)
+				host.clearRoomBindings(roomCode)
+			}
+		}()
 	}
 	return reply, nil
 }
@@ -168,6 +177,15 @@ func (host *Host) applyCommand(
 			return commandResult{}, err
 		}
 		return commandResult{view: matchView}, nil
+	case "send_chat":
+		var args struct {
+			Text string `json:"text"`
+		}
+		if err := json.Unmarshal(payload.Args, &args); err != nil {
+			return commandResult{}, err
+		}
+		// Chat does not bump MatchState.Revision, but peers still need a push.
+		return mutatingView(playerSession.SendChat(args.Text))
 	case "pass_priority":
 		return mutatingView(playerSession.PassPriority(revision))
 	case "complete_current_phase":
@@ -385,6 +403,22 @@ func (host *Host) applyCommand(
 			indexes = []int{args.OrbIndex}
 		}
 		return mutatingView(playerSession.CorruptOrbs(indexes, revision))
+	case "manual_corrupt_orb":
+		var args struct {
+			OrbID model.MatchCardID `json:"orb_id"`
+		}
+		if err := json.Unmarshal(payload.Args, &args); err != nil {
+			return commandResult{}, err
+		}
+		return mutatingView(playerSession.ManualCorruptOrb(args.OrbID, revision))
+	case "manual_banish_orb":
+		var args struct {
+			OrbID model.MatchCardID `json:"orb_id"`
+		}
+		if err := json.Unmarshal(payload.Args, &args); err != nil {
+			return commandResult{}, err
+		}
+		return mutatingView(playerSession.ManualBanishOrb(args.OrbID, revision))
 	case "set_granted_double_corrupt":
 		var args struct {
 			CardID  model.MatchCardID `json:"card_id"`
@@ -394,6 +428,15 @@ func (host *Host) applyCommand(
 			return commandResult{}, err
 		}
 		return mutatingView(playerSession.SetGrantedDoubleCorrupt(args.CardID, args.Enabled, revision))
+	case "set_field_orientation":
+		var args struct {
+			CardID      model.MatchCardID     `json:"card_id"`
+			Orientation model.CardOrientation `json:"orientation"`
+		}
+		if err := json.Unmarshal(payload.Args, &args); err != nil {
+			return commandResult{}, err
+		}
+		return mutatingView(playerSession.SetFieldOrientation(args.CardID, args.Orientation, revision))
 	case "play_break":
 		var args struct {
 			CardID           model.MatchCardID     `json:"card_id"`

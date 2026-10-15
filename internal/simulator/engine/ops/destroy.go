@@ -43,6 +43,7 @@ func DestroyServant(state *model.MatchState, cardID model.MatchCardID) error {
 	instance.EnteredOnTurn = 0
 	instance.GrantedSlowStartUntilEOT = false
 	instance.LosesSlowStartUntilEOT = false
+	instance.GrantedVoidRestATK500UntilEOT = false
 	instance.BattledThisTurn = false
 	state.Players[ownerIndex].Graveyard = append(state.Players[ownerIndex].Graveyard, cardID)
 	state.CardInstances[cardID] = instance

@@ -18,24 +18,26 @@ type manualMoveSource struct {
 }
 
 func (screen *BoardScreen) updateManualMoves() {
-	host := screen.preview.manualActions
-	host.Objects = nil
-	if screen.actions.MoveCard != nil && screen.match.MatchStatus == model.StatusInProgress {
-		button := widget.NewButton("Move a card…", func() {
-			host.Objects = []fyne.CanvasObject{screen.newManualMovePanel()}
-			refreshContainerStructure(host)
-		})
-		host.Objects = []fyne.CanvasObject{button}
+	// Manual moves are opened from card right-click ("Move…"). The left-rail
+	// Actions strip was removed; this hook remains for revision resets/tests.
+	if screen == nil || screen.preview.manualActions == nil {
+		return
 	}
-	refreshContainerStructure(host)
+	screen.preview.manualActions.Objects = nil
+	refreshContainerStructure(screen.preview.manualActions)
 }
 
 func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
-	// Capture the revision represented by these choices, never substitute a
-	// newer revision when submitting an older selection.
+	return screen.newManualMovePanelForCard(simulatorview.CardView{})
+}
+
+// newManualMovePanelForCard builds the Cockatrice-style move form. When card has
+// a MatchID, that card is pre-selected as the move source.
+func (screen *BoardScreen) newManualMovePanelForCard(preselect simulatorview.CardView) fyne.CanvasObject {
 	match := screen.match
 	sources := make(map[string]manualMoveSource)
 	options := []string{}
+	preselectLabel := ""
 	for _, player := range match.Players {
 		if player.ID != match.ViewerID {
 			continue
@@ -69,6 +71,9 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 				label := fmt.Sprintf("%d. %s — %s", len(options)+1, string(name), group.zone)
 				options = append(options, label)
 				sources[label] = manualMoveSource{card: card, zone: group.zone}
+				if preselect.MatchID != "" && card.MatchID == preselect.MatchID {
+					preselectLabel = label
+				}
 			}
 		}
 	}
@@ -161,7 +166,6 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 				}
 			}
 		}
-		// Non-field destinations must stay on the card owner's side.
 		if !field && source.card.Owner != "" {
 			destination = source.card.Owner
 		}
@@ -196,6 +200,9 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 	faceChoice.OnChanged = func(string) { update(false) }
 	orientationChoice.OnChanged = func(string) { update(false) }
 	placementChoice.OnChanged = func(string) { update(false) }
+	if preselectLabel != "" {
+		cardChoice.SetSelected(preselectLabel)
+	}
 	update(true)
 	note := widget.NewLabel("Move a printed card you control between supported zones.")
 	note.Wrapping = fyne.TextWrapWord
@@ -203,5 +210,5 @@ func (screen *BoardScreen) newManualMovePanel() fyne.CanvasObject {
 	limits.Wrapping = fyne.TextWrapWord
 	limits.Importance = widget.LowImportance
 	heading := widget.NewLabelWithStyle("Manual move", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
-	return container.NewVBox(heading, note, limits, widget.NewSeparator(), cardChoice, zoneChoice, playerChoice, faceChoice, orientationChoice, placementChoice, status, confirm, widget.NewButton("Cancel move", screen.updateManualMoves))
+	return container.NewVBox(heading, note, limits, widget.NewSeparator(), cardChoice, zoneChoice, playerChoice, faceChoice, orientationChoice, placementChoice, status, confirm)
 }

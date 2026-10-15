@@ -85,6 +85,11 @@ func CallFaceUpLevelOne(state *model.MatchState, catalog rules.CardCatalog, acti
 	player.Hand = slices.Delete(player.Hand, cardIndex, cardIndex+1)
 	player.CasterZone = append(player.CasterZone, calledCard)
 
+	// Face-up Call is a field entry: run HookEnter (e.g. Merlin peek/draw).
+	if err := triggerEnterEffects(state, catalog, cardID); err != nil {
+		return fmt.Errorf("error resolving Caster Enter effects: %w", err)
+	}
+
 	state.Turn.CallActionTaken = true
 	state.Revision++
 	return nil
@@ -136,6 +141,10 @@ func LevelUpCaster(state *model.MatchState, catalog rules.CardCatalog, actingPla
 	calledCard := state.Players[activeIndex].Hand[cardIndex]
 	player.Hand = slices.Delete(player.Hand, cardIndex, cardIndex+1)
 	player.CasterZone[targetIndex] = calledCard
+
+	if err := triggerEnterEffects(state, catalog, upperID); err != nil {
+		return fmt.Errorf("error resolving Caster Enter effects: %w", err)
+	}
 
 	state.Turn.CallActionTaken = true
 	state.Revision++

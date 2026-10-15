@@ -95,8 +95,15 @@ type BoardActions struct {
 	PassPriority               func(model.Revision)
 	DeclareAttack              func(model.MatchCardID, model.AttackTargetKind, model.MatchCardID, model.Revision)
 	CorruptOrbs                func(orbIndexes []int, revision model.Revision)
-	SetGrantedDoubleCorrupt    func(cardID model.MatchCardID, enabled bool, revision model.Revision)
-	PlayBreak                  func(cardID model.MatchCardID, orientation model.CardOrientation, revision model.Revision)
+	// ManualCorruptOrb / ManualBanishOrb are Cockatrice-style effect aids
+	// (right-click an Orb). Distinct from battle CorruptOrbs judgment.
+	ManualCorruptOrb        func(orbID model.MatchCardID, revision model.Revision)
+	ManualBanishOrb         func(orbID model.MatchCardID, revision model.Revision)
+	SetGrantedDoubleCorrupt func(cardID model.MatchCardID, enabled bool, revision model.Revision)
+	// SetFieldOrientation manually sets Recovered / Rested / Reversed on a
+	// controlled field card (right-click context menu).
+	SetFieldOrientation func(cardID model.MatchCardID, orientation model.CardOrientation, revision model.Revision)
+	PlayBreak           func(cardID model.MatchCardID, orientation model.CardOrientation, revision model.Revision)
 	DeclineBreak               func(revision model.Revision)
 	ResolvePendingChoice       func(optionID string, selectedCardIDs []model.MatchCardID, revision model.Revision)
 	DeclinePendingChoice       func(revision model.Revision)
@@ -105,10 +112,15 @@ type BoardActions struct {
 	PeekOrb                    func(ownerID model.PlayerID, orbIndex int, revision model.Revision, done func(simulatorview.CardView, error))
 	RevealOrb                  func(orbIndex int, revision model.Revision)
 	CompleteCurrentPhase       func(model.Revision)
+	// SendChat posts a player chat message (local + net). Optional.
+	SendChat func(text string)
 	// ShouldAutoPassPriority opts into Arena-style auto-pass when true for the
 	// current view. The board calls PassPriority at most once per revision.
 	ShouldAutoPassPriority func(simulatorview.MatchView) bool
-	BackLabel              string
+	// OnMatchFinished runs after the viewer dismisses the end-of-match dialog
+	// (return to menu / close lobby). Optional.
+	OnMatchFinished func(match simulatorview.MatchView)
+	BackLabel       string
 }
 
 // BoardScreen owns a persistent simulator widget tree. Update changes public
@@ -140,6 +152,9 @@ type BoardScreen struct {
 	pendingCorruptIndexes []int
 	// orbPickMode is set after Peek/Reveal context-menu items (click an Orb tile).
 	orbPickMode orbPickMode
+	sidePanel   *sidePanel
+	// resultAnnounced prevents repeating the victory/defeat dialog.
+	resultAnnounced bool
 }
 
 type orbPickMode int
@@ -220,13 +235,17 @@ func NewBoardController(
 		container.NewVBox(title, screen.status),
 	)
 
+	screen.sidePanel = newSidePanel(screen.definitions, actions.SendChat)
+	screen.sidePanel.update(match)
 	screen.content = container.NewBorder(
 		header,
 		nil,
 		newPreviewRegion(screen.preview, screen.aetherPools),
-		nil,
+		screen.sidePanel.root,
 		screen.boardArea,
 	)
+	registerBoardScreen(screen)
+	screen.maybeAnnounceMatchResult(simulatorview.MatchView{})
 	return screen
 }
 
@@ -254,6 +273,14 @@ func (screen *BoardScreen) Update(match simulatorview.MatchView) {
 		screen.updateManualMoves()
 	}
 	screen.updateMetadata()
+	screen.maybeAnnounceMatchResult(previous)
+	if screen.sidePanel != nil &&
+		(!reflect.DeepEqual(previous.ChaseLinks, match.ChaseLinks) ||
+			!reflect.DeepEqual(previous.Messages, match.Messages) ||
+			!reflect.DeepEqual(previous.DisplayNames, match.DisplayNames) ||
+			previous.Revision != match.Revision) {
+		screen.sidePanel.update(match)
+	}
 	// Preview action panels (Cast payment / Level Up) are cleared when the
 	// viewer's Hand is rebuilt, not on every revision bump — otherwise a peer
 	// view push or auto-pass can wipe the Level Up prompt mid-selection.
@@ -391,6 +418,51 @@ func (screen *BoardScreen) updateMetadata() {
 	screen.maybePromptSageDig()
 	screen.maybeAutoPassPriority()
 	screen.maybeAutoCompleteEmptyBattle()
+}
+
+func (screen *BoardScreen) maybeAnnounceMatchResult(_ simulatorview.MatchView) {
+	if screen == nil || screen.resultAnnounced {
+		return
+	}
+	if screen.match.MatchStatus != model.StatusFinished {
+		return
+	}
+	screen.resultAnnounced = true
+	title, body := matchEndAnnouncement(screen.match)
+	window := windowForObject(screen.content)
+	if window == nil {
+		// Headless/tests: surface the status text only; no auto-leave.
+		return
+	}
+	label := widget.NewLabel(body)
+	label.Wrapping = fyne.TextWrapWord
+	dialog.ShowCustomConfirm(title, "OK", "Stay on board", label, func(confirmed bool) {
+		if confirmed && screen.actions.OnMatchFinished != nil {
+			screen.actions.OnMatchFinished(screen.match)
+		}
+	}, window)
+}
+
+func matchEndAnnouncement(match simulatorview.MatchView) (title, body string) {
+	reason := string(match.Result.Reason)
+	if strings.TrimSpace(reason) == "" {
+		reason = "match ended"
+	}
+	winner := displayNameFor(match, match.Result.Winner)
+	loser := displayNameFor(match, match.Result.Loser)
+	if match.Result.IsDraw {
+		return "Draw", fmt.Sprintf("The match ended in a draw (%s).", reason)
+	}
+	if match.Spectator {
+		return "Match Over", fmt.Sprintf("%s defeated %s (%s).", winner, loser, reason)
+	}
+	if match.ViewerID == match.Result.Winner {
+		return "Victory!", fmt.Sprintf("You defeated %s (%s).", loser, reason)
+	}
+	if match.ViewerID == match.Result.Loser {
+		return "Defeat", fmt.Sprintf("%s defeated you (%s).", winner, reason)
+	}
+	return "Match Over", fmt.Sprintf("%s defeated %s (%s).", winner, loser, reason)
 }
 
 func displayNameFor(match simulatorview.MatchView, id model.PlayerID) string {
@@ -708,6 +780,11 @@ func (screen *BoardScreen) updateAttackPanel() {
 				viewerHasReversedEnemy = true
 			}
 			label := fmt.Sprintf("%s (%s)", name, card.MatchID)
+			if card.Orientation == model.OrientationReversed {
+				label += " [Reversed]"
+			} else if card.Orientation == model.OrientationRested {
+				label += " [Rested]"
+			}
 			targetLabels = append(targetLabels, label)
 			targetIDs[label] = card.MatchID
 		}
@@ -1640,13 +1717,9 @@ func newPreviewRegion(preview previewState, aetherPools fyne.CanvasObject) fyne.
 		),
 		aetherPools,
 	)
-	context := container.NewVScroll(container.NewVBox(
-		preview.description,
-		widget.NewSeparator(),
-		widget.NewLabelWithStyle("Actions", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-		preview.actions,
-		preview.manualActions,
-	))
+	// Card actions (Cast / Call / Level Up / Move) live on right-click menus —
+	// the left rail is inspection-only (artwork + rules text + aether).
+	context := container.NewVScroll(preview.description)
 	context.SetMinSize(fyne.NewSize(0, 180))
 	content := container.NewBorder(heading, aetherSection, nil, nil, context)
 
@@ -1938,10 +2011,6 @@ func (board *playerBoardController) update(
 		aetherChangedForCasting ||
 		casterChangedForCall ||
 		board.canCall != canCall || board.canCast != canCast {
-		if board.isViewer && board.preview.actions != nil && len(board.preview.actions.Objects) > 0 {
-			board.preview.actions.Objects = nil
-			refreshContainerStructure(board.preview.actions)
-		}
 		replaceZone(board.hand, board.newHandZone(player, canCall, canCast))
 	}
 	if !reflect.DeepEqual(previous.CasterZone, player.CasterZone) ||
@@ -2145,78 +2214,7 @@ func newLevelOneCallHandZone(
 	actions BoardActions,
 	currentRevision func() model.Revision,
 ) fyne.CanvasObject {
-	selectedID := model.MatchCardID("")
-	tiles := make([]*CardTile, 0, len(player.Hand))
 	objects := make([]fyne.CanvasObject, 0, len(player.Hand))
-	var faceDownButton *widget.Button
-	var faceUpButton *widget.Button
-
-	clearLevelUpPanel := func() {
-		if preview.actions == nil {
-			return
-		}
-		if len(preview.actions.Objects) == 0 {
-			return
-		}
-		preview.actions.Objects = nil
-		refreshContainerStructure(preview.actions)
-	}
-	// Level Up lives in the preview action strip (same place as Cast payment).
-	// The 82px Hand row cannot fit a Select + button without clipping them.
-	showLevelUpPanel := func(definition cards.Card) {
-		if preview.actions == nil || actions.LevelUpCaster == nil {
-			clearLevelUpPanel()
-			return
-		}
-		candidates := eligibleLevelUpTargets(definition, player.CasterZone, definitions)
-		if len(candidates) == 0 {
-			clearLevelUpPanel()
-			return
-		}
-		targetsByLabel := make(map[string]model.MatchCardID, len(candidates))
-		options := make([]string, 0, len(candidates))
-		for _, candidate := range candidates {
-			options = append(options, candidate.label)
-			targetsByLabel[candidate.label] = candidate.matchID
-		}
-		selectedTargetID := model.MatchCardID("")
-		var levelUpButton *widget.Button
-		levelUpTarget := widget.NewSelect(options, func(label string) {
-			selectedTargetID = targetsByLabel[label]
-			if levelUpButton == nil {
-				return
-			}
-			if selectedID == "" || selectedTargetID == "" {
-				levelUpButton.Disable()
-				return
-			}
-			levelUpButton.Enable()
-		})
-		levelUpTarget.PlaceHolder = "Choose Caster to level up"
-		levelUpButton = widget.NewButton("Level Up Selected", func() {
-			if selectedID == "" || selectedTargetID == "" {
-				return
-			}
-			revision := model.Revision(0)
-			if currentRevision != nil {
-				revision = currentRevision()
-			}
-			actions.LevelUpCaster(selectedID, selectedTargetID, revision)
-		})
-		levelUpButton.Disable()
-		heading := widget.NewLabel("Level Up")
-		heading.TextStyle = fyne.TextStyle{Bold: true}
-		preview.actions.Objects = []fyne.CanvasObject{
-			container.NewVBox(
-				heading,
-				widget.NewLabel("Place the selected hand Caster onto a matching lower-level Caster."),
-				levelUpTarget,
-				levelUpButton,
-			),
-		}
-		refreshContainerStructure(preview.actions)
-	}
-
 	for _, projectedCard := range player.Hand {
 		projectedCard := projectedCard
 		definition := definitions[projectedCard.CardID]
@@ -2228,91 +2226,28 @@ func newLevelOneCallHandZone(
 			func() { preview.showHiddenCard(playerName, "Hand") },
 		)
 		tile.OnActivate = func() {
-			if projectedCard.MatchID == "" {
-				return
-			}
-			wasSelected := selectedID == projectedCard.MatchID
-			for _, candidate := range tiles {
-				candidate.SetSelected(false)
-			}
-			if wasSelected {
-				selectedID = ""
-				if faceDownButton != nil {
-					faceDownButton.Disable()
-				}
-				if faceUpButton != nil {
-					faceUpButton.Disable()
-				}
-				clearLevelUpPanel()
-				return
-			}
-			selectedID = projectedCard.MatchID
-			tile.SetSelected(true)
 			preview.showCard(definition)
-			if faceDownButton != nil {
-				faceDownButton.Enable()
-			}
-			if faceUpButton != nil {
-				if isFaceUpLevelOneCallDefinition(definition) {
-					faceUpButton.Enable()
-				} else {
-					faceUpButton.Disable()
-				}
-			}
-			showLevelUpPanel(definition)
 		}
-		tiles = append(tiles, tile)
+		tile.OnSecondaryActivate = func(event *fyne.PointEvent) {
+			showHandCallContextMenu(
+				tile,
+				projectedCard,
+				definition,
+				player,
+				definitions,
+				actions,
+				currentRevision,
+				event,
+			)
+		}
 		objects = append(objects, tile)
 	}
-
-	actionButtons := make([]fyne.CanvasObject, 0, 2)
-	if actions.CallFaceUpLevelOne != nil {
-		faceUpButton = widget.NewButton("Call Selected Face Up", func() {
-			if selectedID == "" {
-				return
-			}
-			revision := model.Revision(0)
-			if currentRevision != nil {
-				revision = currentRevision()
-			}
-			actions.CallFaceUpLevelOne(selectedID, revision)
-		})
-		faceUpButton.Disable()
-		actionButtons = append(actionButtons, faceUpButton)
-	}
-	if actions.CallFaceDownLevelOne != nil {
-		faceDownButton = widget.NewButton("Call Selected Face Down", func() {
-			if selectedID == "" {
-				return
-			}
-			revision := model.Revision(0)
-			if currentRevision != nil {
-				revision = currentRevision()
-			}
-			actions.CallFaceDownLevelOne(selectedID, revision)
-		})
-		faceDownButton.Disable()
-		actionButtons = append(actionButtons, faceDownButton)
-	}
-
 	cardRow := container.NewHScroll(container.NewHBox(objects...))
-	var content fyne.CanvasObject = cardRow
-	if len(actionButtons) > 0 {
-		// Horizontal Call buttons under the cards — keeps the 82px strip usable
-		// without stacking Level Up controls that need the preview panel.
-		content = container.NewBorder(
-			nil,
-			container.NewHBox(actionButtons...),
-			nil,
-			nil,
-			cardRow,
-		)
-	}
 	return newZone(
 		playerName,
 		"Hand",
-		"Select one card to Call as Level 1, or select a higher Caster to Level Up from the preview panel.",
-		content,
+		"Right-click a Caster to Call or Level Up. Left-click previews the card.",
+		cardRow,
 		preview,
 	)
 }
@@ -2325,125 +2260,7 @@ func newCastHandZone(
 	actions BoardActions,
 	currentRevision func() model.Revision,
 ) fyne.CanvasObject {
-	selectedID := model.MatchCardID("")
-	selectedDefinition := cards.Card{}
-	payment := model.AetherPayment{}
-	tiles := make([]*CardTile, 0, len(player.Hand))
 	objects := make([]fyne.CanvasObject, 0, len(player.Hand))
-
-	orientation := widget.NewSelect(
-		[]string{string(model.OrientationRecovered), string(model.OrientationReversed)},
-		nil,
-	)
-	orientation.PlaceHolder = "Servant orientation"
-	orientation.SetSelected(string(model.OrientationRecovered))
-	orientation.Hide()
-
-	castButton := widget.NewButton("Cast Selected", func() {
-		if selectedID == "" {
-			return
-		}
-		revision := model.Revision(0)
-		if currentRevision != nil {
-			revision = currentRevision()
-		}
-		switch strings.ToLower(strings.TrimSpace(selectedDefinition.Type)) {
-		case "servant":
-			if actions.CastServant != nil {
-				actions.CastServant(selectedID, payment, model.CardOrientation(orientation.Selected), revision)
-			}
-		case "conjure":
-			if actions.CastConjure != nil {
-				actions.CastConjure(selectedID, payment, revision)
-			}
-		case "barrier":
-			if actions.CastBarrier != nil {
-				actions.CastBarrier(selectedID, payment, revision)
-			}
-		}
-	})
-	castButton.Disable()
-
-	var updateAction func()
-	type paymentSource struct {
-		name      string
-		available int
-		set       func(*model.AetherPayment, int)
-	}
-	sources := []paymentSource{
-		{name: "Aes", available: player.Aether.Aes, set: func(value *model.AetherPayment, amount int) { value.Aes = amount }},
-		{name: "Aqua", available: player.Aether.Aqua, set: func(value *model.AetherPayment, amount int) { value.Aqua = amount }},
-		{name: "Ignus", available: player.Aether.Ignus, set: func(value *model.AetherPayment, amount int) { value.Ignus = amount }},
-		{name: "Luna", available: player.Aether.Luna, set: func(value *model.AetherPayment, amount int) { value.Luna = amount }},
-		{name: "Silva", available: player.Aether.Silva, set: func(value *model.AetherPayment, amount int) { value.Silva = amount }},
-		{name: "Solis", available: player.Aether.Solis, set: func(value *model.AetherPayment, amount int) { value.Solis = amount }},
-		{name: "Terra", available: player.Aether.Terra, set: func(value *model.AetherPayment, amount int) { value.Terra = amount }},
-		{name: "Void", available: player.Aether.Void, set: func(value *model.AetherPayment, amount int) { value.Void = amount }},
-		{name: "Non-elemental", available: player.Aether.NonElemental, set: func(value *model.AetherPayment, amount int) { value.NonElemental = amount }},
-	}
-	paymentSelectors := make([]*widget.Select, 0, len(sources))
-	paymentControls := make([]fyne.CanvasObject, 0, len(sources))
-	for _, source := range sources {
-		if source.available <= 0 {
-			continue
-		}
-		source := source
-		options := make([]string, source.available+1)
-		for amount := range options {
-			options[amount] = strconv.Itoa(amount)
-		}
-		selector := widget.NewSelect(options, func(selected string) {
-			amount, err := strconv.Atoi(selected)
-			if err != nil {
-				return
-			}
-			source.set(&payment, amount)
-			if updateAction != nil {
-				updateAction()
-			}
-		})
-		selector.SetSelected("0")
-		paymentSelectors = append(paymentSelectors, selector)
-		paymentControls = append(paymentControls, container.NewVBox(widget.NewLabel(source.name), selector))
-	}
-	var emptyPaymentNotice fyne.CanvasObject
-	if len(paymentControls) == 0 {
-		emptyPaymentNotice = widget.NewLabel("No Aether (0-cost only)")
-	}
-
-	actionAvailable := func(definition cards.Card) bool {
-		switch strings.ToLower(strings.TrimSpace(definition.Type)) {
-		case "servant":
-			return actions.CastServant != nil
-		case "conjure":
-			return actions.CastConjure != nil
-		case "barrier":
-			return actions.CastBarrier != nil
-		default:
-			return false
-		}
-	}
-	updateAction = func() {
-		if selectedID == "" || !actionAvailable(selectedDefinition) {
-			castButton.Disable()
-			return
-		}
-		cost, err := strconv.Atoi(strings.TrimSpace(selectedDefinition.CostLevel))
-		if err != nil || cost < 0 || !paymentMatchesCastDefinition(payment, cost, selectedDefinition.Element) {
-			castButton.Disable()
-			return
-		}
-		castButton.Enable()
-	}
-	orientation.OnChanged = func(string) { updateAction() }
-
-	resetPayment := func() {
-		payment = model.AetherPayment{}
-		for _, selector := range paymentSelectors {
-			selector.SetSelected("0")
-		}
-	}
-	var actionsPanel *container.Scroll
 	for _, projectedCard := range player.Hand {
 		projectedCard := projectedCard
 		definition := definitions[projectedCard.CardID]
@@ -2455,65 +2272,27 @@ func newCastHandZone(
 			func() { preview.showHiddenCard(playerName, "Hand") },
 		)
 		tile.OnActivate = func() {
-			if projectedCard.MatchID == "" {
-				return
-			}
-			wasSelected := selectedID == projectedCard.MatchID
-			for _, candidate := range tiles {
-				candidate.SetSelected(false)
-			}
-			selectedID = ""
-			selectedDefinition = cards.Card{}
-			resetPayment()
-			orientation.Hide()
-			if wasSelected {
-				castButton.SetText("Cast Selected")
-				updateAction()
-				preview.actions.Objects = nil
-				refreshContainerStructure(preview.actions)
-				return
-			}
-			selectedID = projectedCard.MatchID
-			selectedDefinition = definition
-			tile.SetSelected(true)
-			kind := strings.TrimSpace(definition.Type)
-			cost := strings.TrimSpace(definition.CostLevel)
-			selectionText := fmt.Sprintf("Cast %s (%s %s)", kind, cost, strings.TrimSpace(definition.Element))
-			if strings.EqualFold(kind, "Conjure") || strings.EqualFold(kind, "Barrier") {
-				selectionText += " — manual effect"
-			}
-			castButton.SetText(selectionText)
-			if strings.EqualFold(kind, "Servant") {
-				orientation.SetSelected(string(model.OrientationRecovered))
-				orientation.Show()
-			}
-			updateAction()
 			preview.showCard(definition)
-			plannedPanel := newSuggestedCastPanel(projectedCard, definition, player, definitions, actions, currentRevision)
-			if plannedPanel != nil {
-				preview.actions.Objects = []fyne.CanvasObject{plannedPanel}
-				refreshContainerStructure(preview.actions)
-			} else if actionsPanel != nil {
-				preview.actions.Objects = []fyne.CanvasObject{actionsPanel}
-				refreshContainerStructure(preview.actions)
-			}
 		}
-		tiles = append(tiles, tile)
+		tile.OnSecondaryActivate = func(event *fyne.PointEvent) {
+			showHandCastContextMenu(
+				tile,
+				projectedCard,
+				definition,
+				player,
+				definitions,
+				actions,
+				currentRevision,
+				event,
+			)
+		}
 		objects = append(objects, tile)
 	}
-
 	cardRow := container.NewHScroll(container.NewHBox(objects...))
-	actionObjects := append([]fyne.CanvasObject(nil), paymentControls...)
-	if emptyPaymentNotice != nil {
-		actionObjects = append(actionObjects, emptyPaymentNotice)
-	}
-	actionObjects = append(actionObjects, orientation, castButton)
-	actionsPanel = container.NewHScroll(container.NewHBox(actionObjects...))
-	actionsPanel.SetMinSize(fyne.NewSize(280, fieldCardHeight))
 	return newZone(
 		playerName,
 		"Hand",
-		"Select a spell, allocate its Aether payment, and cast it.",
+		"Right-click a spell to Cast (payment dialog). Left-click previews the card.",
 		cardRow,
 		preview,
 	)
@@ -3042,12 +2821,14 @@ func (stack *verticalCardStackLayout) Layout(objects []fyne.CanvasObject, size f
 
 func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) fyne.CanvasObject {
 	var onPrimaryAt func(int)
-	var onSecondary func(*fyne.PointEvent)
-	canPeek := !board.isViewer && board.actions.PeekOrb != nil && len(cards) > 0
-	canReveal := board.isViewer && board.actions.RevealOrb != nil && len(cards) > 0
-	if canPeek || canReveal {
-		onSecondary = func(event *fyne.PointEvent) {
-			board.showOrbContextMenu(event)
+	var onSecondaryAt func(int, simulatorview.CardView, *fyne.PointEvent)
+	canMenu := board.actions.ManualCorruptOrb != nil ||
+		board.actions.ManualBanishOrb != nil ||
+		(!board.isViewer && board.actions.PeekOrb != nil) ||
+		(board.isViewer && board.actions.RevealOrb != nil)
+	if canMenu && len(cards) > 0 {
+		onSecondaryAt = func(index int, card simulatorview.CardView, event *fyne.PointEvent) {
+			board.showOrbTileContextMenu(index, card, event)
 		}
 	}
 	if board.host != nil {
@@ -3068,11 +2849,15 @@ func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) f
 		board.preview,
 		!board.isViewer,
 		onPrimaryAt,
-		onSecondary,
+		onSecondaryAt,
 	)
 }
 
-func (board *playerBoardController) showOrbContextMenu(event *fyne.PointEvent) {
+func (board *playerBoardController) showOrbTileContextMenu(
+	orbIndex int,
+	card simulatorview.CardView,
+	event *fyne.PointEvent,
+) {
 	if board == nil || board.orbs == nil || event == nil {
 		return
 	}
@@ -3080,12 +2865,31 @@ func (board *playerBoardController) showOrbContextMenu(event *fyne.PointEvent) {
 	if canvas == nil {
 		return
 	}
-	items := make([]*fyne.MenuItem, 0, 2)
-	if board.isViewer && board.actions.RevealOrb != nil && len(board.player.Orbs) > 0 {
-		items = append(items, fyne.NewMenuItem("Reveal Orb to opponent...", board.beginRevealOrbPrompt))
+	items := make([]*fyne.MenuItem, 0, 4)
+	revision := board.currentRevision()
+	if card.MatchID != "" && board.actions.ManualCorruptOrb != nil {
+		orbID := card.MatchID
+		items = append(items, fyne.NewMenuItem("Corrupt", func() {
+			board.actions.ManualCorruptOrb(orbID, revision)
+		}))
 	}
-	if !board.isViewer && board.actions.PeekOrb != nil && len(board.player.Orbs) > 0 {
-		items = append(items, fyne.NewMenuItem("Peek Orb (remember)...", board.beginPeekOrbPrompt))
+	if card.MatchID != "" && board.actions.ManualBanishOrb != nil {
+		orbID := card.MatchID
+		items = append(items, fyne.NewMenuItem("Banish", func() {
+			board.actions.ManualBanishOrb(orbID, revision)
+		}))
+	}
+	if board.isViewer && board.actions.RevealOrb != nil {
+		index := orbIndex
+		items = append(items, fyne.NewMenuItem("Reveal to opponent", func() {
+			board.actions.RevealOrb(index, revision)
+		}))
+	}
+	if !board.isViewer && board.actions.PeekOrb != nil && board.host != nil {
+		index := orbIndex
+		items = append(items, fyne.NewMenuItem("Peek (remember)", func() {
+			board.host.finishPeekOrb(index)
+		}))
 	}
 	if len(items) == 0 {
 		return
@@ -3100,7 +2904,7 @@ func newLayeredOrbZone(
 	preview previewState,
 	alignBottom bool,
 	onPrimaryAt func(int),
-	onSecondary func(*fyne.PointEvent),
+	onSecondaryAt func(int, simulatorview.CardView, *fyne.PointEvent),
 ) fyne.CanvasObject {
 	objects := make([]fyne.CanvasObject, 0, len(cardViews))
 	for index, projectedCard := range cardViews {
@@ -3119,10 +2923,16 @@ func newLayeredOrbZone(
 			onHidden,
 			true,
 		)
+		orbIndex := index
+		card := projectedCard
 		if onPrimaryAt != nil {
-			orbIndex := index
 			tile.OnActivate = func() {
 				onPrimaryAt(orbIndex)
+			}
+		}
+		if onSecondaryAt != nil {
+			tile.OnSecondaryActivate = func(event *fyne.PointEvent) {
+				onSecondaryAt(orbIndex, card, event)
 			}
 		}
 		objects = append(objects, tile)
@@ -3135,19 +2945,14 @@ func newLayeredOrbZone(
 			alignBottom: alignBottom,
 		}, objects...)
 	}
-	zone := newZoneWithMinimum(
+	return newZoneWithMinimum(
 		playerName,
 		"Orb Zone",
-		"Face-down Orbs. You only see identities you already knew (hand-placed, peeked, or revealed).",
+		"Face-down Orbs. Right-click to Corrupt/Banish (effects) or Peek/Reveal. You only see identities you already knew.",
 		content,
 		preview,
 		fyne.Size{},
 	)
-	// Zone-level secondary for context menu; primary taps go to individual Orb tiles.
-	if onSecondary != nil {
-		return newZoneInteractLayer(zone, nil, onSecondary)
-	}
-	return zone
 }
 
 func newCardZoneWithMinimum(
@@ -3286,6 +3091,13 @@ func newAetherCasterZone(
 						actions.GenerateNonElementalAether(projectedCard.MatchID, revision)
 					}
 				}
+			}
+		}
+		if isViewer && actions.SetFieldOrientation != nil && projectedCard.MatchID != "" &&
+			projectedCard.CardID != model.CasterTokenCardID {
+			captured := projectedCard
+			tile.OnSecondaryActivate = func(event *fyne.PointEvent) {
+				showCasterOrientationMenu(host, captured, actions.SetFieldOrientation, currentRevision, event)
 			}
 		}
 		objects = append(objects, tile)
@@ -3471,45 +3283,170 @@ func (board *playerBoardController) newInteractiveCardZone(
 		if board.host != nil {
 			board.host.bindCardDrag(tile, zone, board.player.ID)
 		}
-		if zoneName != "Servant Zone" {
-			continue
-		}
 		captured := tile.View
-		tile.OnActivate = func() {
-			if board.host != nil {
-				board.host.handleServantPrimaryTap(board, captured)
+		switch zoneName {
+		case "Servant Zone":
+			tile.OnActivate = func() {
+				if board.host != nil {
+					board.host.handleServantPrimaryTap(board, captured)
+				}
 			}
-		}
-		if board.actions.SetGrantedDoubleCorrupt != nil {
-			tile.OnSecondaryActivate = func(event *fyne.PointEvent) {
-				board.showServantContextMenu(captured, event)
+			if board.actions.SetGrantedDoubleCorrupt != nil || board.actions.SetFieldOrientation != nil {
+				tile.OnSecondaryActivate = func(event *fyne.PointEvent) {
+					board.showServantContextMenu(captured, event)
+				}
+			}
+		case "Barrier Zone":
+			if board.isViewer && board.actions.SetFieldOrientation != nil {
+				tile.OnSecondaryActivate = func(event *fyne.PointEvent) {
+					board.showBarrierContextMenu(captured, event)
+				}
 			}
 		}
 	}
 	return content
 }
 
+func (board *playerBoardController) showBarrierContextMenu(
+	card simulatorview.CardView,
+	event *fyne.PointEvent,
+) {
+	if board == nil || event == nil || card.MatchID == "" || board.actions.SetFieldOrientation == nil {
+		return
+	}
+	canvas := fyne.CurrentApp().Driver().CanvasForObject(board.barriers)
+	if canvas == nil {
+		return
+	}
+	// Barriers may be Recovered/Rested only — not Reversed (CR 3.7.3).
+	items := fieldOrientationMenuItems(card, board.actions.SetFieldOrientation, board.currentRevision(), false)
+	if board.actions.MoveCard != nil {
+		items = append(items, fyne.NewMenuItem("Move…", func() {
+			showManualMoveDialog(board.barriers, card, board.currentRevision)
+		}))
+	}
+	if len(items) == 0 {
+		return
+	}
+	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", items...), canvas, event.AbsolutePosition)
+}
+
 func (board *playerBoardController) showServantContextMenu(
 	card simulatorview.CardView,
 	event *fyne.PointEvent,
 ) {
-	if board == nil || event == nil || card.MatchID == "" || board.actions.SetGrantedDoubleCorrupt == nil {
+	if board == nil || event == nil || card.MatchID == "" {
+		return
+	}
+	if board.actions.SetGrantedDoubleCorrupt == nil && board.actions.SetFieldOrientation == nil {
 		return
 	}
 	canvas := fyne.CurrentApp().Driver().CanvasForObject(board.servants)
 	if canvas == nil {
 		return
 	}
-	label := "Grant Double Corrupt"
-	enabled := true
-	if card.GrantedDoubleCorrupt {
-		label = "Clear granted Double Corrupt"
-		enabled = false
+	items := make([]*fyne.MenuItem, 0, 5)
+	if board.isViewer && board.actions.SetFieldOrientation != nil {
+		items = append(items, fieldOrientationMenuItems(card, board.actions.SetFieldOrientation, board.currentRevision(), true)...)
 	}
-	item := fyne.NewMenuItem(label, func() {
-		board.actions.SetGrantedDoubleCorrupt(card.MatchID, enabled, board.currentRevision())
-	})
-	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", item), canvas, event.AbsolutePosition)
+	if board.actions.SetGrantedDoubleCorrupt != nil {
+		label := "Grant Double Corrupt"
+		enabled := true
+		if card.GrantedDoubleCorrupt {
+			label = "Clear granted Double Corrupt"
+			enabled = false
+		}
+		grantEnabled := enabled
+		items = append(items, fyne.NewMenuItem(label, func() {
+			board.actions.SetGrantedDoubleCorrupt(card.MatchID, grantEnabled, board.currentRevision())
+		}))
+	}
+	if board.isViewer && board.actions.MoveCard != nil {
+		items = append(items, fyne.NewMenuItem("Move…", func() {
+			showManualMoveDialog(board.servants, card, board.currentRevision)
+		}))
+	}
+	if len(items) == 0 {
+		return
+	}
+	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", items...), canvas, event.AbsolutePosition)
+}
+
+func showCasterOrientationMenu(
+	host *BoardScreen,
+	card simulatorview.CardView,
+	setOrientation func(model.MatchCardID, model.CardOrientation, model.Revision),
+	currentRevision func() model.Revision,
+	event *fyne.PointEvent,
+) {
+	if host == nil || event == nil || setOrientation == nil || card.MatchID == "" {
+		return
+	}
+	var canvasObj fyne.CanvasObject
+	for _, board := range host.playerBoards {
+		if board != nil && board.isViewer && board.caster != nil {
+			canvasObj = board.caster
+			break
+		}
+	}
+	if canvasObj == nil {
+		return
+	}
+	c := fyne.CurrentApp().Driver().CanvasForObject(canvasObj)
+	if c == nil {
+		return
+	}
+	revision := model.Revision(0)
+	if currentRevision != nil {
+		revision = currentRevision()
+	}
+	items := fieldOrientationMenuItems(card, setOrientation, revision, false)
+	if host != nil && host.actions.MoveCard != nil {
+		items = append(items, fyne.NewMenuItem("Move…", func() {
+			showManualMoveDialog(canvasObj, card, currentRevision)
+		}))
+	}
+	if len(items) == 0 {
+		return
+	}
+	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", items...), c, event.AbsolutePosition)
+}
+
+func fieldOrientationMenuItems(
+	card simulatorview.CardView,
+	setOrientation func(model.MatchCardID, model.CardOrientation, model.Revision),
+	revision model.Revision,
+	allowReversed bool,
+) []*fyne.MenuItem {
+	if setOrientation == nil || card.MatchID == "" {
+		return nil
+	}
+	options := []model.CardOrientation{
+		model.OrientationRecovered,
+		model.OrientationRested,
+	}
+	if allowReversed {
+		options = append(options, model.OrientationReversed)
+	}
+	items := make([]*fyne.MenuItem, 0, len(options))
+	for _, orientation := range options {
+		orientation := orientation
+		label := "Set " + string(orientation)
+		if card.Orientation == orientation {
+			label += " (current)"
+		}
+		item := fyne.NewMenuItem(label, func() {
+			if card.Orientation == orientation {
+				return
+			}
+			setOrientation(card.MatchID, orientation, revision)
+		})
+		if card.Orientation == orientation {
+			item.Disabled = true
+		}
+		items = append(items, item)
+	}
+	return items
 }
 
 func (screen *BoardScreen) refreshDropTargets() {

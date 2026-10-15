@@ -69,6 +69,7 @@ func ProjectMatch(state model.MatchState, viewerID model.PlayerID) (MatchView, e
 		PriorityHolder:       state.PriorityHolder,
 		PassCount:            state.PassCount,
 		ChaseLinkCount:       len(state.ChaseLinks),
+		ChaseLinks:           projectChaseLinks(state),
 		PrioritySequenceOpen: state.PrioritySequenceOpen,
 		Attack:               state.Attack,
 		PendingDraw:          state.PendingDraw,
@@ -181,24 +182,18 @@ func projectOrbs(state model.MatchState, player model.PlayerState, viewerID mode
 		if !exists {
 			return nil, fmt.Errorf("card %q not in card instances", ID)
 		}
-		// Orbs are hidden unless this viewer already knows them (hand-placed,
-		// peeked, or revealed). Setup/deck-top Orbs stay unknown.
-		if model.ViewerKnowsCard(&state, viewerID, ID) {
-			projection = append(projection, CardView{
-				MatchID:  ID,
-				CardID:   instance.CardID,
-				Face:     model.CardFaceDown,
-				ShowFace: false,
-				Owner:    instance.Owner,
-			})
-			continue
-		}
-		projection = append(projection, CardView{
-			MatchID:  "",
-			CardID:   "",
+		// MatchID is always projected so UI can target Orbs (Corrupt/Banish).
+		// Card identity stays hidden unless this viewer already knows them.
+		view := CardView{
+			MatchID:  ID,
 			Face:     model.CardFaceDown,
 			ShowFace: false,
-		})
+			Owner:    instance.Owner,
+		}
+		if model.ViewerKnowsCard(&state, viewerID, ID) {
+			view.CardID = instance.CardID
+		}
+		projection = append(projection, view)
 	}
 	return projection, nil
 }
@@ -228,6 +223,8 @@ func projectFieldZone(
 			cardView.Owner = instance.Owner
 			cardView.HasStock = len(instance.Stock) > 0
 			cardView.GrantedDoubleCorrupt = instance.GrantedDoubleCorrupt
+			cardView.AttackModifier = instance.AttackModifier
+			cardView.DefenseModifier = instance.DefenseModifier
 		case instance.Face == model.CardFaceDown && player.ID == viewerID:
 			cardView.MatchID = instance.MatchID
 			cardView.CardID = instance.CardID
@@ -235,6 +232,8 @@ func projectFieldZone(
 			cardView.Owner = instance.Owner
 			cardView.HasStock = len(instance.Stock) > 0
 			cardView.GrantedDoubleCorrupt = instance.GrantedDoubleCorrupt
+			cardView.AttackModifier = instance.AttackModifier
+			cardView.DefenseModifier = instance.DefenseModifier
 		case instance.Face == model.CardFaceDown:
 			cardView.ShowFace = false
 		default:
@@ -243,4 +242,42 @@ func projectFieldZone(
 		projection = append(projection, cardView)
 	}
 	return projection, nil
+}
+
+// projectChaseLinks exposes the Chase stack publicly. Cards on Chase are always
+// face-up with known identity (both players must see what is resolving).
+func projectChaseLinks(state model.MatchState) []ChaseLinkView {
+	if len(state.ChaseLinks) == 0 {
+		return nil
+	}
+	out := make([]ChaseLinkView, 0, len(state.ChaseLinks))
+	for _, link := range state.ChaseLinks {
+		card := CardView{
+			Face:        model.CardFaceUp,
+			Orientation: link.EntryOrientation,
+			ShowFace:    true,
+		}
+		if instance, ok := state.CardInstances[link.SourceCardID]; ok {
+			card.MatchID = instance.MatchID
+			card.CardID = instance.CardID
+			card.Owner = instance.Owner
+			card.HasStock = len(instance.Stock) > 0
+			card.GrantedDoubleCorrupt = instance.GrantedDoubleCorrupt
+			card.AttackModifier = instance.AttackModifier
+			card.DefenseModifier = instance.DefenseModifier
+			if link.EntryOrientation == "" {
+				card.Orientation = instance.Orientation
+			}
+		} else {
+			card.MatchID = link.SourceCardID
+		}
+		out = append(out, ChaseLinkView{
+			ID:               link.ID,
+			Controller:       link.Controller,
+			Kind:             link.Kind,
+			EntryOrientation: link.EntryOrientation,
+			Card:             card,
+		})
+	}
+	return out
 }

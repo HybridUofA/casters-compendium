@@ -52,8 +52,8 @@ func TestProjectMatchProtectsHiddenInformation(t *testing.T) {
 	if len(result.Players[1].Deck) != 0 {
 		t.Fatalf("opponent deck identities leaked: %#v", result.Players[1].Deck)
 	}
-	assertConcealedCard(t, result.Players[0].Orbs[0])
-	assertConcealedCard(t, result.Players[1].Orbs[0])
+	assertConcealedOrb(t, result.Players[0].Orbs[0], "p1-orb")
+	assertConcealedOrb(t, result.Players[1].Orbs[0], "p2-orb")
 
 	assertVisibleCard(t, result.Players[0].CasterZone[0], "p1-token", model.CasterTokenCardID)
 	assertVisibleCard(t, result.Players[1].CasterZone[0], "p2-token", model.CasterTokenCardID)
@@ -83,6 +83,46 @@ func TestProjectMatchProtectsHiddenInformation(t *testing.T) {
 	assertVisibleCard(t, result.Players[1].Graveyard[0], "p2-grave", "card-p2-grave")
 	assertVisibleCard(t, result.Players[0].Exile[0], "p1-exile", "card-p1-exile")
 	assertVisibleCard(t, result.Players[1].Exile[0], "p2-exile", "card-p2-exile")
+}
+
+func TestProjectMatchExposesChaseLinksPublicly(t *testing.T) {
+	state := projectionStateForTest()
+	state.CardInstances["chase-spell"] = model.CardInstance{
+		MatchID: "chase-spell", CardID: "card-chase", Owner: "player-one", Controller: "player-one",
+		Face: model.CardFaceUp, CardCategory: model.CategoryPrintedCard,
+	}
+	state.ChaseLinks = model.Chase{{
+		ID: 7, Controller: "player-one", SourceCardID: "chase-spell", Kind: model.ChaseLinkCardPlay,
+	}}
+
+	result, err := ProjectMatch(state, state.Players[1].ID)
+	if err != nil {
+		t.Fatalf("ProjectMatch() error = %v", err)
+	}
+	if result.ChaseLinkCount != 1 || len(result.ChaseLinks) != 1 {
+		t.Fatalf("ChaseLinkCount=%d links=%d; want 1", result.ChaseLinkCount, len(result.ChaseLinks))
+	}
+	link := result.ChaseLinks[0]
+	if !link.Card.ShowFace || link.Card.CardID != "card-chase" || link.Card.MatchID != "chase-spell" {
+		t.Fatalf("opponent must see chase card identity: %#v", link.Card)
+	}
+}
+
+func TestProjectMatchExposesCombatModifiersOnKnownFieldCards(t *testing.T) {
+	state := projectionStateForTest()
+	servant := state.CardInstances["p1-servant"]
+	servant.AttackModifier = 500
+	servant.DefenseModifier = -100
+	state.CardInstances["p1-servant"] = servant
+
+	result, err := ProjectMatch(state, state.Players[0].ID)
+	if err != nil {
+		t.Fatalf("ProjectMatch() error = %v", err)
+	}
+	got := result.Players[0].ServantZone[0]
+	if got.AttackModifier != 500 || got.DefenseModifier != -100 {
+		t.Fatalf("combat modifiers = %+d/%+d; want +500/-100", got.AttackModifier, got.DefenseModifier)
+	}
 }
 
 func TestProjectMatchUsesViewerPerspectiveForEitherPlayer(t *testing.T) {
@@ -164,8 +204,8 @@ func TestProjectMatchShowsKnownEnemyOrbPersistently(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Owner still does not see their own Orb unless they gained knowledge too.
-	assertConcealedCard(t, ownerView.Players[1].Orbs[0])
+	// Owner still does not see their own Orb identity unless they gained knowledge too.
+	assertConcealedOrb(t, ownerView.Players[1].Orbs[0], "p2-orb")
 }
 
 func TestProjectMatchRejectsUnknownViewer(t *testing.T) {
@@ -283,6 +323,13 @@ func assertConcealedCard(t *testing.T, card CardView) {
 	t.Helper()
 	if card.ShowFace || card.MatchID != "" || card.CardID != "" {
 		t.Fatalf("concealed CardView leaked information: %#v", card)
+	}
+}
+
+func assertConcealedOrb(t *testing.T, card CardView, wantMatchID model.MatchCardID) {
+	t.Helper()
+	if card.ShowFace || card.CardID != "" || card.MatchID != wantMatchID {
+		t.Fatalf("concealed Orb = %#v; want MatchID %q with hidden identity", card, wantMatchID)
 	}
 }
 

@@ -149,11 +149,11 @@ func HandServantsCheapestFirst(hand []view.CardView, catalog Catalog) []view.Car
 	return out
 }
 
-func weakestEnemyServant(enemy view.PlayerView) (view.CardView, bool) {
+func weakestEnemyServant(enemy view.PlayerView, catalog Catalog) (view.CardView, bool) {
 	var best view.CardView
 	found := false
 	for _, card := range enemy.ServantZone {
-		if card.MatchID == "" {
+		if card.MatchID == "" || cardIsBarrierView(card, catalog) {
 			continue
 		}
 		if !found {
@@ -169,13 +169,27 @@ func weakestEnemyServant(enemy view.PlayerView) (view.CardView, bool) {
 	return best, found
 }
 
-func canAttackPlayer(enemy view.PlayerView) bool {
+func canAttackPlayer(enemy view.PlayerView, catalog Catalog) bool {
 	for _, card := range enemy.ServantZone {
+		if cardIsBarrierView(card, catalog) {
+			continue
+		}
 		if card.Orientation == model.OrientationReversed {
 			return false
 		}
 	}
 	return true
+}
+
+func cardIsBarrierView(card view.CardView, catalog Catalog) bool {
+	if catalog == nil || card.CardID == "" {
+		return false
+	}
+	def, ok := catalog.FindByID(string(card.CardID))
+	if !ok {
+		return false
+	}
+	return strings.EqualFold(strings.TrimSpace(def.Type), "Barrier")
 }
 
 func selfShouldAct(match view.MatchView) bool {

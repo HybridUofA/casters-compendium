@@ -12,6 +12,7 @@ import (
 // Pending kinds used by bulk recipes.
 const (
 	PendingRestEnemyServant     = "fx:rest_enemy_servant"
+	PendingStaplerPick          = "fx:stapler_pick"
 	PendingRestEnemyCasterLv1   = "fx:rest_enemy_caster_lv1"
 	PendingRecoverAlliedCaster  = "fx:recover_allied_caster_lv1"
 	PendingFaceDownAlliedCaster = "fx:face_down_allied_caster_lv1"
@@ -152,10 +153,7 @@ func resolveAbolition(ctx Context) error {
 	if err := requireState(ctx); err != nil {
 		return err
 	}
-	var all []model.MatchCardID
-	for _, player := range ctx.State.Players {
-		all = append(all, player.ServantZone...)
-	}
+	all := collectAllServants(ctx, -1)
 	for _, id := range all {
 		if err := ops.ReturnToDeck(ctx.State, id, model.DeckPlacementBottom); err != nil {
 			return err
@@ -195,7 +193,7 @@ func resolveExchangeServants(ctx Context) error {
 	if err != nil {
 		return err
 	}
-	allied := append([]model.MatchCardID(nil), ctx.State.Players[alliedIdx].ServantZone...)
+	allied := zoneServants(ctx, alliedIdx)
 	return offerOrSkip(ctx, model.PendingChoice{
 		PlayerID:          ctx.Controller,
 		Kind:              PendingExchangeServants,
@@ -437,23 +435,21 @@ func resolveGlowDesireATK(ctx Context) error {
 		return err
 	}
 	var targets []model.MatchCardID
-	for _, player := range ctx.State.Players {
-		for _, id := range player.ServantZone {
-			inst, ok := ctx.State.CardInstances[id]
-			if !ok || ctx.Catalog == nil {
-				continue
-			}
-			def, ok := ctx.Catalog.FindByID(string(inst.CardID))
-			if !ok {
-				continue
-			}
-			printed, err := strconv.Atoi(strings.TrimSpace(def.Attack))
-			if err != nil {
-				continue
-			}
-			if printed+inst.AttackModifier > printed {
-				targets = append(targets, id)
-			}
+	for _, id := range collectAllServants(ctx, -1) {
+		inst, ok := ctx.State.CardInstances[id]
+		if !ok || ctx.Catalog == nil {
+			continue
+		}
+		def, ok := ctx.Catalog.FindByID(string(inst.CardID))
+		if !ok {
+			continue
+		}
+		printed, err := strconv.Atoi(strings.TrimSpace(def.Attack))
+		if err != nil {
+			continue
+		}
+		if printed+inst.AttackModifier > printed {
+			targets = append(targets, id)
 		}
 	}
 	return offerOrSkip(ctx, model.PendingChoice{
@@ -655,8 +651,11 @@ func applyPrintedStatSwap(ctx Context, cardID model.MatchCardID) error {
 	if err1 != nil || err2 != nil {
 		return ops.SwapCombatModifiers(ctx.State, cardID)
 	}
-	// Effective ATK becomes printed DEF (and vice versa) via modifiers.
-	return ops.SetCombatModifiers(ctx.State, cardID, defense-atk, atk-defense)
+	// Swap current effective stats (printed + existing modifiers), then store
+	// the result as modifiers so Lumielle stacks correctly with prior buffs.
+	effATK := atk + inst.AttackModifier
+	effDEF := defense + inst.DefenseModifier
+	return ops.SetCombatModifiers(ctx.State, cardID, effDEF-atk, effATK-defense)
 }
 
 func resolveMaiseyQueenRest(ctx Context) error {
@@ -782,7 +781,7 @@ func resolveLoseSlowStartAllied(ctx Context) error {
 		Kind:              PendingLoseSlowStart,
 		Prompt:            "Target allied servant loses Slow Start until end of turn",
 		SourceCardID:      ctx.Source,
-		SelectableCardIDs: append([]model.MatchCardID(nil), ctx.State.Players[idx].ServantZone...),
+		SelectableCardIDs: zoneServants(ctx, idx),
 	})
 }
 
@@ -800,7 +799,7 @@ func resolveRukaHandATK(ctx Context) error {
 		Kind:              PendingModifyATK,
 		Prompt:            fmt.Sprintf("Target allied servant gains +%d ATK", delta),
 		SourceCardID:      ctx.Source,
-		SelectableCardIDs: append([]model.MatchCardID(nil), ctx.State.Players[idx].ServantZone...),
+		SelectableCardIDs: zoneServants(ctx, idx),
 		Payload:           strconv.Itoa(delta),
 	})
 }
@@ -853,8 +852,63 @@ func resolveSololBatonRest(ctx Context) error {
 }
 
 func resolveVegaCorruptOrb(ctx Context) error {
-	// Banish orb cost + corrupt target — simplify: open hand-to-orb skip; corrupt via pending enemy orb index not modeled.
-	// Playable approximation: peek/corrupt not available as op without indexes — noop success after Rest.
+	if err := requireState(ctx); err != nil {
+		return err
+	}
+	idx, err := playerIdx(ctx.State, ctx.Controller)
+	if err != nil {
+		return err
+	}
+	orbs := append([]model.MatchCardID(nil), ctx.State.Players[idx].Orbs...)
+	if len(orbs) == 0 {
+		return nil
+	}
+	return offerOrSkip(ctx, model.PendingChoice{
+		PlayerID:          ctx.Controller,
+		Kind:              PendingBanishOrb,
+		Prompt:            "Banish an allied orb (cost)",
+		SourceCardID:      ctx.Source,
+		SelectableCardIDs: orbs,
+		Payload:           "then_corrupt_orb",
+	})
+}
+
+func offerCorruptTargetOrb(ctx Context) error {
+	if err := requireState(ctx); err != nil {
+		return err
+	}
+	targets := make([]model.MatchCardID, 0, 8)
+	for _, player := range ctx.State.Players {
+		targets = append(targets, player.Orbs...)
+	}
+	if len(targets) == 0 {
+		return nil
+	}
+	return offerOrSkip(ctx, model.PendingChoice{
+		PlayerID:          ctx.Controller,
+		Kind:              PendingCorruptOrb,
+		Prompt:            "Corrupt target orb",
+		SourceCardID:      ctx.Source,
+		SelectableCardIDs: targets,
+	})
+}
+
+func corruptOrbByID(ctx Context, orbID model.MatchCardID) error {
+	if err := requireState(ctx); err != nil {
+		return err
+	}
+	location, err := model.FindCardLocation(ctx.State, orbID)
+	if err != nil {
+		return err
+	}
+	if location.Zone != model.ZoneOrbs {
+		return fmt.Errorf("card %q is not an Orb", orbID)
+	}
+	ownerID := ctx.State.Players[location.PlayerIndex].ID
+	if err := ops.MoveOrbToHand(ctx.State, ownerID, location.CardIndex); err != nil {
+		return err
+	}
+	model.MarkCardKnown(ctx.State, ownerID, orbID)
 	return nil
 }
 
@@ -885,10 +939,17 @@ func resolveStrawEffigyEnter(ctx Context) error {
 	if err != nil {
 		return err
 	}
-	if len(ctx.State.Players[idx].Orbs) == 0 {
+	orbs := append([]model.MatchCardID(nil), ctx.State.Players[idx].Orbs...)
+	if len(orbs) == 0 {
 		return nil
 	}
-	return ops.MoveOrbToHand(ctx.State, ctx.Controller, 0)
+	return offerOrSkip(ctx, model.PendingChoice{
+		PlayerID:          ctx.Controller,
+		Kind:              PendingCorruptOrb,
+		Prompt:            "Corrupt an allied orb",
+		SourceCardID:      ctx.Source,
+		SelectableCardIDs: orbs,
+	})
 }
 
 func resolveASAMIEnter(ctx Context) error {
@@ -929,7 +990,7 @@ func resolveMiGoEnter(ctx Context) error {
 }
 
 func resolveIntelligentStaplerEnter(ctx Context) error {
-	// Choose two enemy servants: owner rests them — approximate destroy? Text: enemy chooses. Simplify: rest up to 2.
+	// Printed: choose two enemy servants; that enemy banishes one of them.
 	if err := requireState(ctx); err != nil {
 		return err
 	}
@@ -937,13 +998,16 @@ func resolveIntelligentStaplerEnter(ctx Context) error {
 	if err != nil {
 		return err
 	}
+	if len(targets) == 0 {
+		return nil
+	}
 	return offerOrSkip(ctx, model.PendingChoice{
 		PlayerID:          ctx.Controller,
-		Kind:              PendingRestEnemyServant,
-		Prompt:            "Rest an enemy servant (1 of up to 2)",
+		Kind:              PendingStaplerPick,
+		Prompt:            "Choose an enemy servant (1 of 2)",
 		SourceCardID:      ctx.Source,
 		SelectableCardIDs: targets,
-		Payload:           "need_second_rest",
+		Payload:           "need_second",
 	})
 }
 
@@ -1014,7 +1078,7 @@ func resolveHasturLW(ctx Context) error {
 			fd++
 		}
 	}
-	servants := append([]model.MatchCardID(nil), ctx.State.Players[eidx].ServantZone...)
+	servants := zoneServants(ctx, eidx)
 	for i := 0; i < fd && i < len(servants); i++ {
 		if err := ops.Banish(ctx.State, servants[i]); err != nil {
 			return err
@@ -1329,7 +1393,7 @@ func resolveCosmeticDoctorEnter(ctx Context) error {
 		return err
 	}
 	var others []model.MatchCardID
-	for _, id := range ctx.State.Players[idx].ServantZone {
+	for _, id := range zoneServants(ctx, idx) {
 		if id != ctx.Source {
 			others = append(others, id)
 		}

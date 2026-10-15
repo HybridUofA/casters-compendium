@@ -12,6 +12,21 @@ import (
 	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
 
+func TestCloseRoomRemovesFromOpenLobby(t *testing.T) {
+	lobby := NewLobby()
+	code, _, _, err := lobby.CreateRoom("Hybrid", "Temp", validTestDeck("Host Deck"), "", simulatorview.PlayerCosmetics{})
+	if err != nil {
+		t.Fatalf("CreateRoom() error = %v", err)
+	}
+	if len(lobby.ListRooms()) != 1 {
+		t.Fatalf("ListRooms() = %#v; want 1 room", lobby.ListRooms())
+	}
+	lobby.CloseRoom(code)
+	if len(lobby.ListRooms()) != 0 {
+		t.Fatalf("ListRooms() after CloseRoom = %#v; want empty", lobby.ListRooms())
+	}
+}
+
 func TestCreateRoomAssignsHostSeatAndStoresRoom(t *testing.T) {
 	lobby := NewLobby()
 

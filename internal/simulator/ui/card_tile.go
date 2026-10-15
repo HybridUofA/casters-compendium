@@ -2,9 +2,12 @@ package ui
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 
 	"fyne.io/fyne/v2"
@@ -35,6 +38,9 @@ type CardTile struct {
 	reversedImage       *canvas.Image
 	selectionBorder     *canvas.Rectangle
 	statusBadge         *canvas.Text
+	statBackdrop        *canvas.Rectangle
+	atkLabel            *canvas.Text
+	defLabel            *canvas.Text
 	selected            bool
 	OnPreview           func(cards.Card)
 	OnHiddenPreview     func()
@@ -45,6 +51,7 @@ type CardTile struct {
 	OnDragEnd           func()
 	dragStarted         bool
 	cardBackURL         string
+	sideways            bool
 }
 
 var _ desktop.Hoverable = (*CardTile)(nil)
@@ -87,11 +94,14 @@ func newOrientedCardTile(
 		OnHiddenPreview: onHiddenPreview,
 	}
 	if cardView.ShowFace {
-		tile.image = simulatorCardImage(card)
+		tile.uprightImage = simulatorCardImage(card)
 	} else {
-		tile.image = cardBackImage()
+		tile.uprightImage = cardBackImage()
 	}
-	tile.uprightImage = tile.image
+	// Keep one stable canvas.Image in the renderer tree. Orientation changes
+	// mutate its contents instead of swapping the Objects() pointer (Fyne can
+	// keep showing the first Objects() entry across Refresh).
+	tile.image = cloneCanvasImageShell(tile.uprightImage)
 	tile.selectionBorder = canvas.NewRectangle(color.Transparent)
 	tile.selectionBorder.StrokeColor = theme.Color(theme.ColorNamePrimary)
 	tile.selectionBorder.StrokeWidth = 4
@@ -100,8 +110,20 @@ func newOrientedCardTile(
 	tile.statusBadge.TextStyle = fyne.TextStyle{Bold: true}
 	tile.statusBadge.TextSize = 11
 	tile.statusBadge.Hide()
-	tile.refreshStatusBadge()
+	tile.statBackdrop = canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 170})
+	tile.statBackdrop.Hide()
+	tile.atkLabel = canvas.NewText("", color.NRGBA{R: 255, G: 255, B: 255, A: 255})
+	tile.atkLabel.TextStyle = fyne.TextStyle{Bold: true}
+	tile.atkLabel.TextSize = 10
+	tile.atkLabel.Hide()
+	tile.defLabel = canvas.NewText("", color.NRGBA{R: 255, G: 255, B: 255, A: 255})
+	tile.defLabel.TextStyle = fyne.TextStyle{Bold: true}
+	tile.defLabel.TextSize = 10
+	tile.defLabel.Hide()
+	// Apply orientation before ExtendBaseWidget so the first paint is correct.
 	tile.setSidewaysState(sideways)
+	tile.refreshStatusBadge()
+	tile.refreshCombatStats()
 	tile.ExtendBaseWidget(tile)
 	return tile
 }
@@ -110,13 +132,77 @@ func (tile *CardTile) refreshStatusBadge() {
 	if tile == nil || tile.statusBadge == nil {
 		return
 	}
+	if tile.View.Orientation == model.OrientationReversed {
+		tile.statusBadge.Text = "REV"
+		tile.statusBadge.Color = color.NRGBA{R: 220, G: 80, B: 80, A: 255}
+		tile.statusBadge.Show()
+		return
+	}
 	showDC := tile.View.GrantedDoubleCorrupt ||
 		cardDeclaresDoubleCorruptAbility(tile.Card.Ability)
 	if showDC && tile.View.MatchID != "" {
+		tile.statusBadge.Text = "DC"
+		tile.statusBadge.Color = color.NRGBA{R: 220, G: 180, B: 60, A: 255}
 		tile.statusBadge.Show()
 		return
 	}
 	tile.statusBadge.Hide()
+}
+
+var (
+	statColorNeutral = color.NRGBA{R: 245, G: 245, B: 245, A: 255}
+	statColorBuff    = color.NRGBA{R: 80, G: 220, B: 120, A: 255}
+	statColorNerf    = color.NRGBA{R: 240, G: 90, B: 90, A: 255}
+)
+
+// refreshCombatStats shows live ATK/DEF on face-up servants (MD/EDOPro-style).
+func (tile *CardTile) refreshCombatStats() {
+	if tile == nil || tile.atkLabel == nil || tile.defLabel == nil || tile.statBackdrop == nil {
+		return
+	}
+	hide := func() {
+		tile.atkLabel.Hide()
+		tile.defLabel.Hide()
+		tile.statBackdrop.Hide()
+	}
+	if !tile.View.ShowFace || tile.View.MatchID == "" {
+		hide()
+		return
+	}
+	printedATK, okATK := parsePrintedStat(tile.Card.Attack)
+	printedDEF, okDEF := parsePrintedStat(tile.Card.Defense)
+	if !okATK && !okDEF {
+		hide()
+		return
+	}
+	effATK := printedATK + tile.View.AttackModifier
+	effDEF := printedDEF + tile.View.DefenseModifier
+	tile.atkLabel.Text = fmt.Sprintf("%d", effATK)
+	tile.defLabel.Text = fmt.Sprintf("%d", effDEF)
+	tile.atkLabel.Color = combatStatColor(effATK, printedATK)
+	tile.defLabel.Color = combatStatColor(effDEF, printedDEF)
+	tile.atkLabel.Show()
+	tile.defLabel.Show()
+	tile.statBackdrop.Show()
+}
+
+func parsePrintedStat(raw string) (int, bool) {
+	value, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil {
+		return 0, false
+	}
+	return value, true
+}
+
+func combatStatColor(effective, printed int) color.Color {
+	switch {
+	case effective > printed:
+		return statColorBuff
+	case effective < printed:
+		return statColorNerf
+	default:
+		return statColorNeutral
+	}
 }
 
 // SetSelected displays whether this card is included in the pending UI choice.
@@ -143,8 +229,8 @@ func (tile *CardTile) SetSideways(sideways bool) {
 }
 
 func (tile *CardTile) setSidewaysState(sideways bool) {
+	tile.sideways = sideways
 	tile.size = tile.baseSize
-	tile.image = tile.uprightImage
 	if !sideways {
 		if tile.View.Orientation == model.OrientationReversed {
 			if tile.reversedImage == nil {
@@ -154,7 +240,9 @@ func (tile *CardTile) setSidewaysState(sideways bool) {
 					tile.reversedImage = rotatedCanvasImage(rotatedCanvasImage(tile.uprightImage))
 				}
 			}
-			tile.image = tile.reversedImage
+			adoptCanvasImageContents(tile.image, tile.reversedImage)
+		} else {
+			adoptCanvasImageContents(tile.image, tile.uprightImage)
 		}
 		return
 	}
@@ -167,10 +255,35 @@ func (tile *CardTile) setSidewaysState(sideways bool) {
 			tile.sidewaysImage = sidewaysCardBackImage()
 		}
 	}
-	tile.image = tile.sidewaysImage
+	adoptCanvasImageContents(tile.image, tile.sidewaysImage)
 	if tile.baseSize.Height > tile.baseSize.Width {
 		tile.size = fyne.NewSize(tile.baseSize.Height, tile.baseSize.Width)
 	}
+}
+
+func cloneCanvasImageShell(source *canvas.Image) *canvas.Image {
+	if source == nil {
+		return canvas.NewImageFromImage(nil)
+	}
+	cloned := canvas.NewImageFromImage(source.Image)
+	cloned.Resource = source.Resource
+	cloned.File = source.File
+	cloned.FillMode = source.FillMode
+	cloned.ScaleMode = source.ScaleMode
+	cloned.Translucency = source.Translucency
+	return cloned
+}
+
+func adoptCanvasImageContents(dst, src *canvas.Image) {
+	if dst == nil || src == nil || dst == src {
+		return
+	}
+	dst.Image = src.Image
+	dst.Resource = src.Resource
+	dst.File = src.File
+	dst.FillMode = src.FillMode
+	dst.ScaleMode = src.ScaleMode
+	dst.Translucency = src.Translucency
 }
 
 func rotatedSimulatorCardImage(card cards.Card, fallback *canvas.Image) *canvas.Image {
@@ -347,21 +460,52 @@ func (r *cardTileRenderer) Layout(size fyne.Size) {
 		badge.Resize(badge.MinSize())
 		badge.Move(fyne.NewPos(artX+4, artY+2))
 	}
+	if r.tile.statBackdrop != nil && r.tile.atkLabel != nil && r.tile.defLabel != nil &&
+		!r.tile.statBackdrop.Hidden {
+		atkSize := r.tile.atkLabel.MinSize()
+		defSize := r.tile.defLabel.MinSize()
+		pad := float32(3)
+		barH := max(atkSize.Height, defSize.Height) + pad*2
+		barY := artY + height - barH - 2
+		r.tile.statBackdrop.Move(fyne.NewPos(artX+2, barY))
+		r.tile.statBackdrop.Resize(fyne.NewSize(max(0, width-4), barH))
+		r.tile.atkLabel.Resize(atkSize)
+		r.tile.defLabel.Resize(defSize)
+		r.tile.atkLabel.Move(fyne.NewPos(artX+pad+2, barY+pad))
+		r.tile.defLabel.Move(fyne.NewPos(artX+width-defSize.Width-pad-2, barY+pad))
+	}
 }
 
 func (r *cardTileRenderer) MinSize() fyne.Size { return r.tile.MinSize() }
 
 func (r *cardTileRenderer) Objects() []fyne.CanvasObject {
-	return []fyne.CanvasObject{r.tile.image, r.tile.selectionBorder, r.tile.statusBadge}
+	return []fyne.CanvasObject{
+		r.tile.image,
+		r.tile.selectionBorder,
+		r.tile.statusBadge,
+		r.tile.statBackdrop,
+		r.tile.atkLabel,
+		r.tile.defLabel,
+	}
 }
 
 func (r *cardTileRenderer) Refresh() {
 	r.tile.refreshStatusBadge()
+	r.tile.refreshCombatStats()
 	r.Layout(r.tile.Size())
 	r.tile.image.Refresh()
 	r.tile.selectionBorder.Refresh()
 	if r.tile.statusBadge != nil {
 		r.tile.statusBadge.Refresh()
+	}
+	if r.tile.statBackdrop != nil {
+		r.tile.statBackdrop.Refresh()
+	}
+	if r.tile.atkLabel != nil {
+		r.tile.atkLabel.Refresh()
+	}
+	if r.tile.defLabel != nil {
+		r.tile.defLabel.Refresh()
 	}
 }
 

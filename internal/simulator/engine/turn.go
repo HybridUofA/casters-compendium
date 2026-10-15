@@ -223,6 +223,9 @@ func completeEndPhase(
 	if err := triggerFieldEndOfTurnEffects(state, catalog, actingPlayerID); err != nil {
 		return fmt.Errorf("end of turn effects: %w", err)
 	}
+	if err := resolveExileReturnsAtEOT(state); err != nil {
+		return fmt.Errorf("exile return at EOT: %w", err)
+	}
 	clearTemporaryCombatModifiers(state)
 	clearTurnEventFlags(state)
 	actingIndex := -1

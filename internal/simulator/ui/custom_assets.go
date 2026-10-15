@@ -183,16 +183,11 @@ func (tile *CardTile) replaceUprightImage(image *canvas.Image) {
 	if tile == nil || image == nil {
 		return
 	}
-	wasSideways := tile.sidewaysImage != nil && tile.image == tile.sidewaysImage
-	wasReversed := tile.reversedImage != nil && tile.image == tile.reversedImage
+	wasSideways := tile.sideways
 	tile.uprightImage = image
 	tile.sidewaysImage = nil
 	tile.reversedImage = nil
-	tile.image = image
-	if wasSideways {
-		tile.setSidewaysState(true)
-	} else if wasReversed {
-		tile.setSidewaysState(false)
-	}
+	tile.setSidewaysState(wasSideways)
+	tile.refreshStatusBadge()
 	tile.Refresh()
 }
