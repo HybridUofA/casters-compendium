@@ -144,6 +144,40 @@ func cardIsBarrier(catalog rules.CardCatalog, cardID model.CardID) bool {
 	return strings.EqualFold(strings.TrimSpace(definition.Type), "Barrier")
 }
 
+func cardIsServant(catalog rules.CardCatalog, cardID model.CardID) bool {
+	if catalog == nil || cardID == "" {
+		return false
+	}
+	definition, found := catalog.FindByID(string(cardID))
+	if !found {
+		return false
+	}
+	return strings.EqualFold(strings.TrimSpace(definition.Type), "Servant")
+}
+
+// countServants counts Servant-type cards in a player's servant zone (excludes Barriers).
+func countServants(state *model.MatchState, catalog rules.CardCatalog, playerIndex int) int {
+	if state == nil || playerIndex < 0 || playerIndex > 1 {
+		return 0
+	}
+	n := 0
+	for _, cardID := range state.Players[playerIndex].ServantZone {
+		instance, ok := state.CardInstances[cardID]
+		if !ok {
+			continue
+		}
+		if catalog == nil {
+			// Tests without a catalog still treat zone occupants as servants.
+			n++
+			continue
+		}
+		if cardIsServant(catalog, instance.CardID) {
+			n++
+		}
+	}
+	return n
+}
+
 // activePlayerHasLegalAttacker reports recovered non-Barrier field cards the
 // active player could still declare an attack with.
 func activePlayerHasLegalAttacker(state *model.MatchState, catalog rules.CardCatalog) bool {
@@ -204,6 +238,10 @@ func validateAttackTarget(
 			if !ok {
 				return fmt.Errorf("opponent servant %q does not exist", cardID)
 			}
+			// Barriers share the servant zone but are not servants (CR 2.1 / 3.7).
+			if cardIsBarrier(catalog, instance.CardID) {
+				continue
+			}
 			if instance.Orientation == model.OrientationReversed {
 				return fmt.Errorf("cannot attack the player while a reversed enemy servant is in play")
 			}
@@ -216,8 +254,12 @@ func validateAttackTarget(
 		if !slices.Contains(opponent.ServantZone, targetCardID) {
 			return fmt.Errorf("target servant %q is not in the opponent's servant zone", targetCardID)
 		}
-		if _, ok := state.CardInstances[targetCardID]; !ok {
+		target, ok := state.CardInstances[targetCardID]
+		if !ok {
 			return fmt.Errorf("target servant %q does not exist", targetCardID)
+		}
+		if cardIsBarrier(catalog, target.CardID) {
+			return fmt.Errorf("barriers cannot be attacked as servants")
 		}
 		if servantCannotBeAttacked(state, catalog, targetCardID, opponentIndex) {
 			return fmt.Errorf("target servant %q cannot be attacked", targetCardID)

@@ -26,6 +26,8 @@ func queueBreakIfPresent(
 		return
 	}
 	queued := make([]model.MatchCardID, 0, len(cardIDs))
+	ownerIndex, _ := findPlayerIndex(state, ownerID)
+	loseBreak := ownerIndex >= 0 && cardsLoseBreak(state, catalog, ownerIndex)
 	for _, cardID := range cardIDs {
 		instance, ok := state.CardInstances[cardID]
 		if !ok {
@@ -33,6 +35,9 @@ func queueBreakIfPresent(
 		}
 		definition, found := catalog.FindByID(string(instance.CardID))
 		if !found || !cardDeclaresBreak(definition.Ability) {
+			continue
+		}
+		if loseBreak {
 			continue
 		}
 		queued = append(queued, cardID)
@@ -128,6 +133,9 @@ func PlayBreak(
 	}
 	if !cardDeclaresBreak(definition.Ability) {
 		return fmt.Errorf("card does not declare Break")
+	}
+	if cardsLoseBreak(state, catalog, playerIndex) {
+		return fmt.Errorf("cards you control lose Break")
 	}
 
 	cardKind := strings.ToLower(strings.TrimSpace(definition.Type))

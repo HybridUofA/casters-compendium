@@ -66,6 +66,7 @@ func clearFieldStatus(instance *model.CardInstance) {
 	instance.EnteredOnTurn = 0
 	instance.GrantedSlowStartUntilEOT = false
 	instance.LosesSlowStartUntilEOT = false
+	instance.GrantedVoidRestATK500UntilEOT = false
 	instance.BattledThisTurn = false
 }
 

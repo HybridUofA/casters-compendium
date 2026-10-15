@@ -303,8 +303,8 @@ func resolveCharylThomasRest(ctx Context) error {
 	if err != nil {
 		return err
 	}
-	ally := len(ctx.State.Players[idx].ServantZone)
-	enemy := len(ctx.State.Players[1-idx].ServantZone)
+	ally := countZoneServants(ctx, idx)
+	enemy := countZoneServants(ctx, 1-idx)
 	if ally >= enemy {
 		return nil
 	}

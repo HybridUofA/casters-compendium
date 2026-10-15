@@ -17,17 +17,13 @@ func TestManualMovePanelSubmitsPlacementAndResetsOnRevision(t *testing.T) {
 	var received model.MoveCardCommand
 	var revision model.Revision
 	screen := NewBoardController(match, []gamecards.Card{{ID: "definition", Name: "Example", Type: "Servant"}}, BoardActions{MoveCard: func(c model.MoveCardCommand, r model.Revision) { received = c; revision = r }}, nil)
-	button := findButton(screen.Content(), "Move a card…")
-	if button == nil {
-		t.Fatal("missing manual move action")
-	}
-	test.Tap(button)
-	choices := findSelects(screen.preview.manualActions)
+	panel := screen.newManualMovePanelForCard(simulatorview.CardView{})
+	choices := findSelects(panel)
 	if len(choices) != 6 || len(choices[0].Options) != 1 {
 		t.Fatal("unexpected choices or hidden opponent cards exposed")
 	}
-	confirm := findButton(screen.preview.manualActions, "Confirm move")
-	if !confirm.Disabled() {
+	confirm := findButton(panel, "Confirm move")
+	if confirm == nil || !confirm.Disabled() {
 		t.Fatal("incomplete move enabled")
 	}
 	choices[0].SetSelected(choices[0].Options[0])
@@ -57,7 +53,8 @@ func TestManualMovePanelSubmitsPlacementAndResetsOnRevision(t *testing.T) {
 	}
 	match.Revision++
 	screen.Update(match)
-	if findButton(screen.preview.manualActions, "Confirm move") != nil {
+	screen.updateManualMoves()
+	if len(screen.preview.manualActions.Objects) != 0 {
 		t.Fatal("stale move form survived update")
 	}
 	if minimum := screen.Content().MinSize(); minimum.Width > 1400 || minimum.Height > 850 {
@@ -87,8 +84,8 @@ func TestManualMovePanelExplainsAndHidesUnsupportedChoices(t *testing.T) {
 		nil,
 	)
 
-	test.Tap(findButton(screen.Content(), "Move a card…"))
-	choices := findSelects(screen.preview.manualActions)
+	panel := screen.newManualMovePanelForCard(simulatorview.CardView{})
+	choices := findSelects(panel)
 	if len(choices) != 6 {
 		t.Fatalf("select count = %d; want 6", len(choices))
 	}
@@ -105,7 +102,7 @@ func TestManualMovePanelExplainsAndHidesUnsupportedChoices(t *testing.T) {
 		t.Fatal("Orb destination should be selectable for Luna-style hand placement")
 	}
 	for _, text := range []string{"Prototype limits", "Tokens", "Stock", "face-down Exile"} {
-		if !containsTextPart(screen.preview.manualActions, text) {
+		if !containsTextPart(panel, text) {
 			t.Fatalf("manual move panel does not explain %q limitation", text)
 		}
 	}

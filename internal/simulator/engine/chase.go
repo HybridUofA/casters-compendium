@@ -9,7 +9,12 @@ import (
 	"github.com/HybridUofA/casters-compendium/internal/simulator/rules"
 )
 
-func resolveServantCardPlay(state *model.MatchState, link model.ChaseLink, instance model.CardInstance) error {
+func resolveServantCardPlay(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	link model.ChaseLink,
+	instance model.CardInstance,
+) error {
 	controllerIndex := -1
 	for index, player := range state.Players {
 		if player.ID == link.Controller {
@@ -36,8 +41,13 @@ func resolveServantCardPlay(state *model.MatchState, link model.ChaseLink, insta
 			link.EntryOrientation,
 		)
 	}
+	entryOrientation := link.EntryOrientation
+	// World of Rage: enemy servants enter the field recovered.
+	if worldOfRageAffects(state, catalog, controllerIndex) {
+		entryOrientation = model.OrientationRecovered
+	}
 	instance.Face = model.CardFaceUp
-	instance.Orientation = link.EntryOrientation
+	instance.Orientation = entryOrientation
 	instance.Controller = link.Controller
 	state.Players[controllerIndex].ServantZone = append(state.Players[controllerIndex].ServantZone, link.SourceCardID)
 	state.CardInstances[link.SourceCardID] = instance
@@ -129,7 +139,7 @@ func resolveTopChaseLink(state *model.MatchState, catalog rules.CardCatalog, act
 		}
 		switch strings.ToLower(strings.TrimSpace(definition.Type)) {
 		case "servant":
-			if err := resolveServantCardPlay(state, topLink, instance); err != nil {
+			if err := resolveServantCardPlay(state, catalog, topLink, instance); err != nil {
 				return fmt.Errorf("error resolving Servant card play: %w", err)
 			}
 			noteServantEntered(state, topLink.Controller, topLink.SourceCardID)
@@ -145,6 +155,7 @@ func resolveTopChaseLink(state *model.MatchState, catalog rules.CardCatalog, act
 			}
 			if hadEnter {
 				noteEnterAbility(state, topLink.Controller)
+				noteIdolNonAetherAbility(state, catalog, topLink.Controller, instance.CardID)
 			}
 		case "conjure":
 			// Move to Graveyard first, then run HookResolve recipes (draws, board wipes, …).

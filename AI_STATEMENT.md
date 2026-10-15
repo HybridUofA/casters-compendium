@@ -306,3 +306,14 @@ acceptance and publication.
 Under that authorization, Cursor assistance implemented ops/effects wiring and
 registration for local play, the Agent/driver/Tsubasa Solo path, board UX,
 tests, transparency updates, and release metadata under maintainer review.
+
+## Disclosed v1.2.1 assistance
+
+Hybrid directed the v1.2.1 playability polish (Actions→right-click, Events/Chat
+tabs, orb Corrupt/Banish, Barrier≠Servant corrections, Vega/Straw orb flows,
+match-end dialogs, finished-room lobby cleanup, and shipping as a patch) and
+remains responsible for acceptance and publication.
+
+Under that authorization, Cursor assistance implemented the UI/session/nethost
+wiring, effect pending choices, tests, transparency updates, and release
+metadata under maintainer review.

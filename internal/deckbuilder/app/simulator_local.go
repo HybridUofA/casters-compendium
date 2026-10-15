@@ -148,6 +148,18 @@ func runLocalSimulatorUI(
 				}
 				actions := localBoardActions(playerSessions, playerWindows, playerIndex, cardDefinitions, scheduleBoardRefresh)
 				actions.BackLabel = backLabel
+				actions.OnMatchFinished = func(simulatorview.MatchView) {
+					if solo {
+						onBackToMenu()
+						return
+					}
+					if playerWindows[1] != nil {
+						playerWindows[1].Close()
+					}
+					if playerIndex == 0 {
+						onBackToMenu()
+					}
+				}
 				playerScreens[index] = simulatorui.NewBoardController(
 					matchView,
 					cardDefinitions,
@@ -179,6 +191,14 @@ func localBoardActions(
 ) simulatorui.BoardActions {
 	return simulatorui.BoardActions{
 		ShouldAutoPassPriority: makeShouldAutoPassPriority(cardDefinitions),
+		SendChat: func(text string) {
+			updatedView, err := playerSessions[playerIndex].SendChat(text)
+			if err != nil {
+				dialog.ShowError(err, playerWindows[playerIndex])
+				return
+			}
+			scheduleBoardRefresh(playerIndex, updatedView)
+		},
 		UseCasterToken: func(tokenID model.MatchCardID, expectedRevision model.Revision) {
 			updatedView, err := playerSessions[playerIndex].UseCasterToken(tokenID, expectedRevision)
 			if err != nil {
@@ -373,8 +393,32 @@ func localBoardActions(
 			}
 			scheduleBoardRefresh(playerIndex, updatedView)
 		},
+		ManualCorruptOrb: func(orbID model.MatchCardID, expectedRevision model.Revision) {
+			updatedView, err := playerSessions[playerIndex].ManualCorruptOrb(orbID, expectedRevision)
+			if err != nil {
+				dialog.ShowError(err, playerWindows[playerIndex])
+				return
+			}
+			scheduleBoardRefresh(playerIndex, updatedView)
+		},
+		ManualBanishOrb: func(orbID model.MatchCardID, expectedRevision model.Revision) {
+			updatedView, err := playerSessions[playerIndex].ManualBanishOrb(orbID, expectedRevision)
+			if err != nil {
+				dialog.ShowError(err, playerWindows[playerIndex])
+				return
+			}
+			scheduleBoardRefresh(playerIndex, updatedView)
+		},
 		SetGrantedDoubleCorrupt: func(cardID model.MatchCardID, enabled bool, expectedRevision model.Revision) {
 			updatedView, err := playerSessions[playerIndex].SetGrantedDoubleCorrupt(cardID, enabled, expectedRevision)
+			if err != nil {
+				dialog.ShowError(err, playerWindows[playerIndex])
+				return
+			}
+			scheduleBoardRefresh(playerIndex, updatedView)
+		},
+		SetFieldOrientation: func(cardID model.MatchCardID, orientation model.CardOrientation, expectedRevision model.Revision) {
+			updatedView, err := playerSessions[playerIndex].SetFieldOrientation(cardID, orientation, expectedRevision)
 			if err != nil {
 				dialog.ShowError(err, playerWindows[playerIndex])
 				return

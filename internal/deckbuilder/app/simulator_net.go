@@ -361,21 +361,25 @@ func openNetworkBoard(
 		}()
 	}
 
+	leaveMatch := func() {
+		_ = client.Close()
+		window.SetTitle(applicationName)
+		onBackToMenu()
+	}
 	actions := simulatorui.BoardActions{BackLabel: "Leave Match"}
 	if !spectator {
 		actions = networkBoardActions(runCommand, runCommandWithPrivate)
 		actions.ShouldAutoPassPriority = makeShouldAutoPassPriority(repository.All())
+	}
+	actions.OnMatchFinished = func(simulatorview.MatchView) {
+		leaveMatch()
 	}
 
 	screen = simulatorui.NewBoardController(
 		initialView,
 		repository.All(),
 		actions,
-		func() {
-			_ = client.Close()
-			window.SetTitle(applicationName)
-			onBackToMenu()
-		},
+		leaveMatch,
 	)
 	role := playerID
 	if spectator {
@@ -397,6 +401,10 @@ func networkBoardActions(
 ) simulatorui.BoardActions {
 	return simulatorui.BoardActions{
 		BackLabel: "Leave Match",
+		SendChat: func(text string) {
+			// Revision is unused for chat; pass 0 — host ignores it for send_chat.
+			runCommand("send_chat", 0, map[string]any{"text": text})
+		},
 		UseCasterToken: func(tokenID model.MatchCardID, expectedRevision model.Revision) {
 			runCommand("use_caster_token", expectedRevision, map[string]any{"card_id": tokenID})
 		},
@@ -559,10 +567,22 @@ func networkBoardActions(
 		CorruptOrbs: func(orbIndexes []int, expectedRevision model.Revision) {
 			runCommand("corrupt_orb", expectedRevision, map[string]any{"orb_indexes": orbIndexes})
 		},
+		ManualCorruptOrb: func(orbID model.MatchCardID, expectedRevision model.Revision) {
+			runCommand("manual_corrupt_orb", expectedRevision, map[string]any{"orb_id": orbID})
+		},
+		ManualBanishOrb: func(orbID model.MatchCardID, expectedRevision model.Revision) {
+			runCommand("manual_banish_orb", expectedRevision, map[string]any{"orb_id": orbID})
+		},
 		SetGrantedDoubleCorrupt: func(cardID model.MatchCardID, enabled bool, expectedRevision model.Revision) {
 			runCommand("set_granted_double_corrupt", expectedRevision, map[string]any{
 				"card_id": cardID,
 				"enabled": enabled,
+			})
+		},
+		SetFieldOrientation: func(cardID model.MatchCardID, orientation model.CardOrientation, expectedRevision model.Revision) {
+			runCommand("set_field_orientation", expectedRevision, map[string]any{
+				"card_id":     cardID,
+				"orientation": orientation,
 			})
 		},
 		PlayBreak: func(cardID model.MatchCardID, orientation model.CardOrientation, expectedRevision model.Revision) {

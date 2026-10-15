@@ -62,15 +62,33 @@ func ActivateRegisteredRest(
 			abilityText = definition.Ability
 		}
 	}
-	if !effects.HasMatch(&effectRegistry, effects.HookRest, instance.CardID, abilityText) {
+	grantedVoidRest := instance.GrantedVoidRestATK500UntilEOT
+	hasPrintedRest := effects.HasMatch(&effectRegistry, effects.HookRest, instance.CardID, abilityText)
+	if !hasPrintedRest && !grantedVoidRest {
 		return fmt.Errorf("card %q has no registered Rest ability automation", cardID)
 	}
 
 	if err := ops.SetOrientation(state, cardID, model.OrientationRested); err != nil {
 		return err
 	}
-	if err := triggerRestEffects(state, catalog, cardID); err != nil {
+	if grantedVoidRest {
+		if err := effects.ResolveGrantedVoidRest(effects.Context{
+			State:      state,
+			Source:     cardID,
+			Controller: actingPlayerID,
+			Hook:       effects.HookRest,
+			Catalog:    catalog,
+			OfferChoice: func(choice model.PendingChoice) error {
+				return OfferPendingChoice(state, choice)
+			},
+		}); err != nil {
+			return err
+		}
+	} else if err := triggerRestEffects(state, catalog, cardID); err != nil {
 		return err
+	}
+	if hasPrintedRest {
+		noteIdolNonAetherAbility(state, catalog, actingPlayerID, instance.CardID)
 	}
 	state.Revision++
 	return nil

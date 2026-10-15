@@ -343,3 +343,13 @@ func (lobby *Lobby) Room(roomCode string) (*Room, bool) {
 	room, ok := lobby.rooms[roomCode]
 	return room, ok
 }
+
+// CloseRoom removes a room from the open lobby (after a match ends or host leaves).
+func (lobby *Lobby) CloseRoom(roomCode string) {
+	if lobby == nil || roomCode == "" {
+		return
+	}
+	lobby.mu.Lock()
+	defer lobby.mu.Unlock()
+	delete(lobby.rooms, roomCode)
+}

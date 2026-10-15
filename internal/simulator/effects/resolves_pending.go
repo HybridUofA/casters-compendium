@@ -32,6 +32,8 @@ const (
 	PendingPeekOrb             = "fx:peek_orb"
 	PendingBanishEnemyServant  = "fx:banish_enemy_servant"
 	PendingFaceDownCaster      = "fx:face_down_caster"
+	PendingCorruptOrb          = "fx:corrupt_orb"
+	PendingBanishOrb           = "fx:banish_orb"
 )
 
 func continuePendingExtended(
@@ -40,6 +42,9 @@ func continuePendingExtended(
 	optionID string,
 	ctx Context,
 ) (handled bool, err error) {
+	if handled, err := continueUniquePending(pending, selected, ctx); handled {
+		return true, err
+	}
 	switch pending.Kind {
 	case PendingHildeDeckBottom:
 		return true, continueHildeDeckBottom(pending, optionID, ctx)
@@ -206,6 +211,9 @@ func continuePendingExtended(
 			return true, err
 		}
 		switch pending.Payload {
+		case "return_eot":
+			ctx.State.ExileReturnAtEOT = append(ctx.State.ExileReturnAtEOT, selected[0])
+			return true, nil
 		case "then_enemy_draw":
 			enemy, err := enemyPlayerID(ctx.State, ctx.Controller)
 			if err != nil {
@@ -257,6 +265,22 @@ func continuePendingExtended(
 			return true, ops.Draw(ctx.State, ctx.Controller, 1)
 		}
 		return true, nil
+	case PendingCorruptOrb:
+		if len(selected) != 1 {
+			return true, fmt.Errorf("corrupt orb requires one orb")
+		}
+		return true, corruptOrbByID(ctx, selected[0])
+	case PendingBanishOrb:
+		if len(selected) != 1 {
+			return true, fmt.Errorf("banish orb requires one orb")
+		}
+		if err := ops.Banish(ctx.State, selected[0]); err != nil {
+			return true, err
+		}
+		if pending.Payload == "then_corrupt_orb" {
+			return true, offerCorruptTargetOrb(ctx)
+		}
+		return true, nil
 	case PendingBanishEnemyServant:
 		if len(selected) != 1 {
 			return true, fmt.Errorf("banish enemy requires one target")
@@ -281,6 +305,12 @@ func continuePendingExtended(
 			return true, resolveAlliedATK1000(ctx)
 		case "draw_1":
 			return true, ops.Draw(ctx.State, ctx.Controller, 1)
+		case "arthur_top2_casters":
+			return true, applyArthurTop2Casters(ctx)
+		case "maria_search_band":
+			return true, applyMariaSearchBand(ctx)
+		case "ran_exile_eot":
+			return true, applyRanExileEOT(ctx)
 		default:
 			return true, fmt.Errorf("unknown banish-stock follow-up %q", pending.Payload)
 		}
@@ -345,6 +375,56 @@ func continuePendingExtended(
 			return true, offerDiscardChain(ctx, left)
 		}
 		return false, nil
+	case PendingStaplerPick:
+		if len(selected) != 1 {
+			return true, fmt.Errorf("stapler pick requires one target")
+		}
+		switch {
+		case pending.Payload == "need_second":
+			targets, err := collectEnemyServants(ctx, -1, false)
+			if err != nil {
+				return true, err
+			}
+			remaining := filterOut(targets, selected[0])
+			if len(remaining) == 0 {
+				// Only one legal target: enemy banishes that one.
+				enemyID, err := enemyPlayerID(ctx.State, ctx.Controller)
+				if err != nil {
+					return true, err
+				}
+				return true, offerOrSkip(ctx, model.PendingChoice{
+					PlayerID:          enemyID,
+					Kind:              PendingBanishEnemyServant,
+					Prompt:            "Banish the chosen servant",
+					SourceCardID:      pending.SourceCardID,
+					SelectableCardIDs: []model.MatchCardID{selected[0]},
+				})
+			}
+			return true, offerOrSkip(ctx, model.PendingChoice{
+				PlayerID:          pending.PlayerID,
+				Kind:              PendingStaplerPick,
+				Prompt:            "Choose a second enemy servant",
+				SourceCardID:      pending.SourceCardID,
+				SelectableCardIDs: remaining,
+				Payload:           "first:" + string(selected[0]),
+			})
+		case strings.HasPrefix(pending.Payload, "first:"):
+			first := model.MatchCardID(strings.TrimPrefix(pending.Payload, "first:"))
+			second := selected[0]
+			enemyID, err := enemyPlayerID(ctx.State, ctx.Controller)
+			if err != nil {
+				return true, err
+			}
+			return true, offerOrSkip(ctx, model.PendingChoice{
+				PlayerID:          enemyID,
+				Kind:              PendingBanishEnemyServant,
+				Prompt:            "Banish one of the chosen servants",
+				SourceCardID:      pending.SourceCardID,
+				SelectableCardIDs: []model.MatchCardID{first, second},
+			})
+		default:
+			return true, fmt.Errorf("unknown stapler payload %q", pending.Payload)
+		}
 	case PendingRestEnemyServant:
 		if len(selected) != 1 {
 			return true, fmt.Errorf("rest enemy requires one target")

@@ -15,12 +15,16 @@ func clearTurnEventFlags(state *model.MatchState) {
 	state.TurnFlags = model.TurnFlags{}
 	state.ContinuousUntilEOT = model.ContinuousUntilEOT{}
 	for id, instance := range state.CardInstances {
-		if !instance.BattledThisTurn && !instance.GrantedSlowStartUntilEOT && !instance.LosesSlowStartUntilEOT {
+		if !instance.BattledThisTurn &&
+			!instance.GrantedSlowStartUntilEOT &&
+			!instance.LosesSlowStartUntilEOT &&
+			!instance.GrantedVoidRestATK500UntilEOT {
 			continue
 		}
 		instance.BattledThisTurn = false
 		instance.GrantedSlowStartUntilEOT = false
 		instance.LosesSlowStartUntilEOT = false
+		instance.GrantedVoidRestATK500UntilEOT = false
 		state.CardInstances[id] = instance
 	}
 }
@@ -130,6 +134,30 @@ func noteEnterAbility(state *model.MatchState, controller model.PlayerID) {
 	}
 	enemyIndex := 1 - controllerIndex
 	state.TurnFlags.EnemyEnterAbility[enemyIndex]++
+}
+
+// noteIdolNonAetherAbility tracks Idol Rest/Enter for Maria Ai's conditional draw.
+func noteIdolNonAetherAbility(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	controller model.PlayerID,
+	printedID model.CardID,
+) {
+	if state == nil || catalog == nil {
+		return
+	}
+	definition, found := catalog.FindByID(string(printedID))
+	if !found {
+		return
+	}
+	if strings.EqualFold(strings.TrimSpace(definition.Name), "Maria Ai") {
+		return
+	}
+	if !traitsContain(definition, "idol") {
+		return
+	}
+	state.TurnFlags.IdolNonAetherAbility++
+	_ = controller
 }
 
 func noteDiscard(state *model.MatchState, discardingPlayerID model.PlayerID) {

@@ -17,11 +17,13 @@ type LocalSession struct {
 }
 
 type LocalMatch struct {
-	mu      sync.RWMutex
-	state   model.MatchState
-	seed    engine.MatchSeed
-	random  engine.RandomSource
-	catalog rules.CardCatalog
+	mu         sync.RWMutex
+	state      model.MatchState
+	seed       engine.MatchSeed
+	random     engine.RandomSource
+	catalog    rules.CardCatalog
+	messages   []view.MatchMessage
+	nextMsgSeq uint64
 }
 
 type PlayerSession struct {
@@ -42,7 +44,7 @@ func (session *PlayerSession) AdjustAether(
 	if err := engine.AdjustAether(&session.match.state, session.playerID, command, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("adjust aether: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }
 
 // MoveCard binds manual movement to the authenticated local player and returns
@@ -59,7 +61,7 @@ func (session *PlayerSession) MoveCard(command model.MoveCardCommand, expectedRe
 	if err := engine.MoveCard(&session.match.state, session.match.catalog, session.playerID, command, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("move card: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.finishLocked("Moved a card")
 }
 
 // DrawCards draws count cards from the bound player's deck into their hand.
@@ -78,7 +80,7 @@ func (session *PlayerSession) DrawCards(count int, expectedRevision model.Revisi
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("draw cards: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.finishLocked("Drew cards")
 }
 
 // ShuffleDeck shuffles the bound player's deck using the match random stream.
@@ -91,7 +93,7 @@ func (session *PlayerSession) ShuffleDeck(expectedRevision model.Revision) (view
 	if err := engine.ShufflePlayerDeck(&session.match.state, session.match.random, session.playerID, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("shuffle deck: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.finishLocked("Shuffled deck")
 }
 
 // PeekDeckTops returns the top count cards of deckOwner's library for the bound
@@ -124,7 +126,7 @@ func (session *PlayerSession) PeekDeckTops(
 			HasStock: len(instance.Stock) > 0,
 		})
 	}
-	matchView, err = view.ProjectMatch(session.match.state, session.playerID)
+	matchView, err = session.projectLocked()
 	if err != nil {
 		return nil, view.MatchView{}, err
 	}
@@ -168,7 +170,7 @@ func (session *PlayerSession) ActivateHildeWillow(
 		Owner:    instance.Owner,
 		HasStock: len(instance.Stock) > 0,
 	}
-	matchView, err = view.ProjectMatch(session.match.state, session.playerID)
+	matchView, err = session.projectLocked()
 	if err != nil {
 		return view.CardView{}, "", view.MatchView{}, err
 	}
@@ -195,7 +197,7 @@ func (session *PlayerSession) ActivateRegisteredRest(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("activate rest: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }
 
 // MoveDeckTopToBottom puts the top card of deckOwner's deck on the bottom.
@@ -216,7 +218,7 @@ func (session *PlayerSession) MoveDeckTopToBottom(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("move deck top to bottom: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }
 
 // ResolveDeckDig keeps one peeked card into hand and bottoms the rest in order.
@@ -241,7 +243,7 @@ func (session *PlayerSession) ResolveDeckDig(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("resolve deck dig: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }
 
 // AcceptSageAdvice chooses the dig replacement for the next pending draw.
@@ -256,7 +258,7 @@ func (session *PlayerSession) AcceptSageAdvice(
 	if err := engine.AcceptSageAdvice(&session.match.state, session.playerID, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("accept sage advice: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }
 
 // DeclineDrawReplacement draws normally instead of using Sage Advice.
@@ -276,7 +278,7 @@ func (session *PlayerSession) DeclineDrawReplacement(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("decline draw replacement: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }
 
 func (session *LocalSession) View() (view.MatchView, error) {
@@ -387,7 +389,7 @@ func (session *PlayerSession) View() (view.MatchView, error) {
 	}
 	session.match.mu.RLock()
 	defer session.match.mu.RUnlock()
-	matchProjection, err := view.ProjectMatch(session.match.state, session.playerID)
+	matchProjection, err := session.projectLocked()
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("error projecting match: %w", err)
 	}
@@ -414,7 +416,7 @@ func (session *PlayerSession) SubmitOpeningHandDecision(
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("submit opening-hand decision: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.projectLocked()
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -437,7 +439,7 @@ func (session *PlayerSession) CallFaceDownLevelOne(
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("call face-down caster: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Called face-down Lv1: " + session.cardLabelLocked(cardID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -467,7 +469,7 @@ func (session *PlayerSession) CallFaceUpLevelOne(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("call face-up Level 1 Caster: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Called face-up Lv1: " + session.cardLabelLocked(cardID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -499,7 +501,7 @@ func (session *PlayerSession) LevelUpCaster(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("level up Caster: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.projectLocked()
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -522,7 +524,7 @@ func (session *PlayerSession) GenerateNonElementalAether(
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("generate non-elemental aether: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.projectLocked()
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -552,7 +554,7 @@ func (session *PlayerSession) GenerateCasterAether(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("generate Caster Aether: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.projectLocked()
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -581,7 +583,7 @@ func (session *PlayerSession) UseCasterToken(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("use caster token: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.projectLocked()
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -608,7 +610,7 @@ func (session *PlayerSession) CompleteCurrentPhase(
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("phase transition: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Advanced phase")
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -641,7 +643,7 @@ func (session *PlayerSession) CastServant(
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("cast servant: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Cast servant: " + session.cardLabelLocked(cardID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -665,7 +667,7 @@ func (session *PlayerSession) CastServantWithPlan(
 	if err := engine.CastServantWithPlan(&session.match.state, session.match.catalog, session.playerID, cardID, plan, orientation, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("cast servant with payment plan: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Cast servant: " + session.cardLabelLocked(cardID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -696,7 +698,7 @@ func (session *PlayerSession) CastConjure(
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("cast conjure: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Cast conjure: " + session.cardLabelLocked(cardID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -715,7 +717,7 @@ func (session *PlayerSession) CastConjureWithPlan(cardID model.MatchCardID, plan
 	if err := engine.CastConjureWithPlan(&session.match.state, session.match.catalog, session.playerID, cardID, plan, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("cast conjure with payment plan: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Cast conjure: " + session.cardLabelLocked(cardID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -746,7 +748,7 @@ func (session *PlayerSession) CastBarrier(
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("cast barrier: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Cast barrier: " + session.cardLabelLocked(cardID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -765,7 +767,7 @@ func (session *PlayerSession) CastBarrierWithPlan(cardID model.MatchCardID, plan
 	if err := engine.CastBarrierWithPlan(&session.match.state, session.match.catalog, session.playerID, cardID, plan, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("cast barrier with payment plan: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Cast barrier: " + session.cardLabelLocked(cardID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -792,7 +794,7 @@ func (session *PlayerSession) PassPriority(
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("pass priority: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.projectLocked()
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -824,7 +826,7 @@ func (session *PlayerSession) DeclareAttack(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("declare attack: %w", err)
 	}
-	updatedView, err := view.ProjectMatch(session.match.state, session.playerID)
+	updatedView, err := session.finishLocked("Declared attack with " + session.cardLabelLocked(attackerID))
 	if err != nil {
 		return view.MatchView{}, fmt.Errorf("project updated match: %w", err)
 	}
@@ -858,7 +860,51 @@ func (session *PlayerSession) CorruptOrbs(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("corrupt orbs: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.finishLocked("Corrupted orb(s)")
+}
+
+// ManualCorruptOrb moves an Orb to hand for effect resolution (right-click).
+func (session *PlayerSession) ManualCorruptOrb(
+	orbID model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.ManualCorruptOrb(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		orbID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("manual corrupt orb: %w", err)
+	}
+	return session.finishLocked("Corrupted an orb")
+}
+
+// ManualBanishOrb banishes an Orb for effect costs (right-click).
+func (session *PlayerSession) ManualBanishOrb(
+	orbID model.MatchCardID,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.ManualBanishOrb(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		orbID,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("manual banish orb: %w", err)
+	}
+	return session.finishLocked("Banished an orb")
 }
 
 // SetGrantedDoubleCorrupt toggles a manual Double Corrupt marker on a Servant.
@@ -881,7 +927,32 @@ func (session *PlayerSession) SetGrantedDoubleCorrupt(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("set granted double corrupt: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
+}
+
+// SetFieldOrientation manually sets Recovered / Rested / Reversed on a
+// controlled field card (same-zone MoveCard cannot do this).
+func (session *PlayerSession) SetFieldOrientation(
+	cardID model.MatchCardID,
+	orientation model.CardOrientation,
+	expectedRevision model.Revision,
+) (view.MatchView, error) {
+	if session == nil || session.match == nil {
+		return view.MatchView{}, fmt.Errorf("session and match must exist")
+	}
+	session.match.mu.Lock()
+	defer session.match.mu.Unlock()
+	if err := engine.SetFieldOrientation(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		cardID,
+		orientation,
+		expectedRevision,
+	); err != nil {
+		return view.MatchView{}, fmt.Errorf("set field orientation: %w", err)
+	}
+	return session.projectLocked()
 }
 
 // PlayBreak uses the optional Break on a just-corrupted Orb card.
@@ -905,7 +976,7 @@ func (session *PlayerSession) PlayBreak(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("play break: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.finishLocked("Played Break: " + session.cardLabelLocked(cardID))
 }
 
 // DeclineBreak skips the optional Break for the currently offered card.
@@ -920,7 +991,7 @@ func (session *PlayerSession) DeclineBreak(
 	if err := engine.DeclineBreak(&session.match.state, session.playerID, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("decline break: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }
 
 // ResolvePendingChoice accepts the open generic PendingChoice prompt.
@@ -944,7 +1015,7 @@ func (session *PlayerSession) ResolvePendingChoice(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("resolve pending choice: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.finishLocked("Resolved a pending choice")
 }
 
 // DeclinePendingChoice skips an optional PendingChoice when allowed.
@@ -959,7 +1030,7 @@ func (session *PlayerSession) DeclinePendingChoice(
 	if err := engine.DeclinePendingChoice(&session.match.state, session.playerID, expectedRevision); err != nil {
 		return view.MatchView{}, fmt.Errorf("decline pending choice: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }
 
 // PeekOrb looks at an Orb and remembers its identity for the bound player.
@@ -991,7 +1062,7 @@ func (session *PlayerSession) PeekOrb(
 		ShowFace: true,
 		Owner:    instance.Owner,
 	}
-	matchView, err = view.ProjectMatch(session.match.state, session.playerID)
+	matchView, err = session.projectLocked()
 	if err != nil {
 		return view.CardView{}, view.MatchView{}, err
 	}
@@ -1016,5 +1087,5 @@ func (session *PlayerSession) RevealOrb(
 	); err != nil {
 		return view.MatchView{}, fmt.Errorf("reveal orb: %w", err)
 	}
-	return view.ProjectMatch(session.match.state, session.playerID)
+	return session.projectLocked()
 }

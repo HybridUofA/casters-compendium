@@ -231,7 +231,10 @@ func TestPlayerUtilityZonesMirrorAcrossTheBattlefield(t *testing.T) {
 func TestOrbZoneUsesUnscrolledVerticalCardLayers(t *testing.T) {
 	orbs := make([]simulatorview.CardView, 7)
 	for index := range orbs {
-		orbs[index] = simulatorview.CardView{Face: model.CardFaceDown}
+		orbs[index] = simulatorview.CardView{
+			MatchID: model.MatchCardID("orb-" + string(rune('a'+index))),
+			Face:    model.CardFaceDown,
+		}
 	}
 	zone := newLayeredOrbZone(
 		"Player",
@@ -251,6 +254,9 @@ func TestOrbZoneUsesUnscrolledVerticalCardLayers(t *testing.T) {
 	}
 	stack.Resize(fyne.NewSize(orbCardWidth+20, 260))
 
+	if len(stack.Objects) != orbSlotCount {
+		t.Fatalf("Orb slot count = %d; want %d prize-style slots", len(stack.Objects), orbSlotCount)
+	}
 	tiles := collectCardTiles(stack)
 	if len(tiles) != 7 {
 		t.Fatalf("Orb tile count = %d; want 7", len(tiles))
@@ -686,7 +692,7 @@ func TestFaceDownLevelOneCallSubmitsSelectedCardAndCurrentRevision(t *testing.T)
 	match.Players[0].OpeningHandFinalized = true
 	calledID := model.MatchCardID("")
 	calledRevision := model.Revision(0)
-	screen := NewBoardScreen(
+	controller := NewBoardController(
 		match,
 		testDefinitions(),
 		BoardActions{
@@ -697,24 +703,25 @@ func TestFaceDownLevelOneCallSubmitsSelectedCardAndCurrentRevision(t *testing.T)
 		},
 		nil,
 	)
-	callButton := findButton(screen, "Call Selected Face Down")
-	if callButton == nil {
-		t.Fatal("face-down Call control was not rendered for the active player")
-	}
-	if !callButton.Disabled() {
-		t.Fatal("face-down Call control is enabled before selecting a card")
-	}
-	handCard := findCardTile(screen, "visible-hand-card")
+	handCard := findCardTile(controller.Content(), "visible-hand-card")
 	if handCard == nil {
 		t.Fatal("active player's visible hand card was not rendered")
 	}
-
-	test.Tap(handCard)
-	if callButton.Disabled() {
-		t.Fatal("face-down Call control did not enable after selecting a card")
+	defs := newCardLookup(testDefinitions())
+	items := handCallMenuItems(
+		controller.Content(),
+		handCard.View,
+		defs[handCard.View.CardID],
+		match.Players[0],
+		defs,
+		controller.actions,
+		func() model.Revision { return match.Revision },
+	)
+	item := menuItemByLabel(items, "Call Face Down")
+	if item == nil || item.Action == nil {
+		t.Fatal("Call Face Down missing from hand context menu")
 	}
-	test.Tap(callButton)
-
+	item.Action()
 	if calledID != "player-one-hand" || calledRevision != 12 {
 		t.Fatalf("face-down Call submitted card/revision %q/%d; want player-one-hand/12", calledID, calledRevision)
 	}
@@ -733,7 +740,7 @@ func TestFaceUpLevelOneCallOnlyEnablesForEligibleSelectedCaster(t *testing.T) {
 	}
 	calledID := model.MatchCardID("")
 	calledRevision := model.Revision(0)
-	screen := NewBoardScreen(
+	controller := NewBoardController(
 		match,
 		testDefinitions(),
 		BoardActions{
@@ -745,36 +752,29 @@ func TestFaceUpLevelOneCallOnlyEnablesForEligibleSelectedCaster(t *testing.T) {
 		},
 		nil,
 	)
-	faceDownButton := findButton(screen, "Call Selected Face Down")
-	faceUpButton := findButton(screen, "Call Selected Face Up")
-	if faceDownButton == nil || faceUpButton == nil {
-		t.Fatal("both Level 1 Call controls were not rendered")
-	}
-	if !faceDownButton.Disabled() || !faceUpButton.Disabled() {
-		t.Fatal("Call controls were enabled before selecting a card")
-	}
-
-	servant := findCardTile(screen, "visible-hand-card")
+	defs := newCardLookup(testDefinitions())
+	rev := func() model.Revision { return match.Revision }
+	servant := findCardTile(controller.Content(), "visible-hand-card")
 	if servant == nil {
 		t.Fatal("ineligible hand card was not rendered")
 	}
-	test.Tap(servant)
-	if faceDownButton.Disabled() {
-		t.Fatal("face-down Call did not enable for an arbitrary hand card")
+	servantItems := handCallMenuItems(controller.Content(), servant.View, defs[servant.View.CardID], match.Players[0], defs, controller.actions, rev)
+	if menuItemByLabel(servantItems, "Call Face Up") != nil {
+		t.Fatal("face-up Call offered for a non-Caster")
 	}
-	if !faceUpButton.Disabled() {
-		t.Fatal("face-up Call enabled for a non-Caster")
+	if menuItemByLabel(servantItems, "Call Face Down") == nil {
+		t.Fatal("face-down Call missing for an arbitrary hand card")
 	}
-
-	caster := findCardTile(screen, "level-one-caster")
+	caster := findCardTile(controller.Content(), "level-one-caster")
 	if caster == nil {
 		t.Fatal("eligible Level 1 Caster was not rendered")
 	}
-	test.Tap(caster)
-	if faceUpButton.Disabled() {
-		t.Fatal("face-up Call did not enable for a Level 1 Caster")
+	casterItems := handCallMenuItems(controller.Content(), caster.View, defs[caster.View.CardID], match.Players[0], defs, controller.actions, rev)
+	faceUp := menuItemByLabel(casterItems, "Call Face Up")
+	if faceUp == nil || faceUp.Action == nil {
+		t.Fatal("face-up Call missing for a Level 1 Caster")
 	}
-	test.Tap(faceUpButton)
+	faceUp.Action()
 	if calledID != "caster-in-hand" || calledRevision != 14 {
 		t.Fatalf("face-up Call submitted card/revision %q/%d; want caster-in-hand/14", calledID, calledRevision)
 	}
@@ -797,7 +797,7 @@ func TestLevelUpCasterSelectsUpperAndTargetAtCurrentRevision(t *testing.T) {
 	gotUpper := model.MatchCardID("")
 	gotTarget := model.MatchCardID("")
 	gotRevision := model.Revision(0)
-	screen := NewBoardScreen(
+	controller := NewBoardController(
 		match,
 		testDefinitions(),
 		BoardActions{LevelUpCaster: func(upper, target model.MatchCardID, revision model.Revision) {
@@ -807,32 +807,26 @@ func TestLevelUpCasterSelectsUpperAndTargetAtCurrentRevision(t *testing.T) {
 		}},
 		nil,
 	)
-	if findButton(screen, "Level Up Selected") != nil {
-		t.Fatal("level-up controls appeared before selecting an upper Caster")
-	}
-	upper := findCardTile(screen, "level-three-aria")
+	upper := findCardTile(controller.Content(), "level-three-aria")
 	if upper == nil {
 		t.Fatal("upper Caster was not rendered in hand")
 	}
-
-	test.Tap(upper)
-	levelButton := findButton(screen, "Level Up Selected")
-	targetSelect := findSelectWithPlaceholder(screen, "Choose Caster to level up")
-	if levelButton == nil || targetSelect == nil {
-		t.Fatal("level-up controls were not shown in the preview panel after selecting an eligible upper")
+	defs := newCardLookup(testDefinitions())
+	items := handCallMenuItems(
+		controller.Content(), upper.View, defs[upper.View.CardID], match.Players[0], defs, controller.actions,
+		func() model.Revision { return match.Revision },
+	)
+	var levelItem *fyne.MenuItem
+	for _, item := range items {
+		if item != nil && strings.HasPrefix(item.Label, "Level Up onto ") {
+			levelItem = item
+			break
+		}
 	}
-	if len(targetSelect.Options) != 1 {
-		t.Fatalf("eligible upper selection produced options = %v", targetSelect.Options)
+	if levelItem == nil || levelItem.Action == nil {
+		t.Fatal("Level Up onto target missing from hand context menu")
 	}
-	if !levelButton.Disabled() {
-		t.Fatal("level-up button enabled before choosing a target")
-	}
-	targetSelect.SetSelected(targetSelect.Options[0])
-	if levelButton.Disabled() {
-		t.Fatal("level-up button did not enable after choosing a target")
-	}
-	test.Tap(levelButton)
-
+	levelItem.Action()
 	if gotUpper != "upper-in-hand" || gotTarget != "target-on-field" || gotRevision != 21 {
 		t.Fatalf("Level Up submitted %q/%q/%d; want upper-in-hand/target-on-field/21", gotUpper, gotTarget, gotRevision)
 	}
@@ -852,23 +846,30 @@ func TestLevelUpCasterShowsPromptForLevelTwoUpperOntoLevelOne(t *testing.T) {
 		MatchID: "l1-on-field", CardID: "level-one-aria", Face: model.CardFaceUp,
 		Orientation: model.OrientationRecovered, ShowFace: true,
 	}}
-	screen := NewBoardScreen(
+	controller := NewBoardController(
 		match,
 		testDefinitions(),
 		BoardActions{LevelUpCaster: func(model.MatchCardID, model.MatchCardID, model.Revision) {}},
 		nil,
 	)
-	upper := findCardTile(screen, "level-two-aria")
+	upper := findCardTile(controller.Content(), "level-two-aria")
 	if upper == nil {
 		t.Fatal("Level 2 Caster was not rendered in hand")
 	}
-	test.Tap(upper)
-	if findButton(screen, "Level Up Selected") == nil {
-		t.Fatal("Level Up prompt missing after selecting a Level 2 Caster with a Level 1 target")
+	defs := newCardLookup(testDefinitions())
+	items := handCallMenuItems(
+		controller.Content(), upper.View, defs[upper.View.CardID], match.Players[0], defs, controller.actions,
+		func() model.Revision { return match.Revision },
+	)
+	found := false
+	for _, item := range items {
+		if item != nil && strings.HasPrefix(item.Label, "Level Up onto ") {
+			found = true
+			break
+		}
 	}
-	targetSelect := findSelectWithPlaceholder(screen, "Choose Caster to level up")
-	if targetSelect == nil || len(targetSelect.Options) != 1 {
-		t.Fatalf("Level Up target select = %#v", targetSelect)
+	if !found {
+		t.Fatal("Level Up onto Level 1 target missing from hand context menu")
 	}
 }
 
@@ -945,8 +946,9 @@ func TestFaceDownLevelOneCallControlOnlyAppearsWhenAvailable(t *testing.T) {
 				BoardActions{CallFaceDownLevelOne: func(model.MatchCardID, model.Revision) {}},
 				nil,
 			)
-			if findButton(screen, "Call Selected Face Down") != nil {
-				t.Fatal("face-down Call control was rendered when the action was unavailable")
+			handCard := findCardTile(screen, "visible-hand-card")
+			if handCard != nil && handCard.OnSecondaryActivate != nil {
+				t.Fatal("Call context menu was wired when Call was unavailable")
 			}
 		})
 	}
@@ -967,8 +969,12 @@ func TestBoardControllerUpdatesOnlyViewerHandWhenCallBecomesAvailable(t *testing
 	firstOpponentField := controller.boards.Objects[0]
 	firstPlayerField := controller.boards.Objects[1]
 	firstPlayerHand := controller.playerBoards[1].hand.Objects[0]
-	if findButton(controller.Content(), "Call Selected Face Down") != nil {
-		t.Fatal("face-down Call control appeared during Recovery")
+	handCard := findCardTile(controller.Content(), "visible-hand-card")
+	if handCard == nil {
+		t.Fatal("hand card missing in Recovery")
+	}
+	if handCard.OnSecondaryActivate != nil {
+		t.Fatal("Call context menu was wired during Recovery")
 	}
 
 	updated := match
@@ -985,8 +991,17 @@ func TestBoardControllerUpdatesOnlyViewerHandWhenCallBecomesAvailable(t *testing
 	if controller.playerBoards[1].hand.Objects[0] == firstPlayerHand {
 		t.Fatal("Call availability update did not replace the viewer's Hand zone")
 	}
-	if findButton(controller.Content(), "Call Selected Face Down") == nil {
-		t.Fatal("face-down Call control did not appear upon entering Call phase")
+	handCard = findCardTile(controller.Content(), "visible-hand-card")
+	if handCard == nil {
+		t.Fatal("hand card missing after entering Call")
+	}
+	if handCard.OnSecondaryActivate == nil {
+		t.Fatal("Call context menu was not wired upon entering Call phase")
+	}
+	defs := newCardLookup(testDefinitions())
+	items := handCallMenuItems(controller.Content(), handCard.View, defs[handCard.View.CardID], updated.Players[0], defs, controller.actions, func() model.Revision { return updated.Revision })
+	if menuItemByLabel(items, "Call Face Down") == nil {
+		t.Fatal("Call Face Down missing from hand context menu upon entering Call phase")
 	}
 }
 
@@ -1473,18 +1488,35 @@ func TestCastControlsSubmitSelectedCardPaymentAndOrientation(t *testing.T) {
 			if card == nil {
 				t.Fatal("castable hand card was not rendered")
 			}
-			test.Tap(card)
-			castButton := findButton(controller.Content(), "Confirm Suggested Cast")
-			if castButton == nil {
-				t.Fatal("suggested cast controls did not appear in the side panel")
+			if card.OnSecondaryActivate == nil {
+				t.Fatal("Cast context menu was not wired on hand card")
 			}
-			for _, selection := range findSelects(controller.Content()) {
+			defs := newCardLookup(definitions)
+			menuItems := handCastMenuItems(
+				controller.Content(), card.View, defs[card.View.CardID], match.Players[0], defs, actions,
+				func() model.Revision { return match.Revision },
+			)
+			if menuItemByLabel(menuItems, "Cast…") == nil {
+				t.Fatal("Cast… missing from hand context menu")
+			}
+			panel := newSuggestedCastPanel(
+				card.View, defs[card.View.CardID], match.Players[0], defs, actions,
+				func() model.Revision { return match.Revision },
+			)
+			if panel == nil {
+				t.Fatal("suggested cast panel was not built")
+			}
+			castButton := findButton(panel, "Confirm Suggested Cast")
+			if castButton == nil {
+				t.Fatal("suggested cast controls missing from cast dialog panel")
+			}
+			for _, selection := range findSelects(panel) {
 				if testCase.cardType == "Servant" && reflect.DeepEqual(selection.Options, []string{"Recovered", "Reversed"}) {
 					selection.SetSelected("Reversed")
 				}
 			}
 			if castButton.Disabled() {
-				t.Fatal("Cast Selected did not enable after a legal Aether allocation")
+				t.Fatal("Cast did not enable after a legal Aether allocation")
 			}
 			test.Tap(castButton)
 			if submittedID != "cast-card" || submittedPlan.Payment.Aes != 1 || submittedRevision != match.Revision {
@@ -1512,24 +1544,27 @@ func TestSuggestedCastSourcesCanBeChangedBeforeConfirmation(t *testing.T) {
 		cards.Card{ID: "aes-source-definition", Name: "Aes Source", Type: "Caster", Element: "Aes", CostLevel: "1"},
 	)
 	var submitted model.CastPaymentPlan
-	controller := NewBoardController(
-		match,
-		definitions,
-		BoardActions{CastServantWithPlan: func(_ model.MatchCardID, plan model.CastPaymentPlan, _ model.CardOrientation, _ model.Revision) {
-			submitted = plan
-		}},
-		nil,
-	)
+	actions := BoardActions{CastServantWithPlan: func(_ model.MatchCardID, plan model.CastPaymentPlan, _ model.CardOrientation, _ model.Revision) {
+		submitted = plan
+	}}
+	controller := NewBoardController(match, definitions, actions, nil)
 	card := findCardTileByMatchID(controller.Content(), "player-one-hand")
 	if card == nil {
 		t.Fatal("castable card was not rendered")
 	}
-	test.Tap(card)
-	checks := findChecks(controller.Content())
+	defs := newCardLookup(definitions)
+	panel := newSuggestedCastPanel(
+		card.View, defs[card.View.CardID], match.Players[0], defs, actions,
+		func() model.Revision { return match.Revision },
+	)
+	if panel == nil {
+		t.Fatal("suggested cast panel was not built")
+	}
+	checks := findChecks(panel)
 	if len(checks) != 1 || !checks[0].Checked {
 		t.Fatalf("suggested source checks = %#v; want selected Aes source", checks)
 	}
-	confirm := findButton(controller.Content(), "Confirm Suggested Cast")
+	confirm := findButton(panel, "Confirm Suggested Cast")
 	checks[0].SetChecked(false)
 	if confirm == nil || !confirm.Disabled() {
 		t.Fatal("confirmation remained enabled after removing the required source")

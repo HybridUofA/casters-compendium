@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 
 	"github.com/HybridUofA/casters-compendium/internal/game/cards"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
@@ -17,10 +16,12 @@ import (
 func TestSelectionFollowsContainedArtworkAfterRotation(t *testing.T) {
 	tile := NewCardTile(simulatorview.CardView{ShowFace: true}, cards.Card{}, fyne.NewSize(60, 90), nil, nil)
 	tile.uprightImage = newSimulatorCanvasImage(image.NewNRGBA(image.Rect(0, 0, 60, 90)))
-	tile.image = tile.uprightImage
+	tile.sidewaysImage = nil
+	tile.setSidewaysState(false)
 	tile.Resize(fyne.NewSize(120, 120))
 	tile.SetSelected(true)
 	renderer := tile.CreateRenderer()
+	display := renderer.Objects()[0]
 	for _, sideways := range []bool{false, true} {
 		tile.SetSideways(sideways)
 		renderer.Refresh()
@@ -36,17 +37,39 @@ func TestSelectionFollowsContainedArtworkAfterRotation(t *testing.T) {
 		if border.CornerRadius <= 0 || !border.Visible() {
 			t.Fatal("selected card needs a visible rounded outline")
 		}
-		if renderer.Objects()[0] != tile.image {
-			t.Fatal("renderer retained artwork from the previous orientation")
+		if renderer.Objects()[0] != display || display != tile.image {
+			t.Fatal("renderer must keep a stable artwork object across orientation changes")
 		}
+	}
+}
+
+func TestCombatStatOverlayShowsBuffedValues(t *testing.T) {
+	tile := NewCardTile(
+		simulatorview.CardView{
+			MatchID: "s1", ShowFace: true,
+			AttackModifier: 500, DefenseModifier: -200,
+		},
+		cards.Card{Attack: "1000", Defense: "800"},
+		fyne.NewSize(60, 90),
+		nil,
+		nil,
+	)
+	if tile.atkLabel == nil || tile.atkLabel.Hidden || tile.atkLabel.Text != "1500" {
+		t.Fatalf("ATK overlay = %q hidden=%v; want 1500 visible", tile.atkLabel.Text, tile.atkLabel.Hidden)
+	}
+	if tile.defLabel == nil || tile.defLabel.Hidden || tile.defLabel.Text != "600" {
+		t.Fatalf("DEF overlay = %q hidden=%v; want 600 visible", tile.defLabel.Text, tile.defLabel.Hidden)
+	}
+	if color.NRGBAModel.Convert(tile.atkLabel.Color) != statColorBuff {
+		t.Fatal("buffed ATK should be green")
+	}
+	if color.NRGBAModel.Convert(tile.defLabel.Color) != statColorNerf {
+		t.Fatal("nerfed DEF should be red")
 	}
 }
 
 func TestReversedCardDisplaysUpsideDownWithoutChangingSize(t *testing.T) {
 	tile := NewCardTile(simulatorview.CardView{Orientation: model.OrientationReversed}, cards.Card{}, fyne.NewSize(60, 90), nil, nil)
-	if tile.image == tile.uprightImage {
-		t.Fatal("Reversed card was constructed with upright artwork")
-	}
 	source := image.NewNRGBA(image.Rect(0, 0, 2, 3))
 	marker := color.NRGBA{R: 255, A: 255}
 	source.SetNRGBA(0, 0, marker)
@@ -59,6 +82,9 @@ func TestReversedCardDisplaysUpsideDownWithoutChangingSize(t *testing.T) {
 	}
 	if tile.MinSize() != fyne.NewSize(60, 90) {
 		t.Fatalf("Reversed card size = %v; want portrait 60x90", tile.MinSize())
+	}
+	if tile.statusBadge == nil || tile.statusBadge.Hidden || tile.statusBadge.Text != "REV" {
+		t.Fatal("Reversed card must show a REV status badge")
 	}
 }
 
@@ -140,21 +166,21 @@ func TestSetSidewaysRotatesVisibleCardArtwork(t *testing.T) {
 	)
 	source := image.NewNRGBA(image.Rect(0, 0, 2, 3))
 	source.Set(0, 0, color.NRGBA{R: 255, A: 255})
-	tile.image = canvas.NewImageFromImage(source)
-	tile.image.FillMode = canvas.ImageFillContain
-	tile.uprightImage = tile.image
+	tile.uprightImage = newSimulatorCanvasImage(source)
+	tile.sidewaysImage = nil
+	tile.setSidewaysState(false)
 
 	tile.SetSideways(true)
 
-	if tile.image == tile.uprightImage {
-		t.Fatal("visible Rested card retained its upright artwork")
-	}
 	if tile.image.Image == nil {
 		t.Fatal("visible Rested card has no rotated bitmap")
 	}
 	bounds := tile.image.Image.Bounds()
 	if bounds.Dx() != 3 || bounds.Dy() != 2 {
 		t.Fatalf("rotated visible artwork dimensions = %dx%d; want 3x2", bounds.Dx(), bounds.Dy())
+	}
+	if tile.uprightImage.Image != nil && tile.image.Image == tile.uprightImage.Image {
+		t.Fatal("visible Rested card retained its upright artwork")
 	}
 	if tile.MinSize() != fyne.NewSize(120, 86) {
 		t.Fatalf("Rested visible tile size = %v; want 120x86", tile.MinSize())

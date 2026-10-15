@@ -361,7 +361,7 @@ func TestResolveServantCardPlayAppliesDeclaredOrientation(t *testing.T) {
 			}
 			instance := state.CardInstances[link.SourceCardID]
 
-			if err := resolveServantCardPlay(&state, link, instance); err != nil {
+			if err := resolveServantCardPlay(&state, nil, link, instance); err != nil {
 				t.Fatalf("resolveServantCardPlay() error = %v", err)
 			}
 			if !reflect.DeepEqual(state.Players[0].ServantZone, []model.MatchCardID{"source-one"}) {
@@ -396,7 +396,7 @@ func TestResolveServantCardPlayRejectsInvalidOrientationWithoutMutation(t *testi
 			before := cloneChaseEngineState(state)
 			before.Players[0].ServantZone = append([]model.MatchCardID(nil), state.Players[0].ServantZone...)
 
-			err := resolveServantCardPlay(&state, link, instance)
+			err := resolveServantCardPlay(&state, nil, link, instance)
 			if err == nil || !strings.Contains(err.Error(), "Recovered or Reversed") {
 				t.Fatalf("resolveServantCardPlay() orientation %q error = %v", orientation, err)
 			}

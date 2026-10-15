@@ -72,7 +72,7 @@ func offerModifyATK(ctx Context, delta int, allied bool) error {
 		if err != nil {
 			return err
 		}
-		targets = append(targets, ctx.State.Players[idx].ServantZone...)
+		targets = zoneServants(ctx, idx)
 	} else {
 		var err error
 		targets, err = collectEnemyServants(ctx, -1, false)
@@ -98,7 +98,7 @@ func offerModifyDEF(ctx Context, delta int, allied bool) error {
 	if err != nil {
 		return err
 	}
-	targets := append([]model.MatchCardID(nil), ctx.State.Players[idx].ServantZone...)
+	targets := zoneServants(ctx, idx)
 	return offerOrSkip(ctx, model.PendingChoice{
 		PlayerID:          ctx.Controller,
 		Kind:              PendingModifyDEF,
@@ -122,7 +122,7 @@ func resolveGrantAlliedDC(ctx Context) error {
 		Kind:              PendingGrantDC,
 		Prompt:            "Target allied servant gains Double Corrupt until end of turn",
 		SourceCardID:      ctx.Source,
-		SelectableCardIDs: append([]model.MatchCardID(nil), ctx.State.Players[idx].ServantZone...),
+		SelectableCardIDs: zoneServants(ctx, idx),
 	})
 }
 

@@ -71,6 +71,9 @@ type CardInstance struct {
 	// overlays cleared at end of turn.
 	GrantedSlowStartUntilEOT bool
 	LosesSlowStartUntilEOT   bool
+	// GrantedVoidRestATK500UntilEOT is Arthur-style: this face-down caster may
+	// Rest to give an allied Void servant +500 ATK until end of turn.
+	GrantedVoidRestATK500UntilEOT bool
 	// BattledThisTurn is set when this card attacks or is attacked.
 	BattledThisTurn bool
 }
@@ -198,6 +201,9 @@ type MatchState struct {
 	TurnFlags TurnFlags
 	// ContinuousUntilEOT holds temporary continuous shields cleared at EOT.
 	ContinuousUntilEOT ContinuousUntilEOT
+	// ExileReturnAtEOT cards return to their owner's Servant zone at end of turn
+	// (Ran Berfield stock exile). Cleared after processing.
+	ExileReturnAtEOT []MatchCardID
 }
 
 // TurnFlags are per-player event counters for the current turn (Players index).
@@ -217,6 +223,8 @@ type TurnFlags struct {
 	ConjureEffectDraws              [2]int
 	EnemyAttacks                    [2]int // attacks declared by the other player
 	SpellDestroyedEnemy             [2]int
+	// IdolNonAetherAbility counts Idol Rest/Enter abilities this turn (not Maria Ai).
+	IdolNonAetherAbility int
 }
 
 // ContinuousUntilEOT is temporary continuous protection cleared at end of turn.

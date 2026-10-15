@@ -11,7 +11,7 @@ import (
 	sourceicons "github.com/HybridUofA/casters-compendium/internal/sources/icons"
 )
 
-const aetherIconSize float32 = 28
+const aetherIconSize float32 = 24
 
 type aetherDisplayEntry struct {
 	name     string
@@ -80,27 +80,41 @@ func newAetherPoolDisplay(
 		return canvas.NewText("Aether: 0", boardForeground)
 	}
 
-	objects := make([]fyne.CanvasObject, 0, len(entries)+1)
 	label := canvas.NewText("Aether:", boardForeground)
 	label.TextStyle = fyne.TextStyle{Bold: true}
-	objects = append(objects, label)
+
+	chips := make([]fyne.CanvasObject, 0, len(entries))
 	for _, entry := range entries {
-		icon := canvas.NewImageFromResource(entry.resource)
-		icon.FillMode = canvas.ImageFillContain
-		icon.SetMinSize(fyne.NewSize(aetherIconSize, aetherIconSize))
-		amount := canvas.NewText(fmt.Sprintf("%d", entry.amount), boardForeground)
-		amount.TextStyle = fyne.TextStyle{Bold: true}
-		row := container.NewHBox(icon, amount)
-		if editable && onAdjust != nil {
-			element := entry.element
-			objects = append(objects, newZoneInteractLayer(
-				row,
-				func() { onAdjust(element, 1) },
-				func(*fyne.PointEvent) { onAdjust(element, -1) },
-			))
-			continue
-		}
-		objects = append(objects, row)
+		chips = append(chips, newAetherAmountChip(entry, editable, onAdjust))
 	}
-	return container.NewHBox(objects...)
+	// Fixed columns keep MinSize compact (GridWrap stacks all chips when width
+	// is still unbounded) while fitting the preview rail without a scrollbar.
+	columns := 5
+	if len(chips) < columns {
+		columns = len(chips)
+	}
+	grid := container.NewGridWithColumns(columns, chips...)
+	return container.NewVBox(label, grid)
+}
+
+func newAetherAmountChip(
+	entry aetherDisplayEntry,
+	editable bool,
+	onAdjust func(element string, delta int),
+) fyne.CanvasObject {
+	icon := canvas.NewImageFromResource(entry.resource)
+	icon.FillMode = canvas.ImageFillContain
+	icon.SetMinSize(fyne.NewSize(aetherIconSize, aetherIconSize))
+	amount := canvas.NewText(fmt.Sprintf("%d", entry.amount), boardForeground)
+	amount.TextStyle = fyne.TextStyle{Bold: true}
+	row := container.NewHBox(icon, amount)
+	if editable && onAdjust != nil {
+		element := entry.element
+		return newZoneInteractLayer(
+			row,
+			func() { onAdjust(element, 1) },
+			func(*fyne.PointEvent) { onAdjust(element, -1) },
+		)
+	}
+	return row
 }

@@ -25,7 +25,7 @@ func servantCannotBeAttacked(
 		return true
 	}
 	if state.ContinuousUntilEOT.RestedAlliedCannotBeAttacked[targetControllerIndex] &&
-		len(state.Players[targetControllerIndex].ServantZone) < len(state.Players[1-targetControllerIndex].ServantZone) {
+		countServants(state, catalog, targetControllerIndex) < countServants(state, catalog, 1-targetControllerIndex) {
 		return true
 	}
 	if instance.Orientation == model.OrientationRested {
@@ -68,8 +68,16 @@ func fieldGrantsRestedAlliedProtection(
 			continue
 		}
 		normalized := strings.ToLower(definition.Ability)
+		// Barrier of Arrogance-style: continuous while the barrier is in play.
 		if strings.Contains(normalized, "rested allied servants can't be attacked") ||
 			strings.Contains(normalized, "rested allied servants cannot be attacked") {
+			return true
+		}
+		// Pompous Delphinium-style: only while this card is Reversed.
+		if strings.Contains(normalized, "while i am reversed") &&
+			(strings.Contains(normalized, "cannot attack allied rested") ||
+				strings.Contains(normalized, "can't attack allied rested")) &&
+			instance.Orientation == model.OrientationReversed {
 			return true
 		}
 	}
@@ -164,10 +172,85 @@ func fieldGrantsGlobalSlowStart(state *model.MatchState, catalog rules.CardCatal
 				continue
 			}
 			normalized := strings.ToLower(definition.Ability)
+			// Sophomore Slump-style continuous barrier.
 			if strings.Contains(normalized, "all servants gain slow start") {
 				return true
 			}
 		}
 	}
 	return false
+}
+
+// worldOfRageAffects reports whether controllerIndex's servants are under an
+// enemy World of Rage (enter Recovered; cannot Switch except by effect).
+func worldOfRageAffects(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	controllerIndex int,
+) bool {
+	if state == nil || catalog == nil || controllerIndex < 0 || controllerIndex > 1 {
+		return false
+	}
+	enemyIndex := 1 - controllerIndex
+	for _, cardID := range state.Players[enemyIndex].ServantZone {
+		instance, ok := state.CardInstances[cardID]
+		if !ok {
+			continue
+		}
+		definition, found := catalog.FindByID(string(instance.CardID))
+		if !found {
+			continue
+		}
+		normalized := strings.ToLower(definition.Ability)
+		if strings.Contains(normalized, "enemy servants enter the field recovered") ||
+			strings.Contains(normalized, "enemy servants cannot be switched") {
+			return true
+		}
+	}
+	return false
+}
+
+// cardsLoseBreak reports Saaya-style continuous: while an opponent controls a
+// card that says opponents with 6+ orbs lose Break, and this owner has 6+ orbs.
+func cardsLoseBreak(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	ownerIndex int,
+) bool {
+	if state == nil || catalog == nil || ownerIndex < 0 || ownerIndex > 1 {
+		return false
+	}
+	if len(state.Players[ownerIndex].Orbs) < 6 {
+		return false
+	}
+	enemyIndex := 1 - ownerIndex
+	for _, cardID := range state.Players[enemyIndex].CasterZone {
+		if abilityMakesOpponentLoseBreak(state, catalog, cardID) {
+			return true
+		}
+	}
+	for _, cardID := range state.Players[enemyIndex].ServantZone {
+		if abilityMakesOpponentLoseBreak(state, catalog, cardID) {
+			return true
+		}
+	}
+	return false
+}
+
+func abilityMakesOpponentLoseBreak(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	cardID model.MatchCardID,
+) bool {
+	instance, ok := state.CardInstances[cardID]
+	if !ok {
+		return false
+	}
+	definition, found := catalog.FindByID(string(instance.CardID))
+	if !found {
+		return false
+	}
+	normalized := strings.ToLower(definition.Ability)
+	return strings.Contains(normalized, "lose break") ||
+		strings.Contains(normalized, "loses break")
 }

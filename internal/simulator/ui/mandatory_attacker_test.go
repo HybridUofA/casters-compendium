@@ -43,4 +43,14 @@ func TestViewerHasMandatoryAttackerIgnoresBarriers(t *testing.T) {
 	if !viewerHasMandatoryAttacker(match, definitions) {
 		t.Fatal("recovered Servant must still require an attack")
 	}
+
+	match.Players[0].ServantZone = []simulatorview.CardView{{
+		MatchID:     "reversed-1",
+		CardID:      "servant-def",
+		Orientation: model.OrientationReversed,
+		ShowFace:    true,
+	}}
+	if viewerHasMandatoryAttacker(match, definitions) {
+		t.Fatal("reversed Servant must not count as an eligible attacker")
+	}
 }

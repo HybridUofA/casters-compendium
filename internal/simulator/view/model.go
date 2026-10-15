@@ -8,15 +8,18 @@ import (
 // It must contain only information the identified viewer is permitted to know;
 // presentation and network code must not receive the unrestricted MatchState.
 type MatchView struct {
-	ViewerID             model.PlayerID
-	Players              [2]PlayerView
-	MatchStatus          model.Status
-	Revision             model.Revision
-	Turn                 model.TurnState
-	FirstPlayer          model.PlayerID
-	PriorityHolder       model.PlayerID
-	PassCount            int
-	ChaseLinkCount       int
+	ViewerID       model.PlayerID
+	Players        [2]PlayerView
+	MatchStatus    model.Status
+	Revision       model.Revision
+	Turn           model.TurnState
+	FirstPlayer    model.PlayerID
+	PriorityHolder model.PlayerID
+	PassCount      int
+	ChaseLinkCount int
+	// ChaseLinks is the public stack (bottom→top). Card identities on Chase are
+	// always revealed so both players can see what is resolving.
+	ChaseLinks           []ChaseLinkView
 	PrioritySequenceOpen bool
 	Attack               model.AttackState
 	PendingDraw          model.PendingDraw
@@ -29,6 +32,34 @@ type MatchView struct {
 	Cosmetics map[model.PlayerID]PlayerCosmetics
 	// Spectator is true when ViewerID is not a match player seat.
 	Spectator bool
+	// Messages is the shared event log + chat (newest last). Side-channel data
+	// filled by the session layer; not derived from MatchState alone.
+	Messages []MatchMessage
+}
+
+// ChaseLinkView is one public Chase stack entry.
+type ChaseLinkView struct {
+	ID               model.ChaseLinkID
+	Controller       model.PlayerID
+	Kind             model.ChaseLinkKind
+	EntryOrientation model.CardOrientation
+	Card             CardView
+}
+
+// MatchMessageKind distinguishes system events from player chat.
+type MatchMessageKind string
+
+const (
+	MessageKindEvent MatchMessageKind = "event"
+	MessageKindChat  MatchMessageKind = "chat"
+)
+
+// MatchMessage is one log/chat line visible to all seats (and spectators).
+type MatchMessage struct {
+	Seq      uint64
+	Kind     MatchMessageKind
+	PlayerID model.PlayerID // empty for system events
+	Text     string
 }
 
 // PlayerCosmetics carries optional allowlisted custom-asset URLs for one seat.
@@ -77,4 +108,9 @@ type CardView struct {
 	HasStock bool
 	// GrantedDoubleCorrupt is visible whenever MatchID is known (field cards).
 	GrantedDoubleCorrupt bool
+	// AttackModifier / DefenseModifier are additive offsets to printed ATK/DEF.
+	// Projected whenever MatchID is known so the UI can show live combat stats
+	// (Lumielle swaps, Rest buffs, etc.) the way MD/EDOPro do.
+	AttackModifier  int
+	DefenseModifier int
 }
