@@ -8,15 +8,15 @@ import (
 // It must contain only information the identified viewer is permitted to know;
 // presentation and network code must not receive the unrestricted MatchState.
 type MatchView struct {
-	ViewerID             model.PlayerID
-	Players              [2]PlayerView
-	MatchStatus          model.Status
-	Revision             model.Revision
-	Turn                 model.TurnState
-	FirstPlayer          model.PlayerID
-	PriorityHolder       model.PlayerID
-	PassCount            int
-	ChaseLinkCount       int
+	ViewerID       model.PlayerID
+	Players        [2]PlayerView
+	MatchStatus    model.Status
+	Revision       model.Revision
+	Turn           model.TurnState
+	FirstPlayer    model.PlayerID
+	PriorityHolder model.PlayerID
+	PassCount      int
+	ChaseLinkCount int
 	// ChaseLinks is the public stack (bottom→top). Card identities on Chase are
 	// always revealed so both players can see what is resolving.
 	ChaseLinks           []ChaseLinkView

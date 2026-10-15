@@ -2,12 +2,15 @@ package ui
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
+
+const dragGhostTranslucency = 0.2
 
 type zoneDropTarget struct {
 	object   fyne.CanvasObject
@@ -20,6 +23,7 @@ type cardDragSession struct {
 	sourceZone     model.Zone
 	sourcePlayerID model.PlayerID
 	lastAbs        fyne.Position
+	ghost          *canvas.Image
 	active         bool
 }
 
@@ -42,22 +46,29 @@ func (screen *BoardScreen) clearDropTargets() {
 }
 
 func (screen *BoardScreen) beginCardDrag(
-	card simulatorview.CardView,
+	tile *CardTile,
 	sourceZone model.Zone,
 	sourcePlayerID model.PlayerID,
 ) {
-	if screen == nil || !cardMovable(card) || screen.actions.MoveCard == nil {
+	if screen == nil || tile == nil || screen.actions.MoveCard == nil {
+		return
+	}
+	card := tile.View
+	if !cardMovable(card) {
 		return
 	}
 	if screen.match.MatchStatus != model.StatusInProgress {
 		return
 	}
+	screen.clearDragGhost()
 	screen.drag = cardDragSession{
 		card:           card,
 		sourceZone:     sourceZone,
 		sourcePlayerID: sourcePlayerID,
 		active:         true,
+		ghost:          screen.createDragGhost(tile),
 	}
+	screen.showDragGhost(tile.Size())
 }
 
 func (screen *BoardScreen) trackCardDrag(absolute fyne.Position) {
@@ -65,6 +76,7 @@ func (screen *BoardScreen) trackCardDrag(absolute fyne.Position) {
 		return
 	}
 	screen.drag.lastAbs = absolute
+	screen.moveDragGhost(absolute)
 }
 
 func (screen *BoardScreen) finishCardDrag() {
@@ -72,12 +84,89 @@ func (screen *BoardScreen) finishCardDrag() {
 		return
 	}
 	drag := screen.drag
+	screen.clearDragGhost()
 	screen.drag = cardDragSession{}
 	target, ok := screen.dropTargetAt(drag.lastAbs)
 	if !ok {
 		return
 	}
 	screen.applyDragDrop(drag.card, drag.sourceZone, drag.sourcePlayerID, target, drag.lastAbs)
+}
+
+func (screen *BoardScreen) cancelCardDrag() {
+	if screen == nil || !screen.drag.active {
+		return
+	}
+	screen.clearDragGhost()
+	screen.drag = cardDragSession{}
+}
+
+func (screen *BoardScreen) createDragGhost(tile *CardTile) *canvas.Image {
+	if tile == nil {
+		return nil
+	}
+	var ghost *canvas.Image
+	if tile.image != nil {
+		ghost = cloneCanvasImageShell(tile.image)
+	} else if tile.View.ShowFace {
+		ghost = simulatorCardImage(tile.Card)
+	} else {
+		ghost = cardBackImage()
+	}
+	if ghost == nil {
+		return nil
+	}
+	ghost.Translucency = dragGhostTranslucency
+	ghost.FillMode = canvas.ImageFillContain
+	ghost.ScaleMode = canvas.ImageScaleSmooth
+	return ghost
+}
+
+func (screen *BoardScreen) showDragGhost(size fyne.Size) {
+	if screen == nil || screen.drag.ghost == nil || screen.dragLayer == nil {
+		return
+	}
+	if size.Width < 1 || size.Height < 1 {
+		size = fyne.NewSize(fieldCardWidth, fieldCardHeight)
+	}
+	screen.drag.ghost.Resize(size)
+	screen.dragLayer.Add(screen.drag.ghost)
+	screen.dragLayer.Refresh()
+}
+
+func (screen *BoardScreen) moveDragGhost(absolute fyne.Position) {
+	if screen == nil || screen.drag.ghost == nil || screen.dragLayer == nil {
+		return
+	}
+	driver := fyne.CurrentApp().Driver()
+	if driver == nil {
+		return
+	}
+	layerOrigin := driver.AbsolutePositionForObject(screen.dragLayer)
+	size := screen.drag.ghost.Size()
+	screen.drag.ghost.Move(fyne.NewPos(
+		absolute.X-layerOrigin.X-size.Width/2,
+		absolute.Y-layerOrigin.Y-size.Height/2,
+	))
+	screen.drag.ghost.Refresh()
+}
+
+func (screen *BoardScreen) clearDragGhost() {
+	if screen == nil {
+		return
+	}
+	if screen.drag.ghost != nil && screen.dragLayer != nil {
+		objects := make([]fyne.CanvasObject, 0, len(screen.dragLayer.Objects))
+		for _, object := range screen.dragLayer.Objects {
+			if object == screen.drag.ghost {
+				continue
+			}
+			objects = append(objects, object)
+		}
+		screen.dragLayer.Objects = objects
+		screen.dragLayer.Refresh()
+	}
+	screen.drag.ghost = nil
 }
 
 func (screen *BoardScreen) dropTargetAt(absolute fyne.Position) (zoneDropTarget, bool) {
@@ -162,14 +251,14 @@ func (screen *BoardScreen) promptDeckDropPlacement(
 		}
 		screen.actions.MoveCard(command, screen.match.Revision)
 	}
-	canvas := fyne.CurrentApp().Driver().CanvasForObject(target.object)
-	if canvas == nil {
+	targetCanvas := fyne.CurrentApp().Driver().CanvasForObject(target.object)
+	if targetCanvas == nil {
 		submit(model.DeckPlacementTop)
 		return
 	}
 	top := fyne.NewMenuItem("Put on top of deck", func() { submit(model.DeckPlacementTop) })
 	bottom := fyne.NewMenuItem("Put on bottom of deck", func() { submit(model.DeckPlacementBottom) })
-	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", top, bottom), canvas, dropAt)
+	widget.ShowPopUpMenuAtPosition(fyne.NewMenu("", top, bottom), targetCanvas, dropAt)
 }
 
 func (screen *BoardScreen) bindCardDrag(
@@ -183,9 +272,8 @@ func (screen *BoardScreen) bindCardDrag(
 	if !cardMovable(tile.View) || sourceZone == model.ZoneOrbs {
 		return
 	}
-	card := tile.View
 	tile.OnDragBegin = func() {
-		screen.beginCardDrag(card, sourceZone, sourcePlayerID)
+		screen.beginCardDrag(tile, sourceZone, sourcePlayerID)
 	}
 	tile.OnDragUpdate = func(absolute fyne.Position) {
 		screen.trackCardDrag(absolute)

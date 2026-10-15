@@ -52,9 +52,9 @@ func TestResolveStrawEffigyEnterOffersAlliedCorrupt(t *testing.T) {
 func TestResolveVegaCorruptOrbBanishesThenOffersCorrupt(t *testing.T) {
 	state := model.MatchState{
 		CardInstances: map[model.MatchCardID]model.CardInstance{
-			"vega":     {MatchID: "vega", CardID: "152", Owner: "player-one", Controller: "player-one"},
-			"allied":   {MatchID: "allied", CardID: "x", Owner: "player-one", Controller: "player-one"},
-			"enemy":    {MatchID: "enemy", CardID: "x", Owner: "player-two", Controller: "player-two"},
+			"vega":   {MatchID: "vega", CardID: "152", Owner: "player-one", Controller: "player-one"},
+			"allied": {MatchID: "allied", CardID: "x", Owner: "player-one", Controller: "player-one"},
+			"enemy":  {MatchID: "enemy", CardID: "x", Owner: "player-two", Controller: "player-two"},
 		},
 		Players: [2]model.PlayerState{
 			{ID: "player-one", Orbs: []model.MatchCardID{"allied"}},

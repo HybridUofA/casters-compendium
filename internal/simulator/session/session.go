@@ -17,13 +17,13 @@ type LocalSession struct {
 }
 
 type LocalMatch struct {
-	mu          sync.RWMutex
-	state       model.MatchState
-	seed        engine.MatchSeed
-	random      engine.RandomSource
-	catalog     rules.CardCatalog
-	messages    []view.MatchMessage
-	nextMsgSeq  uint64
+	mu         sync.RWMutex
+	state      model.MatchState
+	seed       engine.MatchSeed
+	random     engine.RandomSource
+	catalog    rules.CardCatalog
+	messages   []view.MatchMessage
+	nextMsgSeq uint64
 }
 
 type PlayerSession struct {

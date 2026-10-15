@@ -42,6 +42,8 @@ type CardTile struct {
 	atkLabel            *canvas.Text
 	defLabel            *canvas.Text
 	selected            bool
+	hovering            bool
+	targetHoverEnabled  bool
 	OnPreview           func(cards.Card)
 	OnHiddenPreview     func()
 	OnActivate          func()
@@ -53,6 +55,10 @@ type CardTile struct {
 	cardBackURL         string
 	sideways            bool
 }
+
+var (
+	cardHoverOutline = color.NRGBA{R: 140, G: 230, B: 235, A: 255}
+)
 
 var _ desktop.Hoverable = (*CardTile)(nil)
 
@@ -211,9 +217,39 @@ func (tile *CardTile) SetSelected(selected bool) {
 		return
 	}
 	tile.selected = selected
-	if selected {
+	tile.refreshSelectionOutline()
+}
+
+// SetTargetHoverEnabled turns on pointer-follow highlighting while the player
+// is choosing a target (Corrupt, Peek, attack, and similar prompts).
+func (tile *CardTile) SetTargetHoverEnabled(enabled bool) {
+	if tile == nil {
+		return
+	}
+	if tile.targetHoverEnabled == enabled {
+		return
+	}
+	tile.targetHoverEnabled = enabled
+	if !enabled {
+		tile.hovering = false
+	}
+	tile.refreshSelectionOutline()
+}
+
+func (tile *CardTile) refreshSelectionOutline() {
+	if tile == nil || tile.selectionBorder == nil {
+		return
+	}
+	switch {
+	case tile.selected:
+		tile.selectionBorder.StrokeColor = theme.Color(theme.ColorNamePrimary)
+		tile.selectionBorder.StrokeWidth = 4
 		tile.selectionBorder.Show()
-	} else {
+	case tile.hovering && tile.targetHoverEnabled:
+		tile.selectionBorder.StrokeColor = cardHoverOutline
+		tile.selectionBorder.StrokeWidth = 3
+		tile.selectionBorder.Show()
+	default:
 		tile.selectionBorder.Hide()
 	}
 	tile.selectionBorder.Refresh()
@@ -555,12 +591,20 @@ func (tile *CardTile) DragEnd() {
 
 func (tile *CardTile) MouseIn(_ *desktop.MouseEvent) {
 	tile.preview()
+	if tile.targetHoverEnabled && !tile.hovering {
+		tile.hovering = true
+		tile.refreshSelectionOutline()
+	}
 }
 
 func (tile *CardTile) MouseMoved(_ *desktop.MouseEvent) {
 }
 
 func (tile *CardTile) MouseOut() {
+	if tile.hovering {
+		tile.hovering = false
+		tile.refreshSelectionOutline()
+	}
 }
 
 func (tile *CardTile) preview() {

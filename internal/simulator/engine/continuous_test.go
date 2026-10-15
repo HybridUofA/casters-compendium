@@ -110,7 +110,7 @@ func TestWorldOfRageForcesEnterRecovered(t *testing.T) {
 	}
 	catalog := continuousCatalog{
 		"151": {
-			ID: "151",
+			ID:      "151",
 			Ability: "• Enemy servants enter the field recovered.\n• Enemy servants cannot be switched except by spell or ability.",
 		},
 		"bear": {ID: "bear", Type: "Servant"},
@@ -146,7 +146,7 @@ func TestCardsLoseBreakUnderSaaya(t *testing.T) {
 	}
 	catalog := continuousCatalog{
 		"186": {
-			ID: "186",
+			ID:      "186",
 			Ability: "• As long as your opponent controls six or more orbs, cards they control lose Break.\n• Rest: Target allied servant with cost of 2 or less gains +500 ATK until end of turn.",
 		},
 		"orb": {ID: "orb"},
@@ -179,7 +179,7 @@ func TestRestedAlliedCannotBeAttackedWhileDelphiniumReversed(t *testing.T) {
 	}
 	catalog := continuousCatalog{
 		"245": {
-			ID: "245",
+			ID:      "245",
 			Ability: "• Your opponent cannot attack allied rested servants while I am reversed.",
 		},
 		"t": {ID: "t", Ability: ""},

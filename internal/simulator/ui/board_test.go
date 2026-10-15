@@ -231,7 +231,10 @@ func TestPlayerUtilityZonesMirrorAcrossTheBattlefield(t *testing.T) {
 func TestOrbZoneUsesUnscrolledVerticalCardLayers(t *testing.T) {
 	orbs := make([]simulatorview.CardView, 7)
 	for index := range orbs {
-		orbs[index] = simulatorview.CardView{Face: model.CardFaceDown}
+		orbs[index] = simulatorview.CardView{
+			MatchID: model.MatchCardID("orb-" + string(rune('a'+index))),
+			Face:    model.CardFaceDown,
+		}
 	}
 	zone := newLayeredOrbZone(
 		"Player",
@@ -251,6 +254,9 @@ func TestOrbZoneUsesUnscrolledVerticalCardLayers(t *testing.T) {
 	}
 	stack.Resize(fyne.NewSize(orbCardWidth+20, 260))
 
+	if len(stack.Objects) != orbSlotCount {
+		t.Fatalf("Orb slot count = %d; want %d prize-style slots", len(stack.Objects), orbSlotCount)
+	}
 	tiles := collectCardTiles(stack)
 	if len(tiles) != 7 {
 		t.Fatalf("Orb tile count = %d; want 7", len(tiles))

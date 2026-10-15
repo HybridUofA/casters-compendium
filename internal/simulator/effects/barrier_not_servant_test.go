@@ -51,7 +51,7 @@ func TestAbolitionLeavesBarriersOnField(t *testing.T) {
 		},
 		Players: [2]model.PlayerState{
 			{
-				ID: "player-one",
+				ID:          "player-one",
 				ServantZone: []model.MatchCardID{"servant", "barrier"},
 				Deck:        []model.MatchCardID{},
 			},
