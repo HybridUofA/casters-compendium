@@ -16,28 +16,21 @@ func clearPendingBreak(state *model.MatchState) {
 	state.PendingBreak = model.PendingBreak{}
 }
 
-func queueBreakIfPresent(
+// queueBreakDecisions always opens a Break/acknowledge prompt for each
+// corrupted Orb that entered hand. Cards without Break (or while Break is
+// lost) still require Continue so opponents cannot tell from timing alone.
+func queueBreakDecisions(
 	state *model.MatchState,
 	catalog rules.CardCatalog,
 	ownerID model.PlayerID,
 	cardIDs ...model.MatchCardID,
 ) {
-	if state == nil || catalog == nil || len(cardIDs) == 0 {
+	if state == nil || len(cardIDs) == 0 {
 		return
 	}
 	queued := make([]model.MatchCardID, 0, len(cardIDs))
-	ownerIndex, _ := findPlayerIndex(state, ownerID)
-	loseBreak := ownerIndex >= 0 && cardsLoseBreak(state, catalog, ownerIndex)
 	for _, cardID := range cardIDs {
-		instance, ok := state.CardInstances[cardID]
-		if !ok {
-			continue
-		}
-		definition, found := catalog.FindByID(string(instance.CardID))
-		if !found || !cardDeclaresBreak(definition.Ability) {
-			continue
-		}
-		if loseBreak {
+		if cardID == "" {
 			continue
 		}
 		queued = append(queued, cardID)
@@ -49,19 +42,60 @@ func queueBreakIfPresent(
 		PlayerID: ownerID,
 		CardIDs:  queued,
 	}
+	refreshPendingBreakOffer(state, catalog)
 }
 
-func finishBreakOrReopen(state *model.MatchState) {
+func refreshPendingBreakOffer(state *model.MatchState, catalog rules.CardCatalog) {
+	if state == nil {
+		return
+	}
+	if len(state.PendingBreak.CardIDs) == 0 {
+		state.PendingBreak.OfferPlay = false
+		return
+	}
+	state.PendingBreak.OfferPlay = breakOfferPlayable(state, catalog, state.PendingBreak.CardIDs[0])
+}
+
+func breakOfferPlayable(
+	state *model.MatchState,
+	catalog rules.CardCatalog,
+	cardID model.MatchCardID,
+) bool {
+	if state == nil || catalog == nil || cardID == "" {
+		return false
+	}
+	instance, ok := state.CardInstances[cardID]
+	if !ok {
+		return false
+	}
+	definition, found := catalog.FindByID(string(instance.CardID))
+	if !found || !cardDeclaresBreak(definition.Ability) {
+		return false
+	}
+	ownerIndex, err := findPlayerIndex(state, state.PendingBreak.PlayerID)
+	if err != nil {
+		ownerIndex, _ = findPlayerIndex(state, instance.Owner)
+	}
+	if ownerIndex >= 0 && cardsLoseBreak(state, catalog, ownerIndex) {
+		return false
+	}
+	return true
+}
+
+func finishBreakOrReopen(state *model.MatchState, catalog rules.CardCatalog) {
 	if len(state.PendingBreak.CardIDs) > 0 {
+		refreshPendingBreakOffer(state, catalog)
 		return
 	}
 	clearPendingBreak(state)
 	reopenPriorityForActivePlayer(state)
 }
 
-// DeclineBreak skips the optional Break for the currently offered corrupted card.
+// DeclineBreak skips Break for the currently offered corrupted card (or
+// acknowledges a non-Break corruption so the prompt does not leak information).
 func DeclineBreak(
 	state *model.MatchState,
+	catalog rules.CardCatalog,
 	actingPlayerID model.PlayerID,
 	expectedRevision model.Revision,
 ) error {
@@ -78,7 +112,7 @@ func DeclineBreak(
 		return fmt.Errorf("only the corrupted Orb's owner may decline break")
 	}
 	state.PendingBreak.CardIDs = state.PendingBreak.CardIDs[1:]
-	finishBreakOrReopen(state)
+	finishBreakOrReopen(state, catalog)
 	state.Revision++
 	return nil
 }
@@ -173,6 +207,8 @@ func PlayBreak(
 	state.PendingBreak.CardIDs = state.PendingBreak.CardIDs[1:]
 	if len(state.PendingBreak.CardIDs) == 0 {
 		clearPendingBreak(state)
+	} else {
+		refreshPendingBreakOffer(state, catalog)
 	}
 	// Break play opens a priority sequence for responses before resolution.
 	state.PrioritySequenceOpen = true

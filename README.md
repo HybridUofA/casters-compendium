@@ -32,7 +32,7 @@ v1.0.0 manual-playable simulator skeleton under the same review model, plus
 v1.1.0's Call / Level Up and priority playability fixes, v1.1.1's manual
 Aether adjust plus Hubris click-to-attack work, v1.1.2's Arena-style
 priority auto-pass plus Hilde Willow Rest automation, v1.2.0's effect
-automation plus Solo vs Tsubasa, and v1.2.1's board UX and match-end polish.
+automation plus Solo vs Tsubasa, v1.2.1's board UX and match-end polish, and v1.2.2's Break privacy and discard targeting UX.
 
 ## Features
 
@@ -87,6 +87,13 @@ automation plus Solo vs Tsubasa, and v1.2.1's board UX and match-end polish.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v1.2.2
+
+- Always prompt after Orb corruption (Use/Decline Break or Continue) so opponents
+  cannot infer Break from a missing wait.
+- Pending-choice / discard prompts show card names and let you click highlighted
+  cards in hand or on the field (Ouroboros and other forced discards).
 
 ### What's new in v1.2.1
 
@@ -407,13 +414,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_1.2.1_amd64.deb
+sudo apt install ./casters-compendium_1.2.2_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-1.2.1-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-1.2.2-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

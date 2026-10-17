@@ -317,3 +317,13 @@ remains responsible for acceptance and publication.
 Under that authorization, Cursor assistance implemented the UI/session/nethost
 wiring, effect pending choices, tests, transparency updates, and release
 metadata under maintainer review.
+
+## Disclosed v1.2.2 assistance
+
+Hybrid directed the v1.2.2 playability patch (always-on Break/acknowledge
+prompts after Orb corruption, named pending-choice / discard targeting with
+click-to-select, and shipping as a patch) and remains responsible for
+acceptance and publication.
+
+Under that authorization, Cursor assistance implemented the engine/UI wiring,
+tests, transparency updates, and release metadata under maintainer review.

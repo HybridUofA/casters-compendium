@@ -235,10 +235,13 @@ type ContinuousUntilEOT struct {
 	RestedAlliedCannotBeAttacked [2]bool
 }
 
-// PendingBreak is set when corrupted Orbs with Break enter their owner's hand.
+// PendingBreak is set when corrupted Orbs enter their owner's hand. Every
+// corrupted card is queued so peers cannot infer Break from a missing prompt.
+// OfferPlay is true when CardIDs[0] may legally Use Break right now.
 type PendingBreak struct {
-	PlayerID PlayerID
-	CardIDs  []MatchCardID
+	PlayerID  PlayerID
+	CardIDs   []MatchCardID
+	OfferPlay bool
 }
 
 // PendingDrawStep is the replace-on-draw decision state.
