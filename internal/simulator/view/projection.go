@@ -17,14 +17,15 @@ func projectPendingBreak(pending model.PendingBreak, viewerID model.PlayerID) mo
 		return model.PendingBreak{}
 	}
 	if pending.PlayerID != viewerID {
-		// Peers only learn that a Break decision is outstanding.
+		// Peers only learn that a Break/acknowledge decision is outstanding —
+		// not whether the card prints Break or OfferPlay is true.
 		return model.PendingBreak{PlayerID: pending.PlayerID}
 	}
-	out := model.PendingBreak{
-		PlayerID: pending.PlayerID,
-		CardIDs:  append([]model.MatchCardID(nil), pending.CardIDs...),
+	return model.PendingBreak{
+		PlayerID:  pending.PlayerID,
+		CardIDs:   append([]model.MatchCardID(nil), pending.CardIDs...),
+		OfferPlay: pending.OfferPlay,
 	}
-	return out
 }
 
 func projectPendingChoice(pending model.PendingChoice, viewerID model.PlayerID) model.PendingChoice {

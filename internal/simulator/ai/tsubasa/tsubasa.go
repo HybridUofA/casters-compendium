@@ -33,11 +33,14 @@ func (a Agent) Choose(match view.MatchView) (ai.Action, error) {
 		return ai.Action{Kind: ai.ActionKeepOpeningHand}, nil
 	}
 	if match.PendingBreak.PlayerID == viewer && len(match.PendingBreak.CardIDs) > 0 {
-		return ai.Action{
-			Kind:        ai.ActionPlayBreak,
-			CardID:      match.PendingBreak.CardIDs[0],
-			Orientation: model.OrientationRecovered,
-		}, nil
+		if match.PendingBreak.OfferPlay {
+			return ai.Action{
+				Kind:        ai.ActionPlayBreak,
+				CardID:      match.PendingBreak.CardIDs[0],
+				Orientation: model.OrientationRecovered,
+			}, nil
+		}
+		return ai.Action{Kind: ai.ActionDeclineBreak}, nil
 	}
 	if match.PendingDraw.PlayerID == viewer && match.PendingDraw.Step != model.PendingDrawIdle {
 		return ai.Action{Kind: ai.ActionDeclineSage}, nil

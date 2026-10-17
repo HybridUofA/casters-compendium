@@ -11,7 +11,8 @@ import (
 
 // ManualCorruptOrb moves an Orb into its owner's hand for effect resolution
 // (Straw Effigy, Vega Scarlet Star, etc.). Unlike battle CorruptOrbs, this does
-// not require a player-attack judgment. Break is offered when the card prints it.
+// not require a player-attack judgment. A Break/acknowledge prompt always opens
+// so peers cannot infer whether the card prints Break.
 func ManualCorruptOrb(
 	state *model.MatchState,
 	catalog rules.CardCatalog,
@@ -47,7 +48,7 @@ func ManualCorruptOrb(
 	}
 	model.MarkCardKnown(state, ownerID, orbID)
 	noteCorrupt(state, actingPlayerID)
-	queueBreakIfPresent(state, catalog, ownerID, orbID)
+	queueBreakDecisions(state, catalog, ownerID, orbID)
 	state.Revision++
 	return nil
 }

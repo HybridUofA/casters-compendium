@@ -43,7 +43,7 @@ func TestDeclineBreakReopensPriorityForActivePlayer(t *testing.T) {
 		t.Fatalf("CorruptOrb() error = %v", err)
 	}
 
-	if err := DeclineBreak(&state, "player-two", state.Revision); err != nil {
+	if err := DeclineBreak(&state, catalog, "player-two", state.Revision); err != nil {
 		t.Fatalf("DeclineBreak() error = %v", err)
 	}
 	if state.PendingBreak.PlayerID != "" || len(state.PendingBreak.CardIDs) != 0 {
@@ -95,9 +95,64 @@ func TestDeclineBreakRejectsWrongPlayer(t *testing.T) {
 	if err := CorruptOrb(&state, catalog, "player-one", 0, state.Revision); err != nil {
 		t.Fatalf("CorruptOrb() error = %v", err)
 	}
-	err := DeclineBreak(&state, "player-one", state.Revision)
+	err := DeclineBreak(&state, catalog, "player-one", state.Revision)
 	if err == nil || !strings.Contains(err.Error(), "owner") {
 		t.Fatalf("DeclineBreak() error = %v; want owner error", err)
+	}
+}
+
+func TestCorruptOrbAlwaysPromptsEvenWithoutBreak(t *testing.T) {
+	state, catalog := breakBattleStateForTest()
+	state.Players[1].ServantZone = nil
+	// Replace the Break orb with a non-Break card.
+	state.CardInstances["p2-plain-orb"] = battleCard("p2-plain-orb", "player-two", model.OrientationRecovered)
+	state.Players[1].Orbs = []model.MatchCardID{"p2-plain-orb", "p2-orb-2"}
+	catalog["definition-p2-plain-orb"] = catalog["definition-p2-orb-2"]
+	plain := state.CardInstances["p2-plain-orb"]
+	plain.CardID = "definition-p2-plain-orb"
+	state.CardInstances["p2-plain-orb"] = plain
+
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
+		t.Fatalf("DeclareAttack() error = %v", err)
+	}
+	passTwiceForTest(t, &state, catalog)
+	if err := CorruptOrb(&state, catalog, "player-one", 0, state.Revision); err != nil {
+		t.Fatalf("CorruptOrb() error = %v", err)
+	}
+	if state.PendingBreak.PlayerID != "player-two" ||
+		len(state.PendingBreak.CardIDs) != 1 ||
+		state.PendingBreak.CardIDs[0] != "p2-plain-orb" {
+		t.Fatalf("PendingBreak = %#v; want acknowledge prompt for non-Break orb", state.PendingBreak)
+	}
+	if state.PendingBreak.OfferPlay {
+		t.Fatal("non-Break corruption must not offer Play Break")
+	}
+	if state.PrioritySequenceOpen {
+		t.Fatal("priority reopened before acknowledge; leaks no-Break information")
+	}
+	if err := DeclineBreak(&state, catalog, "player-two", state.Revision); err != nil {
+		t.Fatalf("DeclineBreak() error = %v", err)
+	}
+	if state.PendingBreak.PlayerID != "" {
+		t.Fatalf("PendingBreak = %#v; want cleared after acknowledge", state.PendingBreak)
+	}
+	if !state.PrioritySequenceOpen || state.PriorityHolder != "player-one" {
+		t.Fatalf("priority = open %t holder %q; want active player after acknowledge", state.PrioritySequenceOpen, state.PriorityHolder)
+	}
+}
+
+func TestCorruptOrbBreakOfferPlayRemainsTrue(t *testing.T) {
+	state, catalog := breakBattleStateForTest()
+	state.Players[1].ServantZone = nil
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetPlayer, "", state.Revision); err != nil {
+		t.Fatalf("DeclareAttack() error = %v", err)
+	}
+	passTwiceForTest(t, &state, catalog)
+	if err := CorruptOrb(&state, catalog, "player-one", 0, state.Revision); err != nil {
+		t.Fatalf("CorruptOrb() error = %v", err)
+	}
+	if !state.PendingBreak.OfferPlay {
+		t.Fatal("Break card should set OfferPlay")
 	}
 }
 

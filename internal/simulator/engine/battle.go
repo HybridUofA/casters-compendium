@@ -562,7 +562,7 @@ func CorruptOrbs(
 	}
 	noteCorrupt(state, actingPlayerID)
 	clearAttack(state)
-	queueBreakIfPresent(state, catalog, opponent.ID, corrupted...)
+	queueBreakDecisions(state, catalog, opponent.ID, corrupted...)
 	if state.PendingBreak.PlayerID == "" {
 		reopenPriorityForActivePlayer(state)
 	}

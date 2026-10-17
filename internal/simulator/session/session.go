@@ -988,7 +988,12 @@ func (session *PlayerSession) DeclineBreak(
 	}
 	session.match.mu.Lock()
 	defer session.match.mu.Unlock()
-	if err := engine.DeclineBreak(&session.match.state, session.playerID, expectedRevision); err != nil {
+	if err := engine.DeclineBreak(
+		&session.match.state,
+		session.match.catalog,
+		session.playerID,
+		expectedRevision,
+	); err != nil {
 		return view.MatchView{}, fmt.Errorf("decline break: %w", err)
 	}
 	return session.projectLocked()

@@ -1270,8 +1270,9 @@ func TestBreakPanelOffersUseAndDecline(t *testing.T) {
 	match.MatchStatus = model.StatusInProgress
 	match.Revision = 61
 	match.PendingBreak = model.PendingBreak{
-		PlayerID: match.ViewerID,
-		CardIDs:  []model.MatchCardID{"break-card"},
+		PlayerID:  match.ViewerID,
+		CardIDs:   []model.MatchCardID{"break-card"},
+		OfferPlay: true,
 	}
 	match.Players[0].ID = match.ViewerID
 	match.Players[0].Hand = []simulatorview.CardView{{
@@ -1304,6 +1305,39 @@ func TestBreakPanelOffersUseAndDecline(t *testing.T) {
 	test.Tap(decline)
 	if declined != 61 {
 		t.Fatalf("DeclineBreak revision = %d; want 61", declined)
+	}
+}
+
+func TestBreakPanelContinueOnlyWhenOfferPlayFalse(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	match.Revision = 62
+	match.PendingBreak = model.PendingBreak{
+		PlayerID:  match.ViewerID,
+		CardIDs:   []model.MatchCardID{"plain-card"},
+		OfferPlay: false,
+	}
+	match.Players[0].ID = match.ViewerID
+	match.Players[0].Hand = []simulatorview.CardView{{
+		MatchID: "plain-card", CardID: "def-plain", ShowFace: true,
+	}}
+	var declined model.Revision
+	controller := NewBoardController(
+		match,
+		[]cards.Card{{ID: "def-plain", Name: "Plain Servant", Type: "Servant"}},
+		BoardActions{DeclineBreak: func(revision model.Revision) { declined = revision }},
+		nil,
+	)
+	if findButton(controller.Content(), "Use Break") != nil {
+		t.Fatal("Use Break must stay hidden when OfferPlay is false")
+	}
+	continueBtn := findButton(controller.Content(), "Continue")
+	if continueBtn == nil {
+		t.Fatal("Continue acknowledge missing for non-Break corruption")
+	}
+	test.Tap(continueBtn)
+	if declined != 62 {
+		t.Fatalf("DeclineBreak revision = %d; want 62", declined)
 	}
 }
 

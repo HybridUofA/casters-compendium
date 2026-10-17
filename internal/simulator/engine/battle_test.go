@@ -332,8 +332,21 @@ func TestCorruptOrbChoosesSelectedEnemyOrb(t *testing.T) {
 	if state.Attack != (model.AttackState{}) {
 		t.Fatalf("Attack = %#v; want cleared after corruption", state.Attack)
 	}
+	// Even without Break, the owner must acknowledge so peers cannot tell.
+	if state.PendingBreak.PlayerID != "player-two" ||
+		len(state.PendingBreak.CardIDs) != 1 ||
+		state.PendingBreak.CardIDs[0] != "p2-orb-2" ||
+		state.PendingBreak.OfferPlay {
+		t.Fatalf("PendingBreak = %#v; want non-Break acknowledge for p2-orb-2", state.PendingBreak)
+	}
+	if state.PrioritySequenceOpen {
+		t.Fatal("priority reopened before Break/acknowledge decision")
+	}
+	if err := DeclineBreak(&state, catalog, "player-two", state.Revision); err != nil {
+		t.Fatalf("DeclineBreak() error = %v", err)
+	}
 	if !state.PrioritySequenceOpen || state.PriorityHolder != "player-one" || state.PassCount != 0 {
-		t.Fatalf("post-corruption priority = open %t holder %q passes %d",
+		t.Fatalf("post-acknowledge priority = open %t holder %q passes %d",
 			state.PrioritySequenceOpen, state.PriorityHolder, state.PassCount)
 	}
 	if state.MatchStatus != model.StatusInProgress {

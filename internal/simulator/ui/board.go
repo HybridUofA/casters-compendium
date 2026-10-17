@@ -155,7 +155,10 @@ type BoardScreen struct {
 	orbPickMode orbPickMode
 	// orbSlotsByPlayer keeps prize-style Orb positions stable across removals.
 	orbSlotsByPlayer map[model.PlayerID][]model.MatchCardID
-	sidePanel        *sidePanel
+	// pendingChoiceSelected tracks click/dropdown picks for PendingChoice prompts.
+	pendingChoiceSelected  []model.MatchCardID
+	pendingChoiceSelectKey string
+	sidePanel              *sidePanel
 	// resultAnnounced prevents repeating the victory/defeat dialog.
 	resultAnnounced bool
 }
@@ -707,6 +710,7 @@ func (screen *BoardScreen) updateAttackPanel() {
 		}
 		return
 	}
+	screen.clearPendingChoiceSelection()
 	if match.PendingChoice.PlayerID != "" && match.PendingChoice.PlayerID != match.ViewerID {
 		screen.renderDecisionStrip(decisionStripConfig{
 			Hint: "Waiting for opponent's decision…",
@@ -1338,26 +1342,62 @@ func (screen *BoardScreen) renderDecisionStrip(cfg decisionStripConfig) {
 func (screen *BoardScreen) renderPendingChoicePanel() {
 	match := screen.match
 	choice := match.PendingChoice
+	screen.syncPendingChoiceSelectionKey()
 	prompt := strings.TrimSpace(choice.Prompt)
 	if prompt == "" {
 		prompt = "A card effect requires a decision."
 	}
+	if len(choice.SelectableCardIDs) > 0 {
+		prompt += " Click a highlighted card, or choose one below."
+	}
 	cfg := decisionStripConfig{Hint: prompt}
 
 	var selectedID model.MatchCardID
+	var byLabel map[string]model.MatchCardID
 	if len(choice.SelectableCardIDs) > 0 {
-		labels := make([]string, 0, len(choice.SelectableCardIDs))
-		for _, cardID := range choice.SelectableCardIDs {
-			labels = append(labels, string(cardID))
-		}
+		var labels []string
+		labels, byLabel = screen.pendingChoiceSelectEntries(choice.SelectableCardIDs)
 		targetSelect := widget.NewSelect(labels, func(value string) {
-			selectedID = model.MatchCardID(value)
+			id, ok := byLabel[value]
+			if !ok {
+				return
+			}
+			selectedID = id
+			if pendingChoiceWantCount(choice) > 1 {
+				if !matchIDInList(screen.pendingChoiceSelected, id) {
+					screen.pendingChoiceSelected = append(screen.pendingChoiceSelected, id)
+				}
+			} else {
+				screen.pendingChoiceSelected = []model.MatchCardID{id}
+			}
+			screen.refreshPendingChoiceHighlights()
 		})
 		if len(labels) > 0 {
-			targetSelect.SetSelected(labels[0])
-			selectedID = model.MatchCardID(labels[0])
+			if current := screen.selectedPendingChoiceID(); current != "" {
+				syncSelectToMatchID(targetSelect, byLabel, current)
+				selectedID = current
+			} else {
+				targetSelect.SetSelected(labels[0])
+				selectedID = byLabel[labels[0]]
+				if len(choice.Options) > 0 || pendingChoiceWantCount(choice) <= 1 {
+					screen.pendingChoiceSelected = []model.MatchCardID{selectedID}
+				}
+			}
 		}
 		cfg.Extra = append(cfg.Extra, targetSelect)
+	}
+
+	selectedCards := func() []model.MatchCardID {
+		if want := pendingChoiceWantCount(choice); want > 1 {
+			return append([]model.MatchCardID(nil), screen.pendingChoiceSelected...)
+		}
+		if len(screen.pendingChoiceSelected) > 0 {
+			return []model.MatchCardID{screen.pendingChoiceSelected[0]}
+		}
+		if selectedID != "" {
+			return []model.MatchCardID{selectedID}
+		}
+		return nil
 	}
 
 	if len(choice.Options) > 0 {
@@ -1373,11 +1413,7 @@ func (screen *BoardScreen) renderPendingChoicePanel() {
 					if screen.actions.ResolvePendingChoice == nil {
 						return
 					}
-					var selected []model.MatchCardID
-					if len(choice.SelectableCardIDs) > 0 && selectedID != "" {
-						selected = []model.MatchCardID{selectedID}
-					}
-					screen.actions.ResolvePendingChoice(option.ID, selected, match.Revision)
+					screen.actions.ResolvePendingChoice(option.ID, selectedCards(), match.Revision)
 				},
 			})
 		}
@@ -1387,11 +1423,7 @@ func (screen *BoardScreen) renderPendingChoicePanel() {
 			if screen.actions.ResolvePendingChoice == nil {
 				return
 			}
-			var selected []model.MatchCardID
-			if len(choice.SelectableCardIDs) > 0 && selectedID != "" {
-				selected = []model.MatchCardID{selectedID}
-			}
-			screen.actions.ResolvePendingChoice("", selected, match.Revision)
+			screen.actions.ResolvePendingChoice("", selectedCards(), match.Revision)
 		}
 	}
 	if choice.AllowDecline && screen.actions.DeclinePendingChoice != nil {
@@ -1401,6 +1433,7 @@ func (screen *BoardScreen) renderPendingChoicePanel() {
 		}
 	}
 	screen.renderDecisionStrip(cfg)
+	screen.refreshPendingChoiceHighlights()
 }
 
 func (screen *BoardScreen) renderSageAdvicePanel() {
@@ -1485,6 +1518,24 @@ func (screen *BoardScreen) renderBreakPanel() {
 			break
 		}
 	}
+	acknowledge := func() {
+		if screen.actions.DeclineBreak != nil {
+			screen.actions.DeclineBreak(match.Revision)
+		}
+	}
+	// Always prompt after corruption so opponents cannot infer Break from a
+	// missing decision. Non-Break (or suppressed Break) is Continue-only.
+	if !match.PendingBreak.OfferPlay {
+		screen.renderDecisionStrip(decisionStripConfig{
+			Hint: fmt.Sprintf(
+				"%s entered your hand from an Orb. It cannot use Break right now — continue when ready.",
+				cardName,
+			),
+			PrimaryLabel: "Continue",
+			Primary:      acknowledge,
+		})
+		return
+	}
 	orientationSelect := widget.NewSelect([]string{"Recovered", "Reversed"}, nil)
 	orientationSelect.SetSelected("Recovered")
 	cfg := decisionStripConfig{
@@ -1504,11 +1555,7 @@ func (screen *BoardScreen) renderBreakPanel() {
 			screen.actions.PlayBreak(cardID, orientation, match.Revision)
 		},
 		SecondaryLabel: "Decline Break",
-		Secondary: func() {
-			if screen.actions.DeclineBreak != nil {
-				screen.actions.DeclineBreak(match.Revision)
-			}
-		},
+		Secondary:      acknowledge,
 	}
 	if definitionType == "servant" {
 		cfg.Extra = []fyne.CanvasObject{orientationSelect}
@@ -1946,6 +1993,7 @@ func newPlayerBoardController(
 		for _, tile := range collectCardTiles(board.caster) {
 			board.host.bindCardDrag(tile, model.ZoneCaster, board.player.ID)
 		}
+		board.host.installPendingChoiceTaps(board.caster)
 	}
 	board.hand = newZoneHolder(board.newHandZone(
 		player,
@@ -2078,6 +2126,7 @@ func (board *playerBoardController) update(
 			for _, tile := range collectCardTiles(board.caster) {
 				board.host.bindCardDrag(tile, model.ZoneCaster, player.ID)
 			}
+			board.host.installPendingChoiceTaps(board.caster)
 		}
 	}
 	board.player = player
@@ -2924,6 +2973,7 @@ func (board *playerBoardController) newOrbZone(cards []simulatorview.CardView) f
 		onSecondaryAt,
 	)
 	if board.host != nil {
+		board.host.installPendingChoiceTaps(zone)
 		board.host.refreshOrbTargetHighlights()
 	}
 	return zone
@@ -3308,10 +3358,13 @@ func (board *playerBoardController) newHandZone(
 		canCallLevelOne,
 		canCastCards,
 	)
-	if board.host != nil && player.OpeningHandFinalized {
-		for _, tile := range collectCardTiles(zone) {
-			board.host.bindCardDrag(tile, model.ZoneHand, player.ID)
+	if board.host != nil {
+		if player.OpeningHandFinalized {
+			for _, tile := range collectCardTiles(zone) {
+				board.host.bindCardDrag(tile, model.ZoneHand, player.ID)
+			}
 		}
+		board.host.installPendingChoiceTaps(zone)
 	}
 	return zone
 }
@@ -3350,6 +3403,9 @@ func (board *playerBoardController) newPileZone(
 		if board.host != nil {
 			board.host.bindCardDrag(tile, zone, board.player.ID)
 		}
+	}
+	if board.host != nil {
+		board.host.installPendingChoiceTaps(content)
 	}
 	return newZoneInteractLayer(content, openBrowser, nil)
 }
@@ -3397,6 +3453,9 @@ func (board *playerBoardController) newInteractiveCardZone(
 				}
 			}
 		}
+	}
+	if board.host != nil {
+		board.host.installPendingChoiceTaps(content)
 	}
 	return content
 }
