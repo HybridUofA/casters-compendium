@@ -539,6 +539,9 @@ func networkBoardActions(
 				},
 			)
 		},
+		ActivateRegisteredRest: func(cardID model.MatchCardID, expectedRevision model.Revision) {
+			runCommand("activate_registered_rest", expectedRevision, map[string]any{"card_id": cardID})
+		},
 		ResolveDeckDig: func(
 			keep model.MatchCardID,
 			bottomOrder []model.MatchCardID,

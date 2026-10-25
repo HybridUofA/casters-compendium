@@ -361,6 +361,14 @@ func localBoardActions(
 				done(peeked, enemyID, nil)
 			}
 		},
+		ActivateRegisteredRest: func(cardID model.MatchCardID, expectedRevision model.Revision) {
+			updatedView, err := playerSessions[playerIndex].ActivateRegisteredRest(cardID, expectedRevision)
+			if err != nil {
+				dialog.ShowError(err, playerWindows[playerIndex])
+				return
+			}
+			scheduleBoardRefresh(playerIndex, updatedView)
+		},
 		ResolveDeckDig: func(keep model.MatchCardID, bottomOrder []model.MatchCardID, expectedRevision model.Revision) {
 			updatedView, err := playerSessions[playerIndex].ResolveDeckDig(keep, bottomOrder, expectedRevision)
 			if err != nil {

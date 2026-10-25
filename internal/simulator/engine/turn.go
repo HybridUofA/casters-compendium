@@ -48,7 +48,12 @@ func validatePhaseCompletion(
 		return fmt.Errorf("closed priority sequence has inconsistent state")
 	}
 	if state.Attack.Step != model.BattleStepIdle || state.Attack.AttackerID != "" {
-		return fmt.Errorf("cannot complete phase while an attack is in progress")
+		// Bounced/destroyed attackers leave a stale Attack; clear interrupted
+		// ones so Battle can end. Still block when a legal attack awaits judgment.
+		clearAttackIfInterrupted(state)
+		if state.Attack.Step != model.BattleStepIdle || state.Attack.AttackerID != "" {
+			return fmt.Errorf("cannot complete phase while an attack is in progress")
+		}
 	}
 	if state.PendingDraw.Step != model.PendingDrawIdle {
 		return fmt.Errorf("cannot complete phase while a draw replacement is pending")

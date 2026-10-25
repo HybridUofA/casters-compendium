@@ -70,13 +70,19 @@ func reconcileOrbSlotIDs(
 }
 
 // orbViewsForSlots expands dense Orb projections into fixed prize-style slots.
+//
+// Orbs with empty MatchID (pre-1.2.1 hosts omitted identifiers the viewer did
+// not already know) still occupy free slots as anonymous face-down cards so
+// the client shows card backs instead of empty prize outlines.
 func orbViewsForSlots(
 	slots []model.MatchCardID,
 	current []simulatorview.CardView,
 ) []simulatorview.CardView {
 	byID := make(map[model.MatchCardID]simulatorview.CardView, len(current))
+	anonymous := make([]simulatorview.CardView, 0)
 	for _, card := range current {
 		if card.MatchID == "" {
+			anonymous = append(anonymous, card)
 			continue
 		}
 		byID[card.MatchID] = card
@@ -88,7 +94,26 @@ func orbViewsForSlots(
 		}
 		out[index] = byID[id]
 	}
+	anonIndex := 0
+	for index := range out {
+		if orbSlotOccupied(out[index]) {
+			continue
+		}
+		if anonIndex >= len(anonymous) {
+			break
+		}
+		card := anonymous[anonIndex]
+		anonIndex++
+		if card.Face == "" {
+			card.Face = model.CardFaceDown
+		}
+		out[index] = card
+	}
 	return out
+}
+
+func orbSlotOccupied(card simulatorview.CardView) bool {
+	return card.MatchID != "" || card.Face == model.CardFaceDown
 }
 
 func denseOrbIndex(orbs []simulatorview.CardView, matchID model.MatchCardID) int {

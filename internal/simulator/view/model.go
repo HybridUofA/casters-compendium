@@ -106,6 +106,9 @@ type CardView struct {
 	// avoid doomed manual-move submissions without receiving MatchState.
 	Owner    model.PlayerID
 	HasStock bool
+	// Stock lists cards under this entity when MatchID is known (level-up
+	// stacks). Used for Rest costs that banish from Stock and pending prompts.
+	Stock []CardView
 	// GrantedDoubleCorrupt is visible whenever MatchID is known (field cards).
 	GrantedDoubleCorrupt bool
 	// AttackModifier / DefenseModifier are additive offsets to printed ATK/DEF.

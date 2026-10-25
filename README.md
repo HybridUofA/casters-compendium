@@ -32,7 +32,9 @@ v1.0.0 manual-playable simulator skeleton under the same review model, plus
 v1.1.0's Call / Level Up and priority playability fixes, v1.1.1's manual
 Aether adjust plus Hubris click-to-attack work, v1.1.2's Arena-style
 priority auto-pass plus Hilde Willow Rest automation, v1.2.0's effect
-automation plus Solo vs Tsubasa, v1.2.1's board UX and match-end polish, and v1.2.2's Break privacy and discard targeting UX.
+automation plus Solo vs Tsubasa, v1.2.1's board UX and match-end polish, v1.2.2's
+Break privacy and discard targeting UX, and v1.2.3's Instant Rest, Stock
+banish, Battle attack-clear, and Save As / TTS identity fix.
 
 ## Features
 
@@ -87,6 +89,16 @@ automation plus Solo vs Tsubasa, v1.2.1's board UX and match-end polish, and v1.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v1.2.3
+
+- Instant-speed Rest abilities for Casters and Servants while you hold priority
+  (any phase); Stock-banish Rest costs show named cards.
+- Bouncing or destroying an attacker clears Battle attack state so the phase can
+  end.
+- Save As sets the deck name from the JSON filename for TTS Install.
+- Anonymous Orb backs render against older multiplayer hosts; release tags can
+  auto-redeploy `simhost` when secrets are configured.
 
 ### What's new in v1.2.2
 
@@ -414,13 +426,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_1.2.2_amd64.deb
+sudo apt install ./casters-compendium_1.2.3_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-1.2.2-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-1.2.3-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations

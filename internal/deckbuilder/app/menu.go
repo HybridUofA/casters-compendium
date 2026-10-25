@@ -1,6 +1,7 @@
 package deckbuilder
 
 import (
+	"path/filepath"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -175,12 +176,26 @@ func showOpenDeckDialog(
 	fileDialog.Show()
 }
 
+// deckNameFromSaveURI derives the deck identity from a Save As JSON filename.
+func deckNameFromSaveURI(uri fyne.URI) string {
+	if uri == nil {
+		return ""
+	}
+	base := filepath.Base(uri.Name())
+	if base == "" || base == "." {
+		base = filepath.Base(uri.Path())
+	}
+	base = strings.TrimSuffix(base, filepath.Ext(base))
+	return strings.TrimSpace(base)
+}
+
 // showSaveDeckDialog selects a destination and writes the deck's editable JSON form.
+// The chosen filename stem becomes deck.Name before write so TTS Install matches Save As.
 func showSaveDeckDialog(
 	window fyne.Window,
 	deck *decks.Deck,
 	initialDirectory string,
-	onSaved func(fyne.URI),
+	onSaved func(uri fyne.URI, previousName string),
 ) {
 	fileDialog := dialog.NewFileSave(
 		func(writer fyne.URIWriteCloser, saveErr error) {
@@ -192,9 +207,14 @@ func showSaveDeckDialog(
 				return
 			}
 			uri := writer.URI()
+			previousName := deck.Name
+			if derived := deckNameFromSaveURI(uri); derived != "" {
+				deck.Name = derived
+			}
 			writeErr := deckio.WriteDeck(writer, deck)
 			closeErr := writer.Close()
 			if writeErr != nil {
+				deck.Name = previousName
 				dialog.ShowError(writeErr, window)
 				return
 			}
@@ -202,7 +222,9 @@ func showSaveDeckDialog(
 				dialog.ShowError(closeErr, window)
 				return
 			}
-			onSaved(uri)
+			if onSaved != nil {
+				onSaved(uri, previousName)
+			}
 		},
 		window,
 	)

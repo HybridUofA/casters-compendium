@@ -1,0 +1,75 @@
+name: Deploy simhost
+
+# Redeploys the public playtest WebSocket host whenever a version tag ships a
+# desktop release, and on demand via workflow_dispatch.
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: simhost-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Package and deploy simhost
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Validate deploy secrets
+        env:
+          SIMHOST_HOST: ${{ secrets.SIMHOST_HOST }}
+          SIMHOST_SSH_KEY: ${{ secrets.SIMHOST_SSH_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          if [[ -z "${SIMHOST_HOST:-}" ]]; then
+            missing+=("SIMHOST_HOST")
+          fi
+          if [[ -z "${SIMHOST_SSH_KEY:-}" ]]; then
+            missing+=("SIMHOST_SSH_KEY")
+          fi
+          if ((${#missing[@]} > 0)); then
+            echo "Missing repository secrets: ${missing[*]}" >&2
+            echo "Add them under Settings → Secrets and variables → Actions." >&2
+            echo "SIMHOST_HOST: public hostname or IP of the playtest EC2/VPS." >&2
+            echo "SIMHOST_SSH_KEY: PEM private key for SIMHOST_USER (default ubuntu)." >&2
+            echo "Optional: SIMHOST_USER, SIMHOST_REMOTE_DIR." >&2
+            exit 1
+          fi
+
+      - name: Write SSH private key
+        env:
+          SIMHOST_SSH_KEY: ${{ secrets.SIMHOST_SSH_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          key_path="$RUNNER_TEMP/simhost_deploy_key"
+          printf '%s\n' "$SIMHOST_SSH_KEY" > "$key_path"
+          chmod 400 "$key_path"
+          echo "SIMHOST_KEY_PATH=$key_path" >> "$GITHUB_ENV"
+
+      - name: Package and deploy simhost
+        env:
+          SIMHOST_HOST: ${{ secrets.SIMHOST_HOST }}
+          SIMHOST_USER: ${{ secrets.SIMHOST_USER }}
+          SIMHOST_REMOTE_DIR: ${{ secrets.SIMHOST_REMOTE_DIR }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export SIMHOST_KEY="${SIMHOST_KEY_PATH:?SIMHOST_KEY_PATH was not set}"
+          export SIMHOST_USER="${SIMHOST_USER:-ubuntu}"
+          export SIMHOST_REMOTE_DIR="${SIMHOST_REMOTE_DIR:-/opt/casters-simhost}"
+          bash scripts/deploy-simhost.example.sh

@@ -6,7 +6,24 @@ starts a match from the decks each player submits on create/join.
 Default port: **7474**  
 Connect URL: `ws://YOUR_PUBLIC_IP:7474/`
 
-## One-command deploy (recommended)
+## Automatic deploy on version tags
+
+When a `v*` tag ships through [Package desktop applications](../../.github/workflows/package-desktop.yml),
+GitHub Actions also runs [Deploy simhost](../../.github/workflows/deploy-simhost.yml): it builds the
+Linux amd64 tarball, SSHs to the playtest host, restarts `casters-simhost`, and runs `simsmoke`.
+
+Required repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Purpose |
+| --- | --- |
+| `SIMHOST_HOST` | Public hostname or IP of the playtest EC2/VPS |
+| `SIMHOST_SSH_KEY` | PEM private key for SSH (same key you use locally) |
+
+Optional secrets: `SIMHOST_USER` (default `ubuntu`), `SIMHOST_REMOTE_DIR` (default `/opt/casters-simhost`).
+
+You can also run **Actions → Deploy simhost → Run workflow** for a manual redeploy without a new tag.
+
+## One-command deploy (local)
 
 `scripts/deploy-simhost.sh` is gitignored so personal host/key paths stay local.
 Copy the example once, edit defaults if you want, then run it:

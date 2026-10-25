@@ -327,3 +327,16 @@ acceptance and publication.
 
 Under that authorization, Cursor assistance implemented the engine/UI wiring,
 tests, transparency updates, and release metadata under maintainer review.
+
+## Disclosed v1.2.3 assistance
+
+Hybrid directed the v1.2.3 playability patch (Instant-speed Rest for casters and
+servants per CR 1.2, Stock projection for banish costs, clearing stuck Battle
+Attack state when attackers leave the field, Save As deck identity for TTS,
+anonymous Orb card backs against older hosts, automatic simhost deploy on
+version tags, and shipping as a patch) and remains responsible for acceptance
+and publication.
+
+Under that authorization, Cursor assistance implemented the engine/UI/nethost
+wiring, tests, transparency updates, and release metadata under maintainer
+review.
