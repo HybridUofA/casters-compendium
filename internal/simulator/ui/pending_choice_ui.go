@@ -177,10 +177,14 @@ func (screen *BoardScreen) lookupProjectedCard(
 			player.Deck,
 		} {
 			for _, card := range zone {
-				if card.MatchID != id {
-					continue
+				if card.MatchID == id {
+					return card, screen.definitions[card.CardID]
 				}
-				return card, screen.definitions[card.CardID]
+				for _, stock := range card.Stock {
+					if stock.MatchID == id {
+						return stock, screen.definitions[stock.CardID]
+					}
+				}
 			}
 		}
 	}

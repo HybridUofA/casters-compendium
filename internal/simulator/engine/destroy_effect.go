@@ -36,6 +36,7 @@ func destroyServantWithCause(
 	if err := ops.DestroyServant(state, cardID); err != nil {
 		return err
 	}
+	clearAttackIfInterrupted(state)
 	if err := triggerLastWordsEffects(state, catalog, cardID); err != nil {
 		return fmt.Errorf("last words for %q: %w", cardID, err)
 	}

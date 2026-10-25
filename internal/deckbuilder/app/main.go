@@ -1540,12 +1540,25 @@ func showApplication(
 		})
 	}
 	saveDeckAs = func() {
-		showSaveDeckDialog(window, deck, deckLibraryDirectory, func(uri fyne.URI) {
+		showSaveDeckDialog(window, deck, deckLibraryDirectory, func(uri fyne.URI, previousName string) {
+			if previousName != "" && previousName != deck.Name {
+				alreadyTracked := false
+				for _, name := range obsoleteTTSDeckNames {
+					if name == previousName {
+						alreadyTracked = true
+						break
+					}
+				}
+				if !alreadyTracked {
+					obsoleteTTSDeckNames = append(obsoleteTTSDeckNames, previousName)
+				}
+			}
 			currentDeckURI = uri
 			currentDeckPath = uri.Path()
 			currentTemplateID = ""
 			fyne.CurrentApp().Preferences().SetString(activeDeckPreferenceKey, uri.Path())
 			deckDirty = false
+			window.SetTitle(deck.Name + " — " + applicationName)
 			refreshDeckLibrary()
 		})
 	}

@@ -42,6 +42,7 @@ You can also drag a search result directly into either deck area.
 
 - **Save** and **Save As** store an editable JSON deck. Save dialogs begin in
   **Documents/Caster's Compendium/Decks**, which is created automatically.
+  **Save As** sets the deck name from the chosen filename (used by Install to TTS).
 - Use **Deck** below the primary editor controls to switch between JSON decks and
   compatible text decklists in that folder. **Refresh** rescans the folder, and
   **Open Folder** reveals it in the system file manager.

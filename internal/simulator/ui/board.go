@@ -18,6 +18,7 @@ import (
 
 	cardimages "github.com/HybridUofA/casters-compendium/internal/carddata/images"
 	"github.com/HybridUofA/casters-compendium/internal/game/cards"
+	"github.com/HybridUofA/casters-compendium/internal/simulator/effects"
 	"github.com/HybridUofA/casters-compendium/internal/simulator/model"
 	simulatorview "github.com/HybridUofA/casters-compendium/internal/simulator/view"
 )
@@ -78,6 +79,8 @@ type BoardActions struct {
 		revision model.Revision,
 		done func(peeked simulatorview.CardView, enemyID model.PlayerID, err error),
 	)
+	// ActivateRegisteredRest pays Rest and runs automated HookRest (casters and servants).
+	ActivateRegisteredRest     func(cardID model.MatchCardID, revision model.Revision)
 	ResolveDeckDig             func(keep model.MatchCardID, bottomOrder []model.MatchCardID, revision model.Revision)
 	SubmitOpeningHand          func([]model.MatchCardID, model.Revision)
 	CallFaceDownLevelOne       func(model.MatchCardID, model.Revision)
@@ -562,12 +565,22 @@ func canViewerGenerateCasterAether(match simulatorview.MatchView) bool {
 }
 
 func canViewerActivateHildeWillow(match simulatorview.MatchView) bool {
+	return canViewerActivateRegisteredRest(match)
+}
+
+// canViewerActivateRegisteredRest is Instant-speed Rest eligibility (CR 1.2
+// §§6.4.1.a, 7.4.1): any phase while holding priority, no pending decisions.
+func canViewerActivateRegisteredRest(match simulatorview.MatchView) bool {
 	return match.MatchStatus == model.StatusInProgress &&
 		match.PrioritySequenceOpen &&
 		match.PriorityHolder == match.ViewerID &&
 		match.PendingBreak.PlayerID == "" &&
 		match.PendingDraw.Step == model.PendingDrawIdle &&
 		match.PendingChoice.PlayerID == ""
+}
+
+func cardHasAutomatedRest(definition cards.Card) bool {
+	return effects.HasAutomatedRest(model.CardID(definition.ID))
 }
 
 func cardIsHildeWillow(definition cards.Card) bool {
@@ -3048,7 +3061,10 @@ func newLayeredOrbZone(
 	cardSize := fyne.NewSize(orbCardWidth, orbCardHeight)
 	objects := make([]fyne.CanvasObject, 0, orbSlotCount)
 	for _, projectedCard := range slotViews {
-		if projectedCard.MatchID == "" {
+		// Vacant prize holes are zero-value CardViews. Anonymous face-down
+		// Orbs (empty MatchID, FaceDown) still get a card-back tile so older
+		// multiplayer hosts that omit Orb MatchIDs do not render blank slots.
+		if projectedCard.MatchID == "" && projectedCard.Face != model.CardFaceDown {
 			objects = append(objects, newOrbSlotPlaceholder(cardSize))
 			continue
 		}
@@ -3178,17 +3194,21 @@ func newAetherCasterZone(
 			card.Orientation == model.OrientationRecovered &&
 			strings.EqualFold(strings.TrimSpace(definition.Type), "Caster")
 	}
-	eligibleHildeAbility := func(card simulatorview.CardView) bool {
+	eligibleCasterRest := func(card simulatorview.CardView) bool {
 		definition, found := definitions[card.CardID]
-		return isViewer &&
-			found &&
-			host != nil &&
-			actions.ActivateHildeWillow != nil &&
-			canViewerActivateHildeWillow(host.match) &&
-			card.MatchID != "" &&
-			card.Face == model.CardFaceUp &&
-			card.Orientation == model.OrientationRecovered &&
-			cardIsHildeWillow(definition)
+		if !isViewer || !found || host == nil || card.MatchID == "" {
+			return false
+		}
+		if card.Face != model.CardFaceUp || card.Orientation != model.OrientationRecovered {
+			return false
+		}
+		if !canViewerActivateRegisteredRest(host.match) {
+			return false
+		}
+		if cardIsHildeWillow(definition) {
+			return actions.ActivateHildeWillow != nil
+		}
+		return actions.ActivateRegisteredRest != nil && cardHasAutomatedRest(definition)
 	}
 	objects := make([]fyne.CanvasObject, 0, len(player.CasterZone))
 	hasEligibleCard := false
@@ -3206,7 +3226,7 @@ func newAetherCasterZone(
 		if eligibleToken(projectedCard) ||
 			eligibleFaceUpCaster(projectedCard) ||
 			eligibleFaceDownCaster(projectedCard) ||
-			eligibleHildeAbility(projectedCard) {
+			eligibleCasterRest(projectedCard) {
 			hasEligibleCard = true
 			tile.OnActivate = func() {
 				revision := model.Revision(0)
@@ -3218,13 +3238,13 @@ func newAetherCasterZone(
 					if actions.UseCasterToken != nil {
 						actions.UseCasterToken(projectedCard.MatchID, revision)
 					}
-				case eligibleHildeAbility(projectedCard) && eligibleFaceUpCaster(projectedCard):
+				case eligibleCasterRest(projectedCard) && eligibleFaceUpCaster(projectedCard):
 					if host != nil {
-						host.promptHildeWillowOrAether(projectedCard.MatchID, revision)
+						host.promptCasterRestOrAether(projectedCard, definition, revision)
 					}
-				case eligibleHildeAbility(projectedCard):
+				case eligibleCasterRest(projectedCard):
 					if host != nil {
-						host.beginHildeWillowAbility(projectedCard.MatchID, revision)
+						host.beginCasterRestAbility(projectedCard, definition, revision)
 					}
 				case eligibleFaceUpCaster(projectedCard):
 					if actions.GenerateCasterAether != nil {
@@ -3250,20 +3270,24 @@ func newAetherCasterZone(
 	cardRow := fyne.CanvasObject(container.NewHBox(objects...))
 	content := cardRow
 	if hasEligibleCard {
-		instruction := widget.NewLabel("Tap a recovered Caster to produce Aether (Hilde Willow may also use her Rest ability)")
+		instruction := widget.NewLabel("Tap a recovered Caster for Aether or Rest abilities (Instant while you hold priority)")
 		instruction.Wrapping = fyne.TextWrapWord
 		content = container.NewBorder(nil, nil, nil, instruction, cardRow)
 	}
 	return newZone(
 		playerName,
 		"Caster Zone",
-		"Rest a Caster to produce its Aether, or remove the Caster Token to produce one non-elemental Aether. Hilde Willow's Rest ability looks at the enemy deck.",
+		"Rest a Caster to produce its Aether, or remove the Caster Token to produce one non-elemental Aether. Printed Rest abilities are Instant while you hold priority.",
 		content,
 		preview,
 	)
 }
 
-func (screen *BoardScreen) promptHildeWillowOrAether(cardID model.MatchCardID, revision model.Revision) {
+func (screen *BoardScreen) promptCasterRestOrAether(
+	card simulatorview.CardView,
+	definition cards.Card,
+	revision model.Revision,
+) {
 	if screen == nil {
 		return
 	}
@@ -3271,24 +3295,51 @@ func (screen *BoardScreen) promptHildeWillowOrAether(cardID model.MatchCardID, r
 	if window == nil {
 		return
 	}
-	content := widget.NewLabel("Hilde Willow can produce Aether or use her Rest ability to look at the top card of the enemy deck.")
+	name := strings.TrimSpace(definition.Name)
+	if name == "" {
+		name = "This Caster"
+	}
+	prompt := name + " can produce Aether or use a printed Rest ability (Instant while you hold priority)."
+	restLabel := "Rest Ability"
+	if cardIsHildeWillow(definition) {
+		prompt = "Hilde Willow can produce Aether or use her Rest ability to look at the top card of the enemy deck."
+		restLabel = "Look at enemy deck"
+	}
+	content := widget.NewLabel(prompt)
 	content.Wrapping = fyne.TextWrapWord
-	popup := dialog.NewCustom("Hilde Willow", "Cancel", content, window)
+	popup := dialog.NewCustom(name, "Cancel", content, window)
 	popup.SetButtons([]fyne.CanvasObject{
 		widget.NewButton("Cancel", func() { popup.Hide() }),
 		widget.NewButton("Produce Aether", func() {
 			popup.Hide()
 			if screen.actions.GenerateCasterAether != nil {
-				screen.actions.GenerateCasterAether(cardID, revision)
+				screen.actions.GenerateCasterAether(card.MatchID, revision)
 			}
 		}),
-		widget.NewButton("Look at enemy deck", func() {
+		widget.NewButton(restLabel, func() {
 			popup.Hide()
-			screen.beginHildeWillowAbility(cardID, revision)
+			screen.beginCasterRestAbility(card, definition, revision)
 		}),
 	})
 	resizeDialogFraction(popup, window, 0.5, 0.35, 520, 240, 900, 480)
 	popup.Show()
+}
+
+func (screen *BoardScreen) beginCasterRestAbility(
+	card simulatorview.CardView,
+	definition cards.Card,
+	revision model.Revision,
+) {
+	if screen == nil {
+		return
+	}
+	if cardIsHildeWillow(definition) {
+		screen.beginHildeWillowAbility(card.MatchID, revision)
+		return
+	}
+	if screen.actions.ActivateRegisteredRest != nil {
+		screen.actions.ActivateRegisteredRest(card.MatchID, revision)
+	}
 }
 
 func (screen *BoardScreen) beginHildeWillowAbility(cardID model.MatchCardID, revision model.Revision) {
@@ -3491,14 +3542,31 @@ func (board *playerBoardController) showServantContextMenu(
 	if board == nil || event == nil || card.MatchID == "" {
 		return
 	}
-	if board.actions.SetGrantedDoubleCorrupt == nil && board.actions.SetFieldOrientation == nil {
+	definition := board.definitions[card.CardID]
+	canRest := board.isViewer &&
+		board.actions.ActivateRegisteredRest != nil &&
+		board.host != nil &&
+		canViewerActivateRegisteredRest(board.host.match) &&
+		card.Face == model.CardFaceUp &&
+		card.Orientation == model.OrientationRecovered &&
+		cardHasAutomatedRest(definition)
+	if board.actions.SetGrantedDoubleCorrupt == nil &&
+		board.actions.SetFieldOrientation == nil &&
+		!canRest &&
+		board.actions.MoveCard == nil {
 		return
 	}
 	canvas := fyne.CurrentApp().Driver().CanvasForObject(board.servants)
 	if canvas == nil {
 		return
 	}
-	items := make([]*fyne.MenuItem, 0, 5)
+	items := make([]*fyne.MenuItem, 0, 6)
+	if canRest {
+		matchID := card.MatchID
+		items = append(items, fyne.NewMenuItem("Activate Rest ability", func() {
+			board.actions.ActivateRegisteredRest(matchID, board.currentRevision())
+		}))
+	}
 	if board.isViewer && board.actions.SetFieldOrientation != nil {
 		items = append(items, fieldOrientationMenuItems(card, board.actions.SetFieldOrientation, board.currentRevision(), true)...)
 	}

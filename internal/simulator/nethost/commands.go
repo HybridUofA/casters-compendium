@@ -363,6 +363,14 @@ func (host *Host) applyCommand(
 				DeckPeekOwner: string(enemyID),
 			},
 		}, nil
+	case "activate_registered_rest":
+		var args struct {
+			CardID model.MatchCardID `json:"card_id"`
+		}
+		if err := json.Unmarshal(payload.Args, &args); err != nil {
+			return commandResult{}, err
+		}
+		return mutatingView(playerSession.ActivateRegisteredRest(args.CardID, revision))
 	case "move_deck_top_to_bottom":
 		var args struct {
 			OwnerID model.PlayerID `json:"owner_id"`

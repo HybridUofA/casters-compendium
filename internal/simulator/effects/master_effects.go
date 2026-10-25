@@ -2637,6 +2637,21 @@ func DefaultHandlers() []Handler {
 	return out
 }
 
+// HasAutomatedRest reports whether cardID has a registered Rest resolve in the
+// master table (for Instant-speed Rest UI eligibility).
+func HasAutomatedRest(cardID model.CardID) bool {
+	if cardID == "" {
+		return false
+	}
+	for i := range MasterEffects {
+		decl := &MasterEffects[i]
+		if decl.Hook == HookRest && decl.Resolve != nil && decl.CardID == cardID {
+			return true
+		}
+	}
+	return false
+}
+
 type masterHandler struct{ decl *EffectDecl }
 
 func (h masterHandler) Matches(hook Hook, cardID model.CardID, _ string) bool {

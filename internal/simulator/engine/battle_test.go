@@ -419,6 +419,40 @@ func TestPassPriorityClearsInterruptedAttackWithoutJudgment(t *testing.T) {
 	}
 }
 
+func TestMoveCardAttackerToHandClearsAttackAndAllowsBattlePhaseExit(t *testing.T) {
+	state, catalog := battleJudgmentStateForTest()
+	if err := DeclareAttack(&state, nil, "player-one", "p1-attacker", model.AttackTargetServant, "p2-defender", state.Revision); err != nil {
+		t.Fatalf("DeclareAttack() error = %v", err)
+	}
+	if state.Attack.Step == model.BattleStepIdle {
+		t.Fatal("expected declared attack")
+	}
+	command := model.MoveCardCommand{
+		CardID:              "p1-attacker",
+		DestinationPlayerID: "player-one",
+		DestinationZone:     model.ZoneHand,
+		DestinationFace:     model.CardFaceDown,
+	}
+	if err := MoveCard(&state, catalog, "player-one", command, state.Revision); err != nil {
+		t.Fatalf("MoveCard() error = %v", err)
+	}
+	if state.Attack != (model.AttackState{}) {
+		t.Fatalf("Attack = %#v; want cleared after bouncing attacker", state.Attack)
+	}
+	// Remaining recovered servant would still block Battle exit; rest it so
+	// phase completion only tests the attack-clear path.
+	other := state.CardInstances["p1-other"]
+	other.Orientation = model.OrientationRested
+	state.CardInstances["p1-other"] = other
+	state.PrioritySequenceOpen = false
+	state.PriorityHolder = ""
+	state.PassCount = 0
+	state.ChaseLinks = nil
+	if err := CompleteCurrentPhase(&state, catalog, "player-one", state.Revision); err != nil {
+		t.Fatalf("CompleteCurrentPhase(Battle) error = %v; want success after interrupted attack cleared", err)
+	}
+}
+
 func battleStateForTest() model.MatchState {
 	return model.MatchState{
 		CardInstances: map[model.MatchCardID]model.CardInstance{

@@ -226,6 +226,7 @@ func projectFieldZone(
 			cardView.GrantedDoubleCorrupt = instance.GrantedDoubleCorrupt
 			cardView.AttackModifier = instance.AttackModifier
 			cardView.DefenseModifier = instance.DefenseModifier
+			cardView.Stock = projectStockCards(state, instance.Stock)
 		case instance.Face == model.CardFaceDown && player.ID == viewerID:
 			cardView.MatchID = instance.MatchID
 			cardView.CardID = instance.CardID
@@ -235,6 +236,7 @@ func projectFieldZone(
 			cardView.GrantedDoubleCorrupt = instance.GrantedDoubleCorrupt
 			cardView.AttackModifier = instance.AttackModifier
 			cardView.DefenseModifier = instance.DefenseModifier
+			cardView.Stock = projectStockCards(state, instance.Stock)
 		case instance.Face == model.CardFaceDown:
 			cardView.ShowFace = false
 		default:
@@ -243,6 +245,28 @@ func projectFieldZone(
 		projection = append(projection, cardView)
 	}
 	return projection, nil
+}
+
+func projectStockCards(state model.MatchState, stockIDs []model.MatchCardID) []CardView {
+	if len(stockIDs) == 0 {
+		return nil
+	}
+	out := make([]CardView, 0, len(stockIDs))
+	for _, id := range stockIDs {
+		instance, ok := state.CardInstances[id]
+		if !ok {
+			continue
+		}
+		out = append(out, CardView{
+			MatchID:     instance.MatchID,
+			CardID:      instance.CardID,
+			Face:        model.CardFaceUp,
+			ShowFace:    true,
+			Owner:       instance.Owner,
+			Orientation: instance.Orientation,
+		})
+	}
+	return out
 }
 
 // projectChaseLinks exposes the Chase stack publicly. Cards on Chase are always

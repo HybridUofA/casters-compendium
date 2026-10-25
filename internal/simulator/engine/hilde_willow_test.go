@@ -50,6 +50,21 @@ func TestActivateHildeWillowThenBottomViaPending(t *testing.T) {
 	}
 }
 
+func TestActivateHildeWillowWorksInBattlePhase(t *testing.T) {
+	RegisterDefaultEffectHandlers()
+	state, catalog := hildeWillowStateForTest()
+	state.Turn.Phase = model.PhaseBattle
+	state.Turn.ActivePlayer = "player-two"
+	state.PriorityHolder = "player-one"
+	state.PrioritySequenceOpen = true
+	if _, err := ActivateHildeWillow(&state, catalog, "player-one", "hilde", state.Revision); err != nil {
+		t.Fatalf("ActivateHildeWillow in Battle error = %v; want Instant-speed success", err)
+	}
+	if state.CardInstances["hilde"].Orientation != model.OrientationRested {
+		t.Fatal("Hilde did not Rest in Battle phase")
+	}
+}
+
 func TestActivateHildeWillowRejectsWithoutPriority(t *testing.T) {
 	ResetEffectHandlers()
 	RegisterDefaultEffectHandlers()

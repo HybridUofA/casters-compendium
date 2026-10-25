@@ -86,6 +86,7 @@ func SetFieldOrientation(
 	if err := ops.SetOrientation(state, cardID, orientation); err != nil {
 		return err
 	}
+	clearAttackIfInterrupted(state)
 	state.Revision++
 	return nil
 }

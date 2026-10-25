@@ -607,6 +607,26 @@ func clearAttack(state *model.MatchState) {
 	state.Attack = model.AttackState{}
 }
 
+// clearAttackIfInterrupted clears Declared or AwaitingJudgment attacks when the
+// attacker (or servant target) is no longer a legal battle participant. Call
+// after any field leave so bounced/destroyed attackers cannot soft-lock Battle.
+func clearAttackIfInterrupted(state *model.MatchState) {
+	if state == nil {
+		return
+	}
+	if state.Attack.Step == model.BattleStepIdle && state.Attack.AttackerID == "" {
+		return
+	}
+	activeIndex, opponentIndex, err := battlePlayerIndexes(state, state.Turn.ActivePlayer)
+	if err != nil {
+		clearAttack(state)
+		return
+	}
+	if attackInterrupted(state, activeIndex, opponentIndex, state.Attack) {
+		clearAttack(state)
+	}
+}
+
 func reopenPriorityForActivePlayer(state *model.MatchState) {
 	state.PrioritySequenceOpen = true
 	state.PassCount = 0

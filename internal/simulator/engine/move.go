@@ -98,6 +98,7 @@ func MoveCard(state *model.MatchState, catalog rules.CardCatalog, actingPlayerID
 	if command.DestinationZone == model.ZoneOrbs {
 		grantOrbEntryKnowledge(state, command.CardID, sourceZone, sourcePlayerID, sourceFace, instance.Owner)
 	}
+	clearAttackIfInterrupted(state)
 	state.Revision++
 	return nil
 }

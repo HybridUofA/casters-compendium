@@ -127,6 +127,83 @@ func TestOrbZoneKeepsPlaceholdersAfterRemoval(t *testing.T) {
 	}
 }
 
+func TestOrbViewsForSlotsPacksAnonymousFaceDownOrbs(t *testing.T) {
+	// Pre-1.2.1 hosts projected unknown Orbs with empty MatchID.
+	anonymous := []simulatorview.CardView{
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+	}
+	slots := reconcileOrbSlotIDs(nil, anonymous)
+	for _, id := range slots {
+		if id != "" {
+			t.Fatalf("anonymous orbs must not claim prize MatchIDs; got %q", id)
+		}
+	}
+	views := orbViewsForSlots(slots, anonymous)
+	occupied := 0
+	for _, view := range views {
+		if !orbSlotOccupied(view) {
+			continue
+		}
+		occupied++
+		if view.MatchID != "" || view.Face != model.CardFaceDown || view.ShowFace {
+			t.Fatalf("anonymous packed orb = %#v; want face-down card back", view)
+		}
+	}
+	if occupied != 7 {
+		t.Fatalf("occupied anonymous slots = %d; want 7 card backs", occupied)
+	}
+}
+
+func TestOrbZoneRendersCardBacksForAnonymousMatchIDs(t *testing.T) {
+	match := testMatchView()
+	match.MatchStatus = model.StatusInProgress
+	// Simulate a legacy host that omits Orb MatchIDs the viewer does not know.
+	match.Players[1].Orbs = []simulatorview.CardView{
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+		{Face: model.CardFaceDown, ShowFace: false},
+	}
+	screen := NewBoardController(match, testDefinitions(), BoardActions{}, nil)
+	window := test.NewWindow(screen.Content())
+	defer window.Close()
+
+	stack := findVerticalCardStack(screen.playerBoards[0].orbs)
+	if stack == nil {
+		t.Fatal("expected layered orb stack")
+	}
+	placeholders := 0
+	for _, object := range stack.Objects {
+		if _, ok := object.(*orbSlotPlaceholder); ok {
+			placeholders++
+		}
+	}
+	if placeholders != 0 {
+		t.Fatalf("placeholders = %d; want 0 (anonymous orbs should show card backs)", placeholders)
+	}
+	tiles := collectCardTiles(stack)
+	if len(tiles) != 7 {
+		t.Fatalf("orb tiles = %d; want 7 card-back tiles", len(tiles))
+	}
+	for index, tile := range tiles {
+		if tile.View.ShowFace {
+			t.Fatalf("orb %d ShowFace = true; want card back", index)
+		}
+		if tile.sidewaysImage == nil && (tile.image == nil || (tile.image.Image == nil && tile.image.Resource == nil)) {
+			t.Fatalf("orb %d has no card-back artwork", index)
+		}
+	}
+}
+
 func TestOrbTargetHoverHighlightsOnMouseIn(t *testing.T) {
 	tile := NewCardTile(
 		simulatorview.CardView{MatchID: "orb", Face: model.CardFaceDown},
