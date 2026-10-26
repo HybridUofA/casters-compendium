@@ -93,7 +93,10 @@ func (layout *CardGridLayout) Layout(
 	}
 }
 
-// MinSize reports the grid footprint at its configured minimum cell width.
+// MinSize reports a compact preferred footprint at the configured minimum
+// cell width. Height is capped to a single row because Layout already shrinks
+// cells to fit the allocated area; claiming the full-deck height here locks
+// vertical window resize and can desync pointer hit-testing when maximized.
 func (layout *CardGridLayout) MinSize(
 	objects []fyne.CanvasObject,
 ) fyne.Size {
@@ -124,17 +127,9 @@ func (layout *CardGridLayout) MinSize(
 		usedColumns = len(objects)
 	}
 
-	rows :=
-		(len(objects) + layout.Columns - 1) /
-			layout.Columns
-
 	width :=
 		float32(usedColumns)*minimumWidth +
 			float32(usedColumns-1)*padding
 
-	height :=
-		float32(rows)*minimumHeight +
-			float32(rows-1)*padding
-
-	return fyne.NewSize(width, height)
+	return fyne.NewSize(width, minimumHeight)
 }

@@ -13,10 +13,10 @@ func TestAllReturnsBundledNotesNewestFirst(t *testing.T) {
 	if len(notes) < 1 {
 		t.Fatal("All() returned no bundled release notes")
 	}
-	if notes[0].Version != "v1.2.3" {
-		t.Fatalf("newest bundled version = %q, want v1.2.3", notes[0].Version)
+	if notes[0].Version != "v1.2.4" {
+		t.Fatalf("newest bundled version = %q, want v1.2.4", notes[0].Version)
 	}
-	if !strings.Contains(notes[0].Markdown, "Caster's Compendium v1.2.3") {
+	if !strings.Contains(notes[0].Markdown, "Caster's Compendium v1.2.4") {
 		t.Fatal("newest bundled note does not contain its release heading")
 	}
 }
@@ -34,8 +34,8 @@ func TestCompareVersionsUsesSemanticPrereleaseOrder(t *testing.T) {
 		{left: "v1.0.0", right: "v1.0.0-rc.1", want: 1},
 	}
 	for _, test := range tests {
-		if got := compareVersions(test.left, test.right); got != test.want {
-			t.Errorf("compareVersions(%q, %q) = %d, want %d", test.left, test.right, got, test.want)
+		if got := CompareVersions(test.left, test.right); got != test.want {
+			t.Errorf("CompareVersions(%q, %q) = %d, want %d", test.left, test.right, got, test.want)
 		}
 	}
 }

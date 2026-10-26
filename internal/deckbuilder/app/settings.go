@@ -198,6 +198,9 @@ func setWindowContent(window fyne.Window, content fyne.CanvasObject) {
 		backgroundNone,
 	)
 	window.SetContent(wrapWithBackground(content, value))
+	// Content swaps can raise Fyne's minimum size; pull back above the taskbar
+	// before pointer hit-testing desyncs on Windows.
+	scheduleWorkAreaClamp(window)
 }
 
 // applyAppearanceTheme installs the selected adaptive or fixed-variant theme.

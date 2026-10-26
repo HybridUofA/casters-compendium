@@ -64,7 +64,8 @@ func runLocalSimulatorUI(
 	playerWindows := [2]fyne.Window{window, nil}
 	if !solo {
 		playerWindows[1] = fyne.CurrentApp().NewWindow(applicationName + " — Player Two")
-		playerWindows[1].Resize(fyne.NewSize(1400, 850))
+		playerWindows[1].Resize(preferredWindowSize())
+		scheduleWorkAreaClamp(playerWindows[1])
 	}
 	if solo {
 		playerWindows[0].SetTitle(applicationName + " — Solo vs Tsubasa")

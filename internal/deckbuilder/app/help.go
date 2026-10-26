@@ -76,6 +76,9 @@ You can also drag a search result directly into either deck area.
 - **Diagnostic Information** displays a reviewable support summary that can be
   copied into a bug report. It excludes deck contents, credentials, usernames,
   and exact filesystem paths, and nothing is transmitted automatically.
+- **Check for Updates** compares this build to the latest GitHub release and
+  can open the downloads page when a newer version is available. The same check
+  also runs quietly when the application starts.
 - **Changelog** displays the reviewed release notes bundled with the application
   and remains available without an internet connection.
 - **Settings** lets you follow the system theme or force Light or Dark mode,

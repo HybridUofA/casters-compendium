@@ -337,10 +337,12 @@ func showApplication(
 	const previewWidth float32 = 160
 	const previewHeight float32 = 224
 	const informationPanelWidth float32 = 260
-	const cardPreviewHeight float32 = 300
-	const sideDeckPanelHeight float32 = 155
+	// Keep vertical mins modest so Windows can resize diagonally and maximized
+	// windows do not fight Fyne's size limits (cursor/hit-test desync).
+	const cardPreviewHeight float32 = 200
+	const sideDeckPanelHeight float32 = 110
 	const searchPanelWidth float32 = 370
-	const searchControlsHeight float32 = 370
+	const searchControlsHeight float32 = 160
 	mainDeckTileMinSize := fyne.NewSize(48, 67)
 	sideDeckTileMinSize := fyne.NewSize(32, 45)
 
@@ -533,7 +535,7 @@ func showApplication(
 
 	detailsScroll := container.NewVScroll(cardDetailsLabel)
 
-	detailsScroll.SetMinSize(fyne.NewSize(0, 180))
+	detailsScroll.SetMinSize(fyne.NewSize(0, 80))
 
 	detailsPanel := container.NewBorder(
 		container.NewVBox(
@@ -1635,6 +1637,7 @@ func showApplication(
 			GenerateImage:    func() { showGenerateImageFromDecklistDialog(window, repository) },
 			GenerateDecklist: func() { showGenerateDecklistDialog(window, repository) },
 			UpdateDatabase:   func() { confirmManualCardDatabaseUpdate(window, paths, repository) },
+			CheckForUpdates:  func() { checkForApplicationUpdate(window) },
 			Changelog:        func() { showChangelogDialog(window) },
 			HowToUse:         func() { showHowToUseDialog(window) },
 			Diagnostics:      func() { showDiagnosticInformationDialog(window, paths, repository) },
@@ -1646,4 +1649,5 @@ func showApplication(
 
 	runSearch()
 	showMainMenu()
+	scheduleApplicationUpdateCheck(window)
 }
