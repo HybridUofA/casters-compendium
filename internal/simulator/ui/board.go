@@ -25,7 +25,9 @@ import (
 
 const (
 	previewPanelWidth float32 = 270
-	boardMinHeight    float32 = 300
+	// Keep each seat's floor modest so a maximized two-seat board stays within
+	// the Windows client area; oversized mins desync canvas hit-testing.
+	boardMinHeight    float32 = 180
 	sideZoneWidth     float32 = 150
 	orbZoneWidth      float32 = 200
 	handZoneHeight    float32 = 82
@@ -1835,9 +1837,8 @@ func newPreviewRegion(preview previewState, aetherPools fyne.CanvasObject) fyne.
 	// Card actions (Cast / Call / Level Up / Move) live on right-click menus —
 	// the left rail is inspection-only (artwork + rules text + aether).
 	context := container.NewVScroll(preview.description)
-	// Keep this modest so Aether pools (multi-row icon grids) still fit the
-	// supported 1400×850 simulator window without forcing a taller min size.
-	context.SetMinSize(fyne.NewSize(0, 150))
+	// Keep this modest so Aether pools still fit without locking vertical resize.
+	context.SetMinSize(fyne.NewSize(0, 80))
 	content := container.NewBorder(heading, aetherSection, nil, nil, context)
 
 	sizer := canvas.NewRectangle(color.Transparent)

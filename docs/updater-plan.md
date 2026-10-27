@@ -16,6 +16,12 @@ This phase is low complexity and does not modify the user's installation.
 
 ## Phase 2: update discovery
 
+Status: partially implemented in v1.2.5. Startup and **Check for Updates**
+compare the installed version to GitHub `releases/latest` and can open the
+public downloads page. Skip-this-version is remembered locally. A signed
+project-hosted manifest, checksum display, and in-app package download remain
+future work.
+
 - Read a small HTTPS release manifest from the Caster's Compendium service.
 - Compare stable, prerelease, and ignored versions using semantic-version rules.
 - Support automatic checks at a respectful interval and an explicit

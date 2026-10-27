@@ -31,6 +31,33 @@ func TestCardGridLayoutFitsAllRowsWithinAvailableHeight(t *testing.T) {
 	}
 }
 
+// TestCardGridLayoutMinSizeDoesNotGrowWithRowCount keeps window mins independent of deck size.
+func TestCardGridLayoutMinSizeDoesNotGrowWithRowCount(t *testing.T) {
+	layout := &CardGridLayout{
+		Columns:          10,
+		HeightToWidth:    1.4,
+		Padding:          6,
+		MinimumCellWidth: 44,
+	}
+	oneRow := make([]fyne.CanvasObject, 10)
+	fullDeck := make([]fyne.CanvasObject, 50)
+	for index := range oneRow {
+		oneRow[index] = canvas.NewRectangle(nil)
+	}
+	for index := range fullDeck {
+		fullDeck[index] = canvas.NewRectangle(nil)
+	}
+
+	one := layout.MinSize(oneRow)
+	full := layout.MinSize(fullDeck)
+	if full.Height != one.Height {
+		t.Fatalf("full-deck MinSize height = %f, want single-row height %f", full.Height, one.Height)
+	}
+	if full.Width != one.Width {
+		t.Fatalf("full-deck MinSize width = %f, want %f", full.Width, one.Width)
+	}
+}
+
 // TestCardGridLayoutLeftAlignsCards verifies spare horizontal space stays after the cards.
 func TestCardGridLayoutLeftAlignsCards(t *testing.T) {
 	layout := &CardGridLayout{

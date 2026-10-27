@@ -71,6 +71,13 @@ func parseVersion(value string) (parsedVersion, bool) {
 	return parsed, true
 }
 
+// CompareVersions orders two semantic versions, including prerelease and
+// hotfix channels used by bundled release notes. Returns 1 when left is newer,
+// -1 when right is newer, and 0 when they are equal.
+func CompareVersions(left, right string) int {
+	return compareVersions(left, right)
+}
+
 func compareVersions(left, right string) int {
 	leftVersion, leftOK := parseVersion(left)
 	rightVersion, rightOK := parseVersion(right)

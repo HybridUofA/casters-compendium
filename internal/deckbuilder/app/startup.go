@@ -28,7 +28,7 @@ import (
 const (
 	applicationID      = localdata.SharedApplicationID
 	applicationName    = "Caster's Compendium"
-	applicationVersion = "1.2.3"
+	applicationVersion = "1.2.5"
 )
 
 const setupDownloadWorkers = 6
@@ -57,7 +57,8 @@ func Run() {
 	guiApp := app.NewWithID(applicationID)
 	loadAppearanceTheme(guiApp)
 	window := guiApp.NewWindow(applicationName)
-	window.Resize(fyne.NewSize(1400, 850))
+	window.Resize(preferredWindowSize())
+	scheduleWorkAreaClamp(window)
 
 	dataRoot, err := localdata.SharedRoot()
 	if err != nil {

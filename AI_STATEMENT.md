@@ -340,3 +340,17 @@ and publication.
 Under that authorization, Cursor assistance implemented the engine/UI/nethost
 wiring, tests, transparency updates, and release metadata under maintainer
 review.
+
+## Disclosed v1.2.5 assistance
+
+Hybrid directed the desktop reliability patch (in-app update discovery against
+GitHub releases with a downloads-page prompt, Windows work-area clamping so
+maximize stays above the taskbar, softer layout minimums so vertical resize
+works again and pointer hit-testing no longer drifts, Fyne v2.8.2, and shipping
+as a patch) and remains responsible for acceptance and publication. The first
+attempt tagged `v1.2.4` on the v1.2.3 commit by mistake; the intended changes
+ship as **v1.2.5**.
+
+Under that authorization, Cursor assistance implemented the update check,
+window-geometry helpers, layout minimum fixes, tests, transparency updates,
+and release metadata under maintainer review.

@@ -33,8 +33,9 @@ v1.1.0's Call / Level Up and priority playability fixes, v1.1.1's manual
 Aether adjust plus Hubris click-to-attack work, v1.1.2's Arena-style
 priority auto-pass plus Hilde Willow Rest automation, v1.2.0's effect
 automation plus Solo vs Tsubasa, v1.2.1's board UX and match-end polish, v1.2.2's
-Break privacy and discard targeting UX, and v1.2.3's Instant Rest, Stock
-banish, Battle attack-clear, and Save As / TTS identity fix.
+Break privacy and discard targeting UX, v1.2.3's Instant Rest, Stock
+banish, Battle attack-clear, and Save As / TTS identity fix, and v1.2.5's
+update discovery plus Windows maximize / mouse-desync fix.
 
 ## Features
 
@@ -89,6 +90,15 @@ banish, Battle attack-clear, and Save As / TTS identity fix.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v1.2.5
+
+- Startup and **Check for Updates** notify when a newer GitHub release exists and
+  can open the downloads page (with Later / Skip This Version).
+- Windows maximize stays above the taskbar; vertical window resize works again;
+  pointer hit-testing no longer drifts after maximize.
+- Fyne updated to v2.8.2.
+- Supersedes the mistagged `v1.2.4` packages, which were still built from v1.2.3.
 
 ### What's new in v1.2.3
 
@@ -426,13 +436,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_1.2.3_amd64.deb
+sudo apt install ./casters-compendium_1.2.5_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-1.2.3-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-1.2.5-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations
