@@ -16,7 +16,7 @@ This phase is low complexity and does not modify the user's installation.
 
 ## Phase 2: update discovery
 
-Status: partially implemented in v1.2.4. Startup and **Check for Updates**
+Status: partially implemented in v1.2.5. Startup and **Check for Updates**
 compare the installed version to GitHub `releases/latest` and can open the
 public downloads page. Skip-this-version is remembered locally. A signed
 project-hosted manifest, checksum display, and in-app package download remain
