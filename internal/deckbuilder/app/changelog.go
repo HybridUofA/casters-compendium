@@ -3,9 +3,13 @@ package deckbuilder
 import (
 	"fmt"
 
+	"image/color"
+
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	releasenotes "github.com/HybridUofA/casters-compendium/docs/releases"
@@ -54,4 +58,63 @@ func showChangelogDialog(window fyne.Window) {
 		scroll,
 	)
 	dialog.ShowCustom("Changelog", "Close", content, window)
+}
+
+// buildChangelogPanel returns the release notes in a fixed-size, scrollable,
+// outlined panel with a version selector, for embedding in the main menu.
+func buildChangelogPanel(size fyne.Size, c fyne.Canvas) fyne.CanvasObject {
+	notes, err := releasenotes.All()
+	if err != nil || len(notes) == 0 {
+		return widget.NewLabel("Release notes are unavailable.")
+	}
+
+	markdownByVersion := make(map[string]string, len(notes))
+	versions := make([]string, 0, len(notes))
+	for _, note := range notes {
+		versions = append(versions, note.Version)
+		markdownByVersion[note.Version] = note.Markdown
+	}
+
+	text := widget.NewRichTextFromMarkdown(notes[0].Markdown)
+	text.Wrapping = fyne.TextWrapWord
+
+	scroll := container.NewVScroll(text)
+	scroll.SetMinSize(size)
+
+	var picker *widget.Button
+	var popup *widget.PopUp
+
+	list := widget.NewList(
+		func() int { return len(versions) },
+		func() fyne.CanvasObject { return widget.NewLabel("") },
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(versions[i])
+		},
+	)
+	list.OnSelected = func(i widget.ListItemID) {
+		picker.SetText(versions[i])
+		text.ParseMarkdown(markdownByVersion[versions[i]])
+		scroll.ScrollToTop()
+		popup.Hide()
+		list.UnselectAll()
+	}
+	popup = widget.NewPopUp(list, c)
+
+	picker = widget.NewButtonWithIcon(versions[0], theme.MenuDropDownIcon(), func() {
+		pos := fyne.CurrentApp().Driver().AbsolutePositionForObject(picker)
+		pos.Y += picker.Size().Height // open just below the button
+		popup.Resize(fyne.NewSize(picker.Size().Width, c.Size().Height/3))
+		popup.ShowAtPosition(pos)
+	})
+	picker.IconPlacement = widget.ButtonIconTrailingText
+
+	outline := canvas.NewRectangle(color.Transparent)
+	outline.StrokeColor = theme.Color(theme.ColorNameForeground)
+	outline.StrokeWidth = 2
+	outline.CornerRadius = 6
+
+	return container.NewStack(
+		outline,
+		container.NewPadded(container.NewBorder(picker, nil, nil, nil, scroll)),
+	)
 }

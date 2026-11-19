@@ -6,3 +6,6 @@ import _ "embed"
 //
 //go:embed images/MTD-back-ver01.png
 var CardBackPNG []byte
+
+//go:embed logo/title.png
+var TitlePNG []byte

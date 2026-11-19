@@ -1641,6 +1641,7 @@ func showApplication(
 			Changelog:        func() { showChangelogDialog(window) },
 			HowToUse:         func() { showHowToUseDialog(window) },
 			Diagnostics:      func() { showDiagnosticInformationDialog(window, paths, repository) },
+			DiagnosticsText:  diagnosticInformation(paths, repository),
 			Settings: func() {
 				showSettingsDialog(window, fyne.CurrentApp(), showMainMenu)
 			},

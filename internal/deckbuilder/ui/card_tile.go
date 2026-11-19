@@ -275,7 +275,6 @@ func (tile *CardTile) Tapped(_ *fyne.PointEvent) {
 
 // MouseIn selects the card when the pointer enters its tile.
 func (tile *CardTile) MouseIn(_ *desktop.MouseEvent) {
-	tile.selectCard()
 }
 
 // MouseMoved leaves the current selection unchanged while the pointer remains over the tile.

@@ -11,26 +11,16 @@ import (
 )
 
 // TestCardTileMouseInSelectsCard verifies entering a tile updates the card preview once.
-func TestCardTileMouseInSelectsCard(t *testing.T) {
-	card := cards.Card{ID: "TEST-001", Name: "Test Card"}
-	selectionCount := 0
-	var selected cards.Card
+func TestCardTileMouseInDoesNotSelectCard(t *testing.T) {
+	calls := 0
 	tile := &CardTile{
-		Card: card,
-		OnSelected: func(card cards.Card) {
-			selectionCount++
-			selected = card
-		},
+		OnSelected: func(cards.Card) { calls++ },
 	}
 
 	tile.MouseIn(&desktop.MouseEvent{})
-	tile.MouseMoved(&desktop.MouseEvent{})
 
-	if selectionCount != 1 {
-		t.Fatalf("selection count = %d, want 1", selectionCount)
-	}
-	if selected.ID != card.ID {
-		t.Fatalf("selected card ID = %q, want %q", selected.ID, card.ID)
+	if calls != 0 {
+		t.Fatalf("expected hover not to select, got %d calls", calls)
 	}
 }
 

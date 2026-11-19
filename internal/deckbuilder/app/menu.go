@@ -1,16 +1,23 @@
 package deckbuilder
 
 import (
+	//	"path/filepath"
+	//	"strings"
+
+	"image/color"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/storage"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-
+	assets "github.com/HybridUofA/casters-compendium/data"
 	cards "github.com/HybridUofA/casters-compendium/internal/carddata/catalog"
 	"github.com/HybridUofA/casters-compendium/internal/deckio"
 	"github.com/HybridUofA/casters-compendium/internal/game/decks"
@@ -33,77 +40,153 @@ type mainMenuActions struct {
 	HowToUse          func()
 	Diagnostics       func()
 	Settings          func()
+	DiagnosticsText   string
+}
+
+type percentSidePadLayout struct {
+	percent float32 // 0.10 means 10% on each side
+}
+
+func (l percentSidePadLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	pad := size.Width * l.percent
+	inner := fyne.NewSize(size.Width-2*pad, size.Height)
+	for _, obj := range objects {
+		obj.Move(fyne.NewPos(pad, 0))
+		obj.Resize(inner)
+	}
+}
+
+func (l percentSidePadLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	var w, h float32
+	for _, obj := range objects {
+		m := obj.MinSize()
+		if m.Width > w {
+			w = m.Width
+		}
+		if m.Height > h {
+			h = m.Height
+		}
+	}
+	return fyne.NewSize(w, h)
+}
+
+// newOnlineMenu lists the online actions shown when the Online button is pressed.
+func newOnlineMenu(actions mainMenuActions) *fyne.Menu {
+	return fyne.NewMenu("",
+		fyne.NewMenuItem("Online Lobby", actions.OnlineLobby),
+		fyne.NewMenuItem("Host Online Game", actions.HostOnlineGame),
+		fyne.NewMenuItem("Join Online Game", actions.JoinOnlineGame),
+	)
 }
 
 // buildMainMenu constructs the application's primary workflow chooser.
 func buildMainMenu(window fyne.Window, actions mainMenuActions) fyne.CanvasObject {
-	title := widget.NewLabelWithStyle(
-		applicationName,
-		fyne.TextAlignCenter,
-		fyne.TextStyle{Bold: true},
-	)
-	description := widget.NewLabel("Build a deck or convert an existing deck file.")
+
+	//This is the title of the application, it is bold and centered.
+	/*Start Making the Main Menu Here*/
+	description := widget.NewLabel("Build a deck, play a game, and summon to win!\nRemember to check for updates!")
 	description.Alignment = fyne.TextAlignCenter
 
 	playButton := widget.NewButton("Play a Game (Hotseat)", actions.PlayGame)
 	if actions.PlayGame == nil {
 		playButton.Disable()
 	}
-	soloButton := widget.NewButton("Solo vs Tsubasa", actions.PlaySoloVsTsubasa)
+	soloButton := widget.NewButton("Vs Tsubasa", actions.PlaySoloVsTsubasa)
 	if actions.PlaySoloVsTsubasa == nil {
 		soloButton.Disable()
 	}
-	lobbyButton := widget.NewButton("Online Lobby", actions.OnlineLobby)
-	if actions.OnlineLobby == nil {
-		lobbyButton.Disable()
-	}
-	hostButton := widget.NewButton("Host Online Game", actions.HostOnlineGame)
-	if actions.HostOnlineGame == nil {
-		hostButton.Disable()
-	}
-	joinButton := widget.NewButton("Join Online Game", actions.JoinOnlineGame)
-	if actions.JoinOnlineGame == nil {
-		joinButton.Disable()
-	}
-	editorButton := widget.NewButton("Open Deck Editor", actions.OpenDeckEditor)
+	deckButton := widget.NewButton("Decks", actions.OpenDeckEditor)
 	if actions.OpenDeckEditor == nil {
-		editorButton.Disable()
+		deckButton.Disable()
 	}
 
-	menu := container.NewVBox(
-		title,
-		description,
-		widget.NewSeparator(),
-		playButton,
-		soloButton,
-		lobbyButton,
-		hostButton,
-		joinButton,
-		editorButton,
-		widget.NewButton("Make a New Deck", actions.NewDeck),
-		widget.NewButton("Load a Deck", actions.LoadDeck),
-		widget.NewButton("Generate Deck Image from Decklist", actions.GenerateImage),
-		widget.NewButton("Generate Decklist File", actions.GenerateDecklist),
-		widget.NewButton("Update Card Database", actions.UpdateDatabase),
-		widget.NewButton("Check for Updates", actions.CheckForUpdates),
-		widget.NewButton("Changelog", actions.Changelog),
-		widget.NewButton("How to Use", actions.HowToUse),
-		widget.NewButton("Diagnostic Information", actions.Diagnostics),
-		widget.NewButton("Settings", actions.Settings),
-		widget.NewSeparator(),
-		widget.NewButton("Quit", func() { window.Close() }),
-	)
-	version := widget.NewLabel("v" + applicationVersion)
-	version.Alignment = fyne.TextAlignTrailing
-	version.TextStyle = fyne.TextStyle{Monospace: true}
+	onlineMenu := newOnlineMenu(actions)
 
-	return container.NewBorder(
+	var onlineButton *widget.Button
+	onlineButton = widget.NewButton("Online", func() {
+		pos := fyne.CurrentApp().Driver().AbsolutePositionForObject(onlineButton)
+		pos.X += onlineButton.Size().Width + 10 // open to the right of the button
+		widget.ShowPopUpMenuAtPosition(onlineMenu, window.Canvas(), pos)
+	})
+
+	var sidebar *widget.PopUp
+
+	changelog := buildChangelogPanel(fyne.NewSize(340, 120), window.Canvas())
+
+	diagText := widget.NewLabel(actions.DiagnosticsText)
+	diagText.Wrapping = fyne.TextWrapWord
+
+	sidebar = widget.NewPopUp(container.NewBorder(
 		nil,
-		container.NewHBox(layout.NewSpacer(), version),
+		container.NewVBox(
+			widget.NewSeparator(),
+			widget.NewLabelWithStyle("Diagnostic Information", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+			diagText,
+			widget.NewButton("Copy to Clipboard", func() {
+				fyne.CurrentApp().Clipboard().SetContent(actions.DiagnosticsText)
+			}),
+		),
 		nil,
 		nil,
-		container.NewCenter(menu),
+		changelog,
+	), window.Canvas())
+
+	var burger *widget.Button
+	burger = widget.NewButtonWithIcon("", theme.MenuIcon(), func() {
+		size := window.Canvas().Size()
+		width := float32(380)
+		sidebar.Resize(fyne.NewSize(width, size.Height))
+		sidebar.ShowAtPosition(fyne.NewPos(size.Width, 0)) // start just off the right edge
+
+		slide := fyne.NewAnimation(250*time.Millisecond, func(progress float32) {
+			// progress runs from 0 to 1 over the duration
+			sidebar.Move(fyne.NewPos(size.Width-width*progress, 0))
+		})
+		slide.Curve = fyne.AnimationEaseOut // fast start, gentle stop
+		slide.Start()
+	})
+
+	menu := container.NewHBox(
+		container.NewVBox(
+			onlineButton,
+			playButton,
+			soloButton,
+			deckButton,
+			widget.NewButton("Check for Updates", actions.CheckForUpdates),
+			widget.NewButton("How to Use", actions.HowToUse),
+			widget.NewButton("Settings", actions.Settings),
+			widget.NewButton("Quit", func() { window.Close() }),
+		),
 	)
+
+	background := fyne.CurrentApp().Preferences().StringWithFallback(
+		backgroundPreferenceKey,
+		backgroundNone,
+	)
+
+	title := canvas.NewImageFromResource(fyne.NewStaticResource("title.png", assets.TitlePNG))
+	title.FillMode = canvas.ImageFillContain
+	title.SetMinSize(fyne.NewSize(360, 280))
+
+	header := container.NewHBox(layout.NewSpacer(), container.NewVBox(burger))
+
+	centeredMenu := container.NewVBox(
+		container.NewHBox(
+			layout.NewSpacer(),
+			container.NewVBox(
+				container.NewCenter(title),
+				container.NewCenter(menu),
+			),
+			layout.NewSpacer(),
+		),
+	)
+
+	row := container.NewStack(centeredMenu, header)
+
+	if background == backgroundNone {
+		return container.NewStack(canvas.NewRectangle(color.Black), row)
+	}
+	return row
 }
 
 // showNewDeckDialog collects a deck name and returns a newly validated deck.

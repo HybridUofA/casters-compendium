@@ -27,6 +27,7 @@ type windowsMonitorInfo struct {
 }
 
 var (
+	procIsZoomed             = user32.NewProc("IsZoomed")
 	user32                   = windows.NewLazySystemDLL("user32.dll")
 	procSystemParametersInfo = user32.NewProc("SystemParametersInfoW")
 	procMonitorFromWindow    = user32.NewProc("MonitorFromWindow")
@@ -58,11 +59,12 @@ func clampWindowToWorkAreaPlatform(window fyne.Window) {
 	}
 
 	var (
-		hwnd     uintptr
-		work     windowsRECT
-		haveWork bool
-		winRect  windowsRECT
-		haveWin  bool
+		hwnd      uintptr
+		work      windowsRECT
+		haveWork  bool
+		winRect   windowsRECT
+		haveWin   bool
+		maximized bool
 	)
 	native.RunNative(func(context any) {
 		winContext, ok := context.(driver.WindowsWindowContext)
@@ -70,6 +72,9 @@ func clampWindowToWorkAreaPlatform(window fyne.Window) {
 			return
 		}
 		hwnd = winContext.HWND
+		if ret, _, _ := procIsZoomed.Call(hwnd); ret != 0 {
+			maximized = true
+		}
 		if ret, _, _ := procGetWindowRect.Call(hwnd, uintptr(unsafe.Pointer(&winRect))); ret != 0 {
 			haveWin = true
 		}
@@ -83,6 +88,11 @@ func clampWindowToWorkAreaPlatform(window fyne.Window) {
 			haveWork = true
 		}
 	})
+
+	if maximized {
+		return
+	}
+
 	if !haveWork {
 		return
 	}
