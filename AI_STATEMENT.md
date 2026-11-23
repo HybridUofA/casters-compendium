@@ -364,3 +364,11 @@ catalog v7 refresh, and remains responsible for acceptance and publication.
 Under that authorization, Cursor assistance implemented the fallback install
 path, tests, catalog refresh publication, transparency updates, and release
 metadata under maintainer review.
+
+## Disclosed v1.2.7 assistance
+
+Hybrid reviewed and merged DukeDesmond's main-menu redesign and title graphic
+([#62](https://github.com/HybridUofA/casters-compendium/pull/62)), then directed
+v1.2.7 packaging and publication. The menu UI and logo are contributor work;
+Cursor assistance prepared release metadata and shipping under maintainer
+review.

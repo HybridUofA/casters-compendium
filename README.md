@@ -35,8 +35,9 @@ priority auto-pass plus Hilde Willow Rest automation, v1.2.0's effect
 automation plus Solo vs Tsubasa, v1.2.1's board UX and match-end polish, v1.2.2's
 Break privacy and discard targeting UX, v1.2.3's Instant Rest, Stock
 banish, Battle attack-clear, and Save As / TTS identity fix, v1.2.5's
-update discovery plus Windows maximize / mouse-desync fix, and v1.2.6's
-card-database update fallback when the hosted catalog is unreachable.
+update discovery plus Windows maximize / mouse-desync fix, v1.2.6's
+card-database update fallback when the hosted catalog is unreachable, and
+v1.2.7's redesigned main menu and title graphic (DukeDesmond).
 
 ## Features
 
@@ -91,6 +92,11 @@ card-database update fallback when the hosted catalog is unreachable.
   (`.pkg.tar.zst`).
 
 ## Roadmap
+
+### What's new in v1.2.7
+
+- Redesigned main menu with a slide-out sidebar and bundled title logo.
+- Contributor menu redesign and graphics from DukeDesmond.
 
 ### What's new in v1.2.6
 
@@ -445,13 +451,13 @@ created.
 Debian and Ubuntu users can install the native package with:
 
 ```sh
-sudo apt install ./casters-compendium_1.2.6_amd64.deb
+sudo apt install ./casters-compendium_1.2.7_amd64.deb
 ```
 
 Arch Linux users can install the native package with:
 
 ```sh
-sudo pacman -U casters-compendium-1.2.6-1-x86_64.pkg.tar.zst
+sudo pacman -U casters-compendium-1.2.7-1-x86_64.pkg.tar.zst
 ```
 
 ## Known limitations
